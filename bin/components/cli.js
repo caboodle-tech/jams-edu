@@ -64,8 +64,8 @@ class CLI {
 
         // Make the release directory if its missing.
         try {
-            if ( ! fs.existsSync( 'release' ) ) {
-                fs.mkdirSync( 'release' );
+            if ( ! fs.existsSync( this.settings.releaseDir ) ) {
+                fs.mkdirSync( this.settings.releaseDir );
             }
         } catch( err ) {
             this.errorOut( '[ERR-06] We could not create the release directory. You may have a permission problem. We will be unable to compile a release until this is resolved.' );
@@ -111,7 +111,7 @@ class CLI {
             
             // Make sure the dir path exists first or create it.
             let filename = path.parse( file ).name + path.parse( file ).ext
-            let dir      = path.join( 'release', file.replace( filename, '' ) );
+            let dir      = path.join( this.settings.releaseDir, file.replace( filename, '' ) );
             if ( ! fs.existsSync( dir ) ) {
                 let ext  = path.parse( dir ).ext;
                 let name = path.parse( dir ).name;
@@ -168,7 +168,7 @@ class CLI {
 
     copyFileToRelease( location ) {
 
-        let dest    = path.join( 'release', location );
+        let dest    = path.join( this.settings.releaseDir, location );
         let hash    = md5( location );
         let mtime   = new Date( fs.statSync( location ).mtime );
         mtime       = mtime.toGMTString();
@@ -183,7 +183,7 @@ class CLI {
             // Copy file to release directory.
             fs.copyFileSync(
                 location,
-                path.join( 'release', location ),
+                path.join( this.settings.releaseDir, location ),
                 { encoding: 'utf8' }
             );
 
@@ -196,7 +196,7 @@ class CLI {
      * @deprecated
      */
     deleteRelease( dir ) {
-        if ( dir.substring( 0, 7 ) === 'release' ) {
+        if ( dir.substring( 0, 7 ) === this.settings.releaseDir ) {
             try {
                 if ( fs.existsSync( dir ) ) {
                     fs.readdirSync( dir ).forEach( ( file, index ) => {
@@ -460,7 +460,7 @@ Compile completed in: ${this.stats.time}
         // Replace the original file and extension from the path (location).
         let name = path.parse( location ).name;
         let dest = location.replace( name + ext, name + out );
-        dest     = path.join( 'release', dest );
+        dest     = path.join( this.settings.releaseDir, dest );
 
         // If this file is missing from the release directory compile it.
         if ( ! fs.existsSync( dest ) ) {
@@ -484,7 +484,7 @@ Compile completed in: ${this.stats.time}
     processDirs( dir, recursive ) {
 
         // Create this directory in the release folder if its missing.
-        let dest = path.join( 'release', dir );
+        let dest = path.join( this.settings.releaseDir, dir );
         if ( ! fs.existsSync( dest ) ) {
             this.stats.dcopied += 1;
             fs.mkdirSync( dest, { recursive: true } );
@@ -582,7 +582,7 @@ Compile completed in: ${this.stats.time}
         if ( matches ) {
             matches.forEach( match => {
                 let key = match.match( /\${{(.*)}}/ )[1].toUpperCase();
-                let val = match.match( /= *(?:'|')(.*)(?:'|") *;/ )[1];
+                let val = match.match( /= *(?:'|")(.*)(?:'|") *;/ )[1];
                 vars[ key ] = val;
                 file = file.replace( match, '' );
             } );

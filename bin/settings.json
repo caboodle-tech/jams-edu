@@ -3,24 +3,10 @@
         "jhtm": "compilerDefault",
         "jsd": "compilerShortdown"
     },
-    "compileDirectories": [
-        "assets",
-        "challenges",
-        "css",
-        "exercises",
-        "fonts",
-        "js",
-        "resources"
-    ],
-    "compileFiles": [
-        "LICENSE-CC-BY-NC-SA",
-        "LICENSE-MIT"
-    ],
+    "compileDirectories": [],
+    "compileFiles": [],
     "ignoreDir": [
-        "bin",
-        "less",
-        "release",
-        "templates"
+        "bin"
     ],
     "ignoreFile": [],
     "output": {
@@ -28,6 +14,7 @@
         "jmd": "html",
         "jsd": "html"
     },
+    "releaseDir": "release",
     "safeFileExtensions": [
         "7z",
         "css",

@@ -1,5 +1,42 @@
+const { match } = require('assert');
 const fs   = require( 'fs' );
 const path = require('path');
+
+// Improve performance by caching heavily used regular expressions.
+const regex = {
+    'alt': new RegExp( 'alt *= *"(.*?)"', 'i' ),
+    'class': new RegExp( '(?: )(\\.(?:\\w*|-*|_*)*)' ),
+    'colspan': new RegExp( 'colspan *= *"(.*?)"', 'i' ),
+    'data': new RegExp( '(data-.*?) *?= *?"(.*?)', 'gi' ),
+    'header': new RegExp( 'h\d' ),
+    'height': new RegExp( 'height *= *"(.*?)"', 'i' ),
+    'id': new RegExp( ' \\#(?:\\w*|-*|_*)*' ),
+    'lang': new RegExp( 'lang *= *"(.*?)"', 'i' ),
+    'map': new RegExp( 'map *= *"(.*?)"', 'i' ),
+    'newtab': new RegExp( 'newtab *= *"(.*?)"', 'i' ),
+    'numbers': new RegExp( '[^0-9]', 'g' ),
+    'rowspan': new RegExp( 'rowspan *= *"(.*?)"', 'i' ),
+    'title': new RegExp( 'title *= *"(.*?)"', 'i' ),
+    'type': new RegExp( 'type *= *"(.*?)"', 'i' ),
+    'url': new RegExp( 'url *= *"(.*?)"', 'i' ),
+    'varKey': new RegExp( '% *(\\w*) *=' ),
+    'vars': new RegExp( '% *\\w* *= *(?:\'|")\\w*(?:\'|")', 'g' ),
+    'varValue': new RegExp( '= *(?:\'|")(.*?)(?:\'|")' ),
+    'width': new RegExp( 'width *= *"(.*?)"', 'i' )
+};
+
+// The HTML tags we support.
+const genericTags = [ 'blockquote', 'br', 'cite', 'code', 'div', 'dl', 'dt', 'hr', 'i', 'img', 'kbd', 'li', 'ol', 'p', 'pre', 'strong', 'table', 'td', 'th', 'tr' ];
+
+// Alternative names for our supported HTML tags.
+const swapTags = {
+    'b': 'strong',
+    'bold': 'strong',
+    'image': 'img',
+    'italic': 'i',
+    'key': 'kbd',
+    'quote': 'blockquote'
+};
 
 module.exports = function( location, data, passBack ) {
 
@@ -34,36 +71,17 @@ module.exports = function( location, data, passBack ) {
 
             startTags.forEach( function( startTag, startIndex ) {
 
-                let tag = startTag.match( /\[ *\w*/ )[0].replace( '[', '' ).trim();
+                let tag = startTag.match( /\[ *\w*/ )[0].replace( '[', '' ).trim().toLowerCase();
 
-                switch ( tag.toLowerCase() ) {
+                switch ( tag  ) {
                     case 'a':
-                        line = line.replace( startTag, genericElementOpen( startTag, 'a' ) );
-                        break;
-                    case 'br':
-                        line = line.replace( startTag, genericElementOpen( startTag, 'br' ) );
-                        break;
-                    case 'blockquote':
-                    case 'quote':
-                        line = line.replace( startTag, genericElementOpen( startTag, 'blockquote' ) );
-                        break;
-                    case 'cite':
-                        line = line.replace( startTag, genericElementOpen( startTag, 'cite' ) );
+                        line = line.replace( startTag, linkElementOpen( startTag, 'a' ) );
                         break;
                     case 'code':
                         if ( getType( startTag ).toLowerCase().trim() == 'block' ){
                             codeBlock = true;
                         }
                         line = line.replace( startTag, codeOpenElement( startTag, codeBlock ) );
-                        break;
-                    case 'div':
-                        line = line.replace( startTag, genericElementOpen( startTag, 'div' ) );
-                        break;
-                    case 'dl':
-                        line = line.replace( startTag, genericElementOpen( startTag, 'dl' ) );
-                        break;
-                    case 'dt':
-                        line = line.replace( startTag, genericElementOpen( startTag, 'dt' ) );
                         break;
                     case 'h1':
                     case 'h2':
@@ -73,29 +91,24 @@ module.exports = function( location, data, passBack ) {
                     case 'h6':
                         line = line.replace( startTag, headerOpenElement( startTag ) );
                         break;
-                    case 'hr':
-                        line = line.replace( startTag, genericElementOpen( startTag, 'hr' ) );
+                    case 'img':
+                        line = line.replace( startTag, imageOpenElement( startTag ) );
                         break;
-                    case 'key':
-                        line = line.replace( startTag, genericElementOpen( startTag ), 'kdb' );
-                        break;
-                    case 'li':
-                        line = line.replace( startTag, genericElementOpen( startTag, 'li' ) );
-                        break;
-                    case 'ol':
-                        line = line.replace( startTag, genericElementOpen( startTag, 'ol' ) );
-                        break;
-                    case 'p':
-                        line = line.replace( startTag, genericElementOpen( startTag, 'p' ) );
-                        break;
-                    case 'ul':
-                        line = line.replace( startTag, genericElementOpen( startTag, 'ul' ) );
+                    case 'td':
+                    case 'th':
+                        line = line.replace( startTag, tableDataOpenElement( startTag, tag ) );
                         break;
                     case 'video':
                         line = line.replace( startTag, videoOpenElement( startTag ) );
                         break;
+                    default:
+                        if ( ! genericTags.includes( tag ) ) {
+                            tag = swapTags[ tag ];
+                        }
+                        if ( tag ) {
+                            line = line.replace( startTag, genericElementOpen( startTag, tag ) );
+                        }
                 }
-
                
             } );
 
@@ -107,34 +120,15 @@ module.exports = function( location, data, passBack ) {
 
             endTags.forEach( function( endTag, endIndex ) {
 
-                let tag = endTag.match( /\[ *\/ *\w*/ )[0].replace( /\[ *?\//, '' ).trim();
+                let tag = endTag.match( /\[ *\/ *\w*/ )[0].replace( /\[ *?\//, '' ).trim().toLowerCase();
 
-                switch ( tag.toLowerCase() ) {
-                    case 'a':
-                        line = line.replace( endTag, genericElementClose( 'a' ) );
-                        break;
+                switch ( tag ) {
                     case 'br':
                         line = line.replace( endTag, genericElementOpen( endTag, 'br' ) );
-                        break;
-                    case 'blockquote':
-                    case 'quote':
-                        line = line.replace( endTag, genericElementClose( 'blockquote' ) );
-                        break;
-                    case 'cite':
-                        line = line.replace( endTag, genericElementClose( 'cite' ) );
                         break;
                     case 'code':
                         line = line.replace( endTag, codeCloseElement( codeBlock ) );
                         codeBlock = false;
-                        break;
-                    case 'div':
-                        line = line.replace( endTag, genericElementClose( 'div' ) );
-                        break;
-                    case 'dl':
-                        line = line.replace( endTag, genericElementClose( 'dl' ) );
-                        break;
-                    case 'dt':
-                        line = line.replace( endTag, genericElementClose( 'dt' ) );
                         break;
                     case 'h1':
                     case 'h2':
@@ -147,24 +141,16 @@ module.exports = function( location, data, passBack ) {
                     case 'hr':
                         line = line.replace( endTag, genericElementOpen( endTag, 'hr' ) );
                         break;
-                    case 'key':
-                        line = line.replace( endTag, genericElementClose( 'key' ) );
-                        break;
-                    case 'li':
-                        line = line.replace( endTag, genericElementClose( 'li' ) );
-                        break;
-                    case 'ol':
-                        line = line.replace( endTag, genericElementClose( 'ol' ) );
-                        break;
-                    case 'p':
-                        line = line.replace( endTag, genericElementClose( 'p' ) );
-                        break;
-                    case 'ul':
-                        line = line.replace( endTag, genericElementClose( 'ul' ) );
-                        break;
                     case 'video':
                         line = line.replace( endTag, genericElementClose( 'a' ) );
                         break;
+                    default:
+                        if ( ! genericTags.includes( tag ) ) {
+                            tag = swapTags[ tag ];
+                        }
+                        if ( tag ) {
+                            line = line.replace( endTag, genericElementClose( tag ) );
+                        }
                 }
 
             } );
@@ -201,6 +187,17 @@ module.exports = function( location, data, passBack ) {
 
     html = html.replace( /^\s*[\r\n]/gm, '' );
 
+    // Replace any variables.
+    let matches = html.match( regex.vars );
+    
+    if ( matches ) {
+        matches.forEach( match => {
+            let key = match.match( regex.varKey )[1].toUpperCase().trim();
+            let val = match.match( regex.varValue )[1];
+            html = html.replace( match, '${{' + key + '}} = "' + val + '";');
+        } );
+    }
+
     // Process any variables.
     html = this.compilerDefault( location, html, true );
 
@@ -224,10 +221,70 @@ module.exports = function( location, data, passBack ) {
 
         // Build the path to the destination.
         let dest = location.replace( name + ext, name + out );
-        dest     = path.join( 'release', dest );
+        dest     = path.join( this.settings.releaseDir, dest );
 
         this.saveCompiledFile( html, dest );
     }
+}
+
+function tableDataOpenElement( content, tag ) {
+    let elem = '';
+    if ( tag == 'th' ) {
+        elem += '<th';
+    } else {
+        elem += '<td';
+    }
+    elem += getAttributes( content );
+    elem += getColspan( content );
+    elem += getRowspan( content );
+    return elem + '>';
+}
+
+function imageOpenElement( content ) {
+    let elem  = '<img src="' + getUrl( content ) + '"';
+    elem     += getAttributes( content );
+    elem     += getAlt( content );
+    elem     += getTitle( content );
+    elem     += getWidth( content );
+    elem     += getHeight( content );
+
+    let m = content.match( regex.map );
+    if ( m!= null ){
+        elem += ' usemap="' + m[1] + '"';
+    }
+
+    return elem + '>';
+}
+
+
+function getColspan( content ) {
+    let m = content.match( regex.colspan );
+    if ( m != null ){
+        let num = m[1].replace( regex.numbers, '' ).trim();
+        if ( num.length > 0 ) {
+            return ' colspan="' + num + '"';
+        }
+    }
+    return '';
+}
+
+function getRowspan( content ) {
+    let m = content.match( regex.rowspan );
+    if ( m != null ){
+        let num = m[1].replace( regex.numbers, '' ).trim();
+        if ( num.length > 0 ) {
+            return ' rowspan="' + num + '"';
+        }
+    }
+    return '';
+}
+
+function getAlt( content ) {
+    let m = content.match( regex.alt );
+    if ( m != null ){
+        return ' alt="' + m[1] + '"';
+    }
+    return '';
 }
 
 function getAttributes( content ) {
@@ -239,15 +296,19 @@ function getAttributes( content ) {
 }
 
 function getClasses( content ) {
-    let m = content.match( / \.(?:\w*|-*|_*)*/g );
-    if ( m && m.length > 0 ) {
-        return ' class="' + m.join( ' ' ).replace( '.', '' ) + '"';
+    let m = content.match( regex.class );
+    if ( m != null && m.length > 0 ) {
+        let elem = '';
+        m.forEach( function( c ) {
+            elem += ' ' + c.replace( '.', '' );
+        } );
+        return ' class="' + elem.trim() + '"';
     }
     return '';
 }
 
 function getDataAttributes( content ) {
-    let m = content.match( /(data-.*?) *?= *?"(.*?)"/gi );
+    let m = content.match( regex.data );
     let a = [];
     if ( m != null ) {
         m.forEach( function( data ) {
@@ -260,15 +321,15 @@ function getDataAttributes( content ) {
 }
 
 function getId( content ) {
-    let m = content.match( /#(?:\w*|-*|_*)*/ );
+    let m = content.match( regex.id );
     if ( m && m.length > 0 ) {
-        return ' id="' + m[0].replace( '#', '' ) + '"';
+        return ' id="' + m[0].replace( '#', '' ).trim() + '"';
     }
     return '';
 }
 
 function getLanguage( content ) {
-    let m = content.match( /lang *= *"(.*?)"/i );
+    let m = content.match( regex.lang );
     if ( m != null ){
         return ' class="lang-' + m[1].toLowerCase() + '"';
     }
@@ -276,17 +337,66 @@ function getLanguage( content ) {
 }
 
 function getType( content ) {
-    let m = content.match( /type *= *"(.*?)"/i );
+    let m = content.match( regex.type );
     if ( m != null ){
-        return m[1];
+        return m[1].trim();
     }
     return '';
 }
 
+function linkElementOpen( content ) {
+    let elem  = '<a href="' + getUrl( content ) + '"';
+    elem     += getNewtab( content );
+    elem     += getAttributes( content );
+    return elem + '>';
+}
+
 function getUrl( content ) {
-    let m = content.match( /url *= *"(.*?)"/i );
+    let m = content.match( regex.url );
     if ( m != null ){
-        return m[1];
+        return m[1].trim();
+    }
+    return '';
+}
+
+function getNewtab( content ) {
+    let m = content.match( regex.newtab );
+    if ( m != null ){
+        if ( m[1].toLowerCase().indexOf( 'no' ) > -1 ) {
+            return ' target="_self"';
+        }
+    }
+    return ' target="_blank"';
+}
+
+function getMap( content ) {
+    let m = content.match( regex.map );
+    if ( m != null ){
+        return ' usemap="#' + m[1].trim() + '"';
+    }
+    return '';
+}
+
+function getTitle( content ) {
+    let m = content.match( regex.title );
+    if ( m != null ){
+        return ' title="' + m[1].trim() + '"';
+    }
+    return '';
+}
+
+function getHeight( content ) {
+    let m = content.match( regex.height );
+    if ( m != null ){
+        return ' height="' + m[1].replace( regex.numbers, '' ) + '"';
+    }
+    return '';
+}
+
+function getWidth( content ) {
+    let m = content.match( regex.width );
+    if ( m != null ){
+        return ' width="' + m[1].replace( regex.numbers, '' ) + '"';
     }
     return '';
 }
@@ -319,7 +429,7 @@ function genericElementOpen( content, tag ) {
 
 function headerCloseElement( content ) {
     let lvl = 1;
-    let m   = content.match( /h\d/ );
+    let m   = content.match( regex.header );
     if ( m && m.length > 0 ) {
         lvl = m[0][1];
     }
