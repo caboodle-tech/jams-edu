@@ -8,7 +8,9 @@
     "ignoreDir": [
         "bin"
     ],
-    "ignoreFile": [],
+    "ignoreFile": [
+        "README.md"
+    ],
     "output": {
         "jhtm": "html",
         "jmd": "html",

@@ -20,16 +20,17 @@ const compilerShortdown = require( './compilers/jsd' );
 class CLI {
 
     constructor() {
-        this.compilers  = {};
-        this.cwd        = '';
-        this.DB         = null;
-        this.globalVars = {};
-        this.ready      = false;
-        this.readyCount = 0;
-        this.settings   = {};
-        this.stats      = {};
-        this.SQL        = null;
-        this.templates  = {};
+        this.compilers    = {};
+        this.cwd          = '';
+        this.DB           = null;
+        this.forceCompile = false;
+        this.globalVars   = {};
+        this.ready        = false;
+        this.readyCount   = 0;
+        this.settings     = {};
+        this.stats        = {};
+        this.SQL          = null;
+        this.templates    = {};
         this.initialize();
     }
 
@@ -52,6 +53,22 @@ class CLI {
             }
         }
         this.compilers = compilers;
+    }
+
+    checkForceCompile() {
+
+        // Loop through all the template files and see it one has changed.
+        let items = fs.readdirSync( 'templates' );
+        items.forEach( item => {
+            let location = path.join( 'templates', item );
+            let hash     = md5( location );
+            let mtime    = new Date( fs.statSync( location ).mtime );
+            let result   = this.getFileTrackingStatus( hash, mtime );
+            if ( ! this.forceCompile && ! result ) {
+                this.forceCompile = true;
+            }
+        } );
+
     }
 
     closeDatabase() {
@@ -239,7 +256,7 @@ class CLI {
 
             // Yes.
             let old = result[0].values[0][0];
-            if ( mtime != old ){
+            if ( mtime != old || this.forceCompile ){
                 this.DB.exec( "UPDATE history SET modified = '" + mtime + "' WHERE file = '" + hash + "';" );
                 return false;
             }
@@ -376,6 +393,8 @@ Compile completed in: ${this.stats.time}
                 // Open the existing database file.
                 let filebuffer = fs.readFileSync( location );
                 that.DB = new SQL.Database( filebuffer );
+                // Check if we need to force compile.
+                that.checkForceCompile();
             }
             that.ready = true;
         } ).catch( function( err ) {
@@ -513,8 +532,14 @@ Compile completed in: ${this.stats.time}
                         this[ compiler ]( location );
                     }
                 } else if ( this.settings.safeFileExtensions.includes( ext ) ) {
-                    // If this file is in the safe list copy it to release; no compile needed.
-                    this.copyFileToRelease( location );
+                    /**
+                     * This file is in the safe list and no compiling is needed
+                     * copy it to release if it's not in the ignore list.
+                     */
+                    if ( ! this.settings.ignoreFile.includes( location ) ) {
+                        
+                        this.copyFileToRelease( location );
+                    }
                 }
             }
         } );
