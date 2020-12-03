@@ -1,3 +1,4 @@
+// Start the JamED CLI application.
 const CLI = require( './components/cli' );
 
 // Attempt to pull the users command from the command line (terminal).
