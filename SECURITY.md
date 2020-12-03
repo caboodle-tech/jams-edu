@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-The following table outlines the current state of security support for JamED.By its nature, JamED is a very secure application, but it is always good practice to keep your installation of JamED updated to the latest production version.
+The following table outlines the current state of security support for JamED. By its nature, JamED is a very secure application, but it is always good practice to keep your installation of JamED updated to the latest production version.
 
 | Version    | Supported          |
 | -----------| ------------------ |
