@@ -1,6 +1,6 @@
 const { match } = require('assert');
-const fs   = require( 'fs' );
-const path = require('path');
+const fs        = require( 'fs' );
+const path      = require('path');
 
 // Improve performance by caching heavily used regular expressions.
 const regex = {
@@ -242,17 +242,12 @@ function tableDataOpenElement( content, tag ) {
 
 function imageOpenElement( content ) {
     let elem  = '<img src="' + getUrl( content ) + '"';
+    elem     += getMap( content );
     elem     += getAttributes( content );
     elem     += getAlt( content );
     elem     += getTitle( content );
     elem     += getWidth( content );
     elem     += getHeight( content );
-
-    let m = content.match( regex.map );
-    if ( m!= null ){
-        elem += ' usemap="' + m[1] + '"';
-    }
-
     return elem + '>';
 }
 
