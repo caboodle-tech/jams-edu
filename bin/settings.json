@@ -9,7 +9,8 @@
         "bin"
     ],
     "ignoreFile": [
-        "README.md"
+        "README.md",
+        "SECURITY.md"
     ],
     "output": {
         "jhtm": "html",

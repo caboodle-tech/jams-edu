@@ -557,11 +557,14 @@ Compile completed in: ${this.stats.time}
             this.stats.dignored += 1;
         }
 
+        // TODO: Need to add better checks here for skipping files and dirs in the compile.
+
         // Loop through all items in this directory and process accordingly.
         let items = fs.readdirSync( dir );
         items.forEach( item => {
             let location = path.join( dir, item );
             let stats    = fs.statSync( location );
+            
             // Is this a directory?
             if ( stats.isDirectory() && recursive == true ) {
                 // Yes. Only continue if this is a safe (requested) directory.
@@ -569,17 +572,20 @@ Compile completed in: ${this.stats.time}
                     this.processDirs( location, true );
                 }
             } else {
-                // No. Compile the file if its extension is in the compile list.
-                let ext = path.parse( location ).ext.replace( '.', '' );
-                if ( this.compilers.types.includes( ext ) ) {
-                    // Does this file actually need to be compiled?
-                    if ( this.needsCompile( location ) ) {
-                        let compiler = this.compilers[ ext ];
-                        this[ compiler ]( location );
+                // TODO: Improve this.
+                if ( ! this.settings.ignoreFile.includes( location ) ) {
+                    // No. Compile the file if its extension is in the compile list.
+                    let ext = path.parse( location ).ext.replace( '.', '' );
+                    if ( this.compilers.types.includes( ext ) ) {
+                        // Does this file actually need to be compiled?
+                        if ( this.needsCompile( location ) ) {
+                            let compiler = this.compilers[ ext ];
+                            this[ compiler ]( location );
+                        }
+                    } else if ( this.settings.safeFileExtensions.includes( ext ) ) {
+                        // If this file is in the safe list copy it to release; no compile needed.
+                        this.copyFileToRelease( location );
                     }
-                } else if ( this.settings.safeFileExtensions.includes( ext ) ) {
-                    // If this file is in the safe list copy it to release; no compile needed.
-                    this.copyFileToRelease( location );
                 }
             }
         } );

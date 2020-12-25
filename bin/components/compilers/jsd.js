@@ -94,6 +94,9 @@ module.exports = function( location, data, passBack ) {
                     case 'img':
                         line = line.replace( startTag, imageOpenElement( startTag ) );
                         break;
+                    case 'math':
+                        line = line.replace( startTag, mathOpenElement( startTag ) );
+                        break;
                     case 'td':
                     case 'th':
                         line = line.replace( startTag, tableDataOpenElement( startTag, tag ) );
@@ -139,7 +142,10 @@ module.exports = function( location, data, passBack ) {
                         line = line.replace( endTag, headerCloseElement( endTag ) );
                         break;
                     case 'hr':
-                        line = line.replace( endTag, genericElementOpen( endTag, 'hr' ) );
+                        line = line.replace( endTag, genericElementClose( endTag, 'hr' ) );
+                        break;
+                    case 'math':
+                        line = line.replace( endTag, genericElementClose( 'div', 'div' ) );
                         break;
                     case 'video':
                         line = line.replace( endTag, genericElementClose( 'a' ) );
@@ -225,6 +231,10 @@ module.exports = function( location, data, passBack ) {
 
         this.saveCompiledFile( html, dest );
     }
+}
+
+function mathOpenElement( content ) {
+    return '<div data-type="katex">';
 }
 
 function tableDataOpenElement( content, tag ) {

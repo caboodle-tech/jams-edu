@@ -23,7 +23,7 @@ module.exports = function( location, data, passBack ) {
     file     = obj.file;
 
     // Add the compile time to the variables object.
-    vars[ 'TIMESTAMP' ] = this.getTimestamp();
+    //vars[ 'TIMESTAMP' ] = this.getTimestamp();
 
     // Add the global variables the variables object.
     vars = Object.assign( vars, this.globalVars );
