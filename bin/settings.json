@@ -3,12 +3,16 @@
         "jhtm": "compilerDefault",
         "jsd": "compilerShortdown"
     },
-    "compileDirectories": [],
+    "compileDirectories": [
+        "css",
+        "js"
+    ],
     "compileFiles": [],
     "ignoreDir": [
         "bin"
     ],
     "ignoreFile": [
+        "LICENSE.txt",
         "README.md",
         "SECURITY.md"
     ],

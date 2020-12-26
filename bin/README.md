@@ -1,7 +1,6 @@
 # BIN
 The files in this directory are the key to the JamED CLI application.
 
-
 ### CLI
 The `cli.js` file loads the JamED CLI application and all the other components it needs from the components folder.
 
