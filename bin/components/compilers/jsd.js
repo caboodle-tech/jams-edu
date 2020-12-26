@@ -97,6 +97,10 @@ module.exports = function( location, data, passBack ) {
                     case 'math':
                         line = line.replace( startTag, mathOpenElement( startTag ) );
                         break;
+                    case 'mermaid':
+                    case 'diagram':
+                        line = line.replace( startTag, diagramOpenElement( startTag ) );
+                        break;
                     case 'td':
                     case 'th':
                         line = line.replace( startTag, tableDataOpenElement( startTag, tag ) );
@@ -145,6 +149,10 @@ module.exports = function( location, data, passBack ) {
                         line = line.replace( endTag, genericElementClose( endTag, 'hr' ) );
                         break;
                     case 'math':
+                        line = line.replace( endTag, genericElementClose( 'div', 'div' ) );
+                        break;
+                    case 'mermaid':
+                    case 'diagram':
                         line = line.replace( endTag, genericElementClose( 'div', 'div' ) );
                         break;
                     case 'video':
@@ -233,8 +241,26 @@ module.exports = function( location, data, passBack ) {
     }
 }
 
+function diagramOpenElement( content ) {
+    let elem  = '<div ';
+    elem     += getAttributes( content );
+    if ( elem.includes( 'class="' ) ) {
+        elem.replace( 'class="', 'class="mermaid ' );
+    } else {
+        elem += ' class="mermaid"';
+    }
+    return elem + '>';
+}
+
 function mathOpenElement( content ) {
-    return '<div data-type="katex">';
+    let elem  = '<div ';
+    elem     += getAttributes( content );
+    if ( elem.includes( 'class="' ) ) {
+        elem.replace( 'class="', 'class="katex ' );
+    } else {
+        elem += ' class="katex"';
+    }
+    return elem + '>';
 }
 
 function tableDataOpenElement( content, tag ) {
