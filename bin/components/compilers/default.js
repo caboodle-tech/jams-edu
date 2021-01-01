@@ -23,7 +23,7 @@ module.exports = function( location, data, passBack ) {
     file     = obj.file;
 
     // Add the compile time to the variables object.
-    //vars[ 'TIMESTAMP' ] = this.getTimestamp();
+    vars[ 'TIMESTAMP' ] = this.getTimestamp();
 
     // Add the global variables the variables object.
     vars = Object.assign( vars, this.globalVars );
@@ -40,22 +40,17 @@ module.exports = function( location, data, passBack ) {
     }
     vars[ 'PATH' ] = rel;
 
-    // Loop through the template parts replacing variables with their values.
+    // Replace template variables with their actual values in the file.
     let parts = this.templates;
     for( const tempProp in parts ) {
         let temp = parts[ tempProp ];
-        for( const varProp in vars ) {
-            let regex = new RegExp( '{{' + varProp + '}}', 'g' );
-            temp = temp.replace( regex, vars[ varProp ] );
-        }
-        // Replace template variables with their actual values in the file.
-        let regex = new RegExp( '{{' + tempProp + '}}', 'g' );
+        let regex = new RegExp( '{{' + tempProp + '}}', 'gi' );
         file = file.replace( regex, temp );
     }
 
-    // Replace variables with their actual values in the file.
+    // Replace all variables with their actual values in the file.
     for( const varProp in vars ) {
-        let regex = new RegExp( '{{' + varProp + '}}', 'g' );
+        let regex = new RegExp( '{{' + varProp + '}}', 'gi' );
         file = file.replace( regex, vars[ varProp ] );
     }
 

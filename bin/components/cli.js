@@ -329,6 +329,34 @@ Compile completed in: ${this.stats.time}
     }
 
     /**
+     * Create a human readable UTC like timestamp: YYYY-MM-DD @ HH:MM:SS
+     */
+    getTimestamp() {
+
+        let d = new Date();
+
+        let dy = d.getDate();
+        if ( dy < 10 ){ dy = '0' + dy; }
+
+        let mm = d.getMonth() + 1;
+        if ( mm < 10 ){ mm = '0' + mm; }
+
+        let hr = d.getHours();
+        if ( hr < 10 ){ hr = '0' + hr; }
+
+        let mn = d.getMinutes();
+        if ( mn < 10 ){ mn = '0' + mn; }
+
+        let sc = d.getSeconds();
+        if ( sc < 10 ){ sc = '0' + sc; }
+
+        let timestamp  = d.getFullYear() + '-' + mm + '-' + dy;
+        timestamp     += ' @ ' + hr + ':' + mn + ':' + sc;
+
+        return timestamp;
+    }
+
+    /**
      * Create a human readable timestamp that supports hours, minutes, seconds, and milliseconds.
      * 
      * @param {*} ary 
@@ -480,16 +508,26 @@ Compile completed in: ${this.stats.time}
     /**
      * Load all the template files into memory.
      */
-    loadTemplates() {
-        let templates = {};
-        let files = fs.readdirSync( 'templates' );
+    loadTemplates( base ) {
+        if ( ! base || base.substring( 0, 9 ) != 'templates' ) {
+            base = 'templates';
+        }
+        let files = fs.readdirSync( base );
         files.forEach( file => {
-            let name = path.parse( file ).name.toUpperCase();
-            templates[ name ] = fs.readFileSync( 'templates' + path.sep + file, {
-                encoding: 'utf8'
-            } );
+            let stats = fs.statSync( base + path.sep + file );
+            if ( stats.isDirectory() ) {
+                this.loadTemplates( base + path.sep + file );
+            } else {
+                let name = base + path.sep + path.parse( file ).name;
+                name     = name.replace( /templates(\/|\\{1,2})/, '' );
+                this.templates[ name.toUpperCase() ] = fs.readFileSync(
+                    base + path.sep + file,
+                    {
+                        encoding: 'utf8'
+                    }
+                );
+            }
         } );
-        this.templates = templates;
     }
 
     /**
