@@ -1,3 +1,17 @@
+/**
+ * Polyfill forEach.
+ * 
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/NodeList/forEach|Source Code}
+ */
+if (window.NodeList && !NodeList.prototype.forEach) {
+    NodeList.prototype.forEach = function (callback, thisArg) {
+        thisArg = thisArg || window;
+        for (var i = 0; i < this.length; i++) {
+            callback.call(thisArg, this[i], i, this);
+        }
+    };
+}
+
 document.addEventListener( 'DOMContentLoaded', function( event ) { 
 
     // Setup.
@@ -30,27 +44,76 @@ document.addEventListener( 'DOMContentLoaded', function( event ) {
         count--;
     }
 
+    // Before we load the mermaid script add the correct class to all diagrams on the page.
+    var diagrams = document.querySelectorAll( '.diagram' );
+    diagrams.forEach( function( d ) {
+        d.classList.add( 'mermaid' );
+    } );
+
+    // Load the Font Awesome script into the current page.
+    var tag   = document.createElement( 'SCRIPT' );
+    tag.defer = true;
+    tag.type  = 'text/javascript';
+    tag.src   = relPath + 'js/fa-all.min.js';
+    document.head.appendChild( tag );
+
+    // Load the Highlight JS stylesheet into the current page.
+    tag      = document.createElement( 'LINK' );
+    tag.rel  = 'stylesheet';
+    tag.href = relPath + 'css/highlight.min.css';
+    document.head.appendChild( tag );
+
+    // Load the Highlight JS script into the current page.
+    tag       = document.createElement( 'SCRIPT' );
+    tag.defer = true;
+    tag.type  = 'text/javascript';
+    tag.src   = relPath + 'js/highlight.min.js';
+    document.head.appendChild( tag );
+
     // Load the Katex stylesheet into the current page.
-    var tag  = document.createElement( 'LINK' );
+    tag      = document.createElement( 'LINK' );
     tag.rel  = 'stylesheet';
     tag.href = relPath + 'css/katex.min.css';
     document.head.appendChild( tag );
 
     // Load the Katex script into the current page.
-    var tag  = document.createElement( 'SCRIPT' );
-    tag.type = 'text/javascript';
-    tag.src  = relPath + 'js/katex.min.js';
+    tag       = document.createElement( 'SCRIPT' );
+    tag.defer = true;
+    tag.type  = 'text/javascript';
+    tag.src   = relPath + 'js/katex.min.js';
     document.head.appendChild( tag );
 
     // Load the Mermaid script into the current page.
-    var tag  = document.createElement( 'SCRIPT' );
-    tag.type = 'text/javascript';
-    tag.src  = relPath + 'js/mermaid.min.js';
+    tag       = document.createElement( 'SCRIPT' );
+    tag.defer = true;
+    tag.type  = 'text/javascript';
+    tag.src   = relPath + 'js/mermaid.min.js';
     document.head.appendChild( tag );
 
     // Once the scripts have been loaded call the functions to initialize them.
+    loadHighlight( 0 );
     loadMermaid( 0 );
     loadKatex( 0 );
+
+    function loadHighlight( count ) {
+
+        if ( count > 30 ) {
+            return;
+        }
+
+        if ( typeof hljs !== 'undefined' ) {
+
+            // Initialize Highlight.js to format all code examples on the page.
+            var tag  = document.createElement( 'SCRIPT' );
+            tag.type = 'text/javascript';
+            tag.innerHTML = 'hljs.initHighlighting();';
+            document.head.appendChild( tag );
+
+        } else {
+            setTimeout( loadHighlight.bind( null, count++ ), 100 );
+        }
+
+    }
 
     function loadMermaid( count ) {
 
@@ -58,11 +121,13 @@ document.addEventListener( 'DOMContentLoaded', function( event ) {
             return;
         }
 
-        if ( typeof mermaid !== 'undefined' ) { 
+        if ( typeof mermaid !== 'undefined' ) {
+
             var tag  = document.createElement( 'SCRIPT' );
             tag.type = 'text/javascript';
             tag.innerHTML = 'mermaid.initialize( { startOnLoad: true } );';
             document.head.appendChild( tag );
+            
         } else {
             setTimeout( loadMermaid.bind( null, count++ ), 100 );
         }
