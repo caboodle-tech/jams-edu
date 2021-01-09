@@ -32,7 +32,7 @@ class CLI {
         this.stats        = {};
         this.SQL          = null;
         this.templates    = {};
-        this.versions     = {};
+        this.versions     = { 'jamsedu': '1.5.5' };
         this.initialize();
     }
 
@@ -76,20 +76,41 @@ class CLI {
     }
 
     /**
+     * Checks if the global file has changed, if it has we should force a compile.
+     */
+    checkGlobalForCompile() {
+        let location = 'bin/globals';
+        let stats    = fs.statSync( location );
+        let hash     = md5( location );
+        let mtime    = new Date( stats.mtime );
+        let result   = this.getFileTrackingStatus( hash, mtime );
+        if ( ! this.forceCompile && ! result ) {
+            this.forceCompile = true;
+        }
+    }
+    
+    /**
      * Checks if any template files have changed, if they have we
      * should force a compile.
      */
-    checkForceCompile() {
+    checkTemplatesForCompile( base ) {
+        if ( ! base || base.substring( 0, 9 ) != 'templates' ) {
+            base = 'templates';
+        }
         // Loop through all the template files and see if one has changed.
-        let items = fs.readdirSync( 'templates' );
+        let items = fs.readdirSync( base );
         items.forEach( item => {
-            // TODO: This does not skip dirs and does not support recursion.
-            let location = path.join( 'templates', item );
-            let hash     = md5( location );
-            let mtime    = new Date( fs.statSync( location ).mtime );
-            let result   = this.getFileTrackingStatus( hash, mtime );
-            if ( ! this.forceCompile && ! result ) {
-                this.forceCompile = true;
+            let location = path.join( base, item );
+            let stats    = fs.statSync( location );
+            if ( stats.isDirectory() ) {
+                this.checkTemplatesForCompile( location );
+            } else {
+                let hash   = md5( location );
+                let mtime  = new Date( stats.mtime );
+                let result = this.getFileTrackingStatus( hash, mtime );
+                if ( ! this.forceCompile && ! result ) {
+                    this.forceCompile = true;
+                }
             }
         } );
     }
@@ -156,7 +177,7 @@ class CLI {
                 dir = dir.replace( name + ext, '' );
                 fs.mkdirSync( dir, { recursive: true } );
                 this.stats.dcopied += 1;
-                // DO NOT ADD to the dignored count here.
+                // DO NOT ADD to the ignored count here.
             }
 
             // Send this file off to be compiled and saved if it needs it.
@@ -480,7 +501,10 @@ Compile completed in: ${this.stats.time}
                 let filebuffer = fs.readFileSync( location );
                 that.DB = new SQL.Database( filebuffer );
                 // Check if we need to force compile.
-                that.checkForceCompile();
+                that.checkGlobalForCompile();
+                if ( ! that.forceCompile ) {
+                    that.checkTemplatesForCompile();
+                }
             }
             that.ready = true;
         } ).catch( function( err ) {
