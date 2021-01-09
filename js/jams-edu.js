@@ -21,13 +21,13 @@ document.addEventListener( 'DOMContentLoaded', function( event ) {
     var relPath = '';
 
     /**
-     * Using the absolute path to the current file and the stem.js
+     * Using the absolute path to the current file and the jams-edu.js
      * file path determine the sites root path.
      */
     var len = scripts.length;
     for ( var x = 0; x < len; x++ ) {
         if ( scripts[ x ].src ) {
-            if ( scripts[ x ].src.includes( 'stem.js' ) ) {
+            if ( scripts[ x ].src.includes( 'jams-edu.js' ) ) {
                 root = scripts[ x ].src.substring( 0, scripts[ x ].src.lastIndexOf( '/' ) );
                 root = root.substring( 0, root.lastIndexOf( '/' ) );
                 break;
