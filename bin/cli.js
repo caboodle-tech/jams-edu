@@ -14,4 +14,4 @@ if ( cmd[0] ) {
  * change the working directory to the projects root.
  */
 let cli = new CLI();
-cli.runCmd( cmd );
+cli.runCmd( cmd, process.argv.slice(3).join( ' ' ) );

@@ -1,3 +1,4 @@
+const cmdLine   = require('child_process');
 const fs        = require('fs');
 const initSqlJs = require( './sql-wasm' );
 const md5       = require( './md5' );
@@ -31,6 +32,7 @@ class CLI {
         this.stats        = {};
         this.SQL          = null;
         this.templates    = {};
+        this.versions     = {};
         this.initialize();
     }
 
@@ -58,6 +60,19 @@ class CLI {
             }
         }
         this.compilers = compilers;
+    }
+
+    // https://stackoverflow.com/a/5582715/3193156
+    containsAny( str, array ) {
+        if ( ! str ){ return false; }
+        if ( str.length < 1 ){ return false; }
+        for ( let x = 0; x != array.length; x++ ) {
+           let substring = array[ x ];
+           if ( str.indexOf( substring ) != -1 ) {
+             return true;
+           }
+        }
+        return false; 
     }
 
     /**
@@ -102,15 +117,6 @@ class CLI {
             this.errorOut( '[ERR-06] We could not create the release directory. You may have a permission problem. We will be unable to compile a release until this is resolved.' );
         }
 
-        // Make sure the release gitkeep file exists.
-        if ( ! fs.existsSync( 'release/.gitkeep' ) ) {
-            try {
-                fs.writeFileSync( 'release/.gitkeep', '', { encoding: 'utf8' } );
-            } catch( err ) {
-                this.errorDisplay( '[ERR-07] We could not create the .gitkeep file in the release directory. You may want to manually create it if this is the only error you received.' );
-            }
-        }
-
         // Reset stats.
         this.stats = {
             'dcopied': 0,
@@ -121,6 +127,7 @@ class CLI {
             'fignored': 0,
             'time': process.hrtime()
         }
+        
 
         // Compile the root directory without recursion.
         this.processDirs( '.', false );
@@ -195,6 +202,65 @@ class CLI {
      */
 
     /**
+     * Runs the LESS or SASS compiler as part of the JamsEDU compiling process.
+     * Can be triggered by adding the --styles flag to the compile command.
+     */
+    compileStyles() {
+        let error = false;
+        if ( this.settings.preprocessor ) {
+            try {
+                // Attempt to compile the styles, show an error message if something failed.
+                let regex = new RegExp( '(\\d+\\.\\d+\\.\\d+)', 'gm' );
+                if ( this.settings.preprocessor.toLowerCase() == 'sass') {
+                    if ( fs.existsSync( 'sass' ) ) {
+                        let ver = cmdLine.execSync( 
+                            'sass --version',
+                            {stdio: 'pipe' }
+                        ).toString().trim();
+                        if ( ver.match( regex ) ) {
+                            let files = [ 'main.sass', 'dark.sass', 'main-light.sass', 'main-dark.sass' ];
+                            files.forEach( function( file ) {
+                                if ( fs.existsSync( path.join( 'less', file ) ) ) {
+                                    cmdLine.execSync( 
+                                        'lessc less/' + file + ' css/' + file.replace( '.less', '.css' ),
+                                        {stdio: 'pipe' }
+                                    ).toString().trim();
+                                }
+                            } );
+                        }
+                    } 
+                } else {
+                    if ( fs.existsSync( 'less' ) ) {
+                        let ver = cmdLine.execSync( 
+                            'lessc --version',
+                            {stdio: 'pipe' }
+                        ).toString().trim();
+                        if ( ver.match( regex ) ) {
+                            let files = [ 'main.less', 'dark.less', 'main-light.less', 'main-dark.less' ];
+                            files.forEach( function( file ) {
+                                if ( fs.existsSync( path.join( 'less', file ) ) ) {
+                                    cmdLine.execSync( 
+                                        'lessc less/' + file + ' css/' + file.replace( '.less', '.css' ),
+                                        {stdio: 'pipe' }
+                                    ).toString().trim();
+                                }
+                            } );
+                        }
+                    }
+                }
+            } catch( e ){
+                error = true;
+            }
+        } else {
+            error = true;
+        }
+
+        if ( error ) {
+            this.errorDisplay( '[SKIPPED STYLES] We could not auto compile your style sheet(s), either the pre-processor is missing from the settings file, is not installed on your machine, or there was an error in your LESS or SASS code.' );
+        }
+    };
+
+    /**
      * Copies the specified file to the release directory.
      * 
      * @param {string} location The location of the file in question.
@@ -216,40 +282,13 @@ class CLI {
             // Copy file to release directory.
             fs.copyFileSync(
                 location,
-                path.join( this.settings.releaseDir, location ),
-                { encoding: 'utf8' }
+                path.join( this.settings.releaseDir, location )
             );
 
         } else {
             this.stats.fignored += 1;
         }
     }
-
-    /**
-     * @deprecated
-     *
-    deleteRelease( dir ) {
-        if ( dir.substring( 0, 7 ) === this.settings.releaseDir ) {
-            try {
-                if ( fs.existsSync( dir ) ) {
-                    fs.readdirSync( dir ).forEach( ( file, index ) => {
-                        const curPath = path.join( dir, file );
-                        if ( fs.lstatSync( curPath ).isDirectory() ) {
-                            // recurse
-                            this.deleteRelease( curPath );
-                        } else {
-                            // delete file
-                            fs.unlinkSync( curPath );
-                        }
-                    } );
-                    fs.rmdirSync( dir );
-                }
-            } catch ( err ) {
-                this.errorOut( '[ERR-09] We could not delete the release directory for a fresh compile. You should manually delete the release directory and then run the compiler again.' );
-            }
-        }
-    }
-    */
 
     /**
      * Show an error to the user.
@@ -449,6 +488,8 @@ Compile completed in: ${this.stats.time}
             console.log( err )
         } );
 
+        this.recordVersions();
+
         this.buildCompilers();
 
         this.loadTemplates();
@@ -463,7 +504,7 @@ Compile completed in: ${this.stats.time}
      * 
      * @param {function} cmd A command the application is trying to run.
      */
-    isReady( cmd ) {
+    isReady( cmd, flags ) {
         // Is the application ready?
         if ( this.ready ) {
             // Yes.
@@ -480,7 +521,7 @@ Compile completed in: ${this.stats.time}
             let that = this;
             setTimeout( function() {
                 // Call the command that was originally called.
-                that.runCmd( cmd );
+                that.runCmd( cmd, flags );
             }, 250 );
         }
     }
@@ -630,11 +671,16 @@ Compile completed in: ${this.stats.time}
 
     }
 
+    recordVersions() {
+        // TODO: Implement.
+    };
+
     /**
      * Attempt to run the users command.
-     * @param {string} cmd The command the user would like to run.
+     * @param {string} cmd   The command the user would like to run.
+     * @param {string} flags A string of any flags passed passed with this command.
      */
-    runCmd( cmd ) {
+    runCmd( cmd, flags ) {
 
         switch( cmd ) {
             case '':
@@ -650,7 +696,10 @@ Compile completed in: ${this.stats.time}
                 this.showHelp();
                 break;
             case 'compile':
-                if ( this.isReady( 'compile' ) ) {
+                if ( this.isReady( 'compile', flags ) ) {
+                    if ( this.containsAny( flags, [ '--style', '--styles' ] ) ) {
+                        this.compileStyles();
+                    }
                     this.compile();
                     console.log( this.getStatBlock() );
                 }

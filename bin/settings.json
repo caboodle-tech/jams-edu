@@ -18,9 +18,9 @@
     ],
     "output": {
         "jhtm": "html",
-        "jmd": "html",
         "jsd": "html"
     },
+    "preprocessor": "less",
     "releaseDir": "release",
     "safeFileExtensions": [
         "7z",
