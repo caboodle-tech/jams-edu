@@ -1,0 +1,10 @@
+${{title}} = "Demo";
+${{navigation}} = 'main';
+
+{{T:HEAD}}
+<body>
+    {{T:HEADER}}
+    {{T:SIDEBAR}}
+    {{T:FOOTER}}
+</body>
+</html>

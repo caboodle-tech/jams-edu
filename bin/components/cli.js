@@ -37,9 +37,10 @@ class CLI {
     }
 
     /**
-     * Reads the compiler(s) from the setting file and attempts to
-     * add them to the CLI. If a compiler is not found we send its
-     * calls to the default compiler.
+     * Reads the settings file and determines what compilers are going to be needed. If
+     * a requested compiler is not found in the CLI class we divert its calls to the
+     * default compiler. This is done for better security, users must explicitly add
+     * additional compilers to CLI if they would like them to be available.
      */
     buildCompilers() {
         let compilers = {
@@ -62,7 +63,15 @@ class CLI {
         this.compilers = compilers;
     }
 
-    // https://stackoverflow.com/a/5582715/3193156
+    /**
+     * Check if a string contains text from an array of substrings.
+     * {@link https://stackoverflow.com/a/5582715/3193156|Source Code}
+     * 
+     * @param {string} str A string to search for substrings.
+     * @param {array} array An array of substrings to check against str.
+     * @return {boolean} True if a substring was found in str, otherwise false. 
+     * @memberof CLI
+     */
     containsAny( str, array ) {
         if ( ! str ){ return false; }
         if ( str.length < 1 ){ return false; }
@@ -76,7 +85,8 @@ class CLI {
     }
 
     /**
-     * Checks if the global file has changed, if it has we should force a compile.
+     * Checks if the global file has changed, if it has we should force a recompile
+     * by setting the global forceCompile setting true.
      */
     checkGlobalForCompile() {
         let location = 'bin/globals';
@@ -90,8 +100,10 @@ class CLI {
     }
     
     /**
-     * Checks if any template files have changed, if they have we
-     * should force a compile.
+     * Checks if any template files have changed, if they have we should force a
+     * recompile by setting the global forceCompile setting true.
+     * 
+     * @param {string} base The path to the template directory or a sub-directory of it.
      */
     checkTemplatesForCompile( base ) {
         if ( ! base || base.substring( 0, 9 ) != 'templates' ) {
@@ -151,43 +163,50 @@ class CLI {
         
 
         // Compile the root directory without recursion.
-        this.processDirs( '.', false );
+        //this.processDirs( '.', false );
 
         // Compile directories listed in the settings file.
-        this.settings.compileDirectories.forEach( dir => {
-            this.processDirs( dir, true );
-        } );
+        // this.settings.compileDirectories.forEach( dir => {
+        //     this.processDirs( dir, true );
+        // } );
+
+        this.processDirs( 'www' );
 
         /**
          * Compile files listed in the settings file. These are files
          * that may have been excluded by the ignoreDir setting but
          * are still wanted.
          */
-        this.settings.compileFiles.forEach( file => {
+        this.settings.keepFiles.forEach( file => {
 
             // Normalize the path to this file (if any); makes the path OS safe.
             file = path.normalize( file );
             
             // Make sure the dir path exists first or create it.
             let filename = path.parse( file ).name + path.parse( file ).ext
-            let dir      = path.join( this.settings.releaseDir, file.replace( filename, '' ) );
-            if ( ! fs.existsSync( dir ) ) {
-                let ext  = path.parse( dir ).ext;
-                let name = path.parse( dir ).name;
-                dir = dir.replace( name + ext, '' );
-                fs.mkdirSync( dir, { recursive: true } );
+            let dest     = path.join( this.settings.releaseDir, file.replace( filename, '' ) );
+            if ( ! fs.existsSync( dest ) ) {
+                // let ext  = path.parse( dir ).ext;
+                // let name = path.parse( dir ).name;
+                // dir = dir.replace( name + ext, '' );
+                fs.mkdirSync( dest, { recursive: true } );
                 this.stats.dcopied += 1;
                 // DO NOT ADD to the ignored count here.
             }
 
-            // Send this file off to be compiled and saved if it needs it.
-            if ( this.needsCompile( file ) ) {
-                let ext = path.parse( file ).ext;
-                let compiler = this.compilers[ ext.replace( '.', '' ) ];
-                if ( compiler == undefined ) {
-                    compiler = 'compilerDefault';
+            let location = path.normalize( 'www' + path.sep + file );
+
+            // No. Compile the file if its extension is in the compile list.
+            let ext = path.parse( location ).ext.replace( '.', '' );
+            if ( this.compilers.types.includes( ext ) ) {
+                // Does this file actually need to be compiled?
+                if ( this.needsCompile( location ) ) {
+                    let compiler = this.compilers[ ext ];
+                    this[ compiler ]( location, dest );
                 }
-                this[ compiler ]( file );
+            } else if ( this.settings.safeFileExtensions.includes( ext ) ) {
+                // If this file is in the safe list copy it to release; no compile needed.
+                this.copyFileToRelease( location );
             }
 
         } );
@@ -227,11 +246,11 @@ class CLI {
      * Can be triggered by adding the --styles flag to the compile command.
      */
     compileStyles() {
-        let error = false;
         if ( this.settings.preprocessor ) {
+            let files = [ 'main', 'dark', 'light', 'main-light', 'main-dark' ];
+            let regex = new RegExp( '(\\d+\\.\\d+\\.\\d+)', 'gm' );
             try {
                 // Attempt to compile the styles, show an error message if something failed.
-                let regex = new RegExp( '(\\d+\\.\\d+\\.\\d+)', 'gm' );
                 if ( this.settings.preprocessor.toLowerCase() == 'sass') {
                     if ( fs.existsSync( 'sass' ) ) {
                         let ver = cmdLine.execSync( 
@@ -239,17 +258,18 @@ class CLI {
                             {stdio: 'pipe' }
                         ).toString().trim();
                         if ( ver.match( regex ) ) {
-                            let files = [ 'main.sass', 'dark.sass', 'main-light.sass', 'main-dark.sass' ];
                             files.forEach( function( file ) {
-                                if ( fs.existsSync( path.join( 'less', file ) ) ) {
+                                if ( fs.existsSync( path.join( 'sass', file + '.sass' ) ) ) {
                                     cmdLine.execSync( 
-                                        'lessc less/' + file + ' css/' + file.replace( '.less', '.css' ),
-                                        {stdio: 'pipe' }
+                                        'sass sass/' + file + '.sass css/' + file + '.css',
+                                        { stdio: 'pipe' }
                                     ).toString().trim();
                                 }
                             } );
                         }
-                    } 
+                    } else {
+                        this.errorDisplay( '[SKIPPED STYLES] The sass directory is missing.' );
+                    }
                 } else {
                     if ( fs.existsSync( 'less' ) ) {
                         let ver = cmdLine.execSync( 
@@ -257,27 +277,25 @@ class CLI {
                             {stdio: 'pipe' }
                         ).toString().trim();
                         if ( ver.match( regex ) ) {
-                            let files = [ 'main.less', 'dark.less', 'main-light.less', 'main-dark.less' ];
                             files.forEach( function( file ) {
-                                if ( fs.existsSync( path.join( 'less', file ) ) ) {
+                                if ( fs.existsSync( path.join( 'less', file + '.less' ) ) ) {
                                     cmdLine.execSync( 
-                                        'lessc less/' + file + ' css/' + file.replace( '.less', '.css' ),
-                                        {stdio: 'pipe' }
+                                        'lessc less/' + file + '.less css/' + file + '.css',
+                                        { stdio: 'pipe' }
                                     ).toString().trim();
                                 }
                             } );
                         }
+                    } else {
+                        this.errorDisplay( '[SKIPPED STYLES] The less directory is missing.' );
                     }
                 }
-            } catch( e ){
-                error = true;
+            } catch( error ){
+                this.errorDisplay( '[SKIPPED STYLES] We could not auto compile your style sheet(s). There was an error in one of your files:\n' );
+                console.error( error.message );
             }
         } else {
-            error = true;
-        }
-
-        if ( error ) {
-            this.errorDisplay( '[SKIPPED STYLES] We could not auto compile your style sheet(s), either the pre-processor is missing from the settings file, is not installed on your machine, or there was an error in your LESS or SASS code.' );
+            this.errorDisplay( '[SKIPPED STYLES] We could not auto compile your style sheet(s). The pre-processor is missing from the settings file.' );
         }
     };
 
@@ -288,7 +306,7 @@ class CLI {
      */
     copyFileToRelease( location ) {
 
-        let dest    = path.join( this.settings.releaseDir, location );
+        let dest    = path.join( this.settings.releaseDir, location.substr( 3 ) );
         let hash    = md5( location );
         let mtime   = new Date( fs.statSync( location ).mtime );
         mtime       = mtime.toGMTString();
@@ -303,7 +321,7 @@ class CLI {
             // Copy file to release directory.
             fs.copyFileSync(
                 location,
-                path.join( this.settings.releaseDir, location )
+                dest
             );
 
         } else {
@@ -513,11 +531,8 @@ Compile completed in: ${this.stats.time}
         } );
 
         this.recordVersions();
-
         this.buildCompilers();
-
         this.loadTemplates();
-
         this.loadGlobals();
     }
 
@@ -565,7 +580,7 @@ Compile completed in: ${this.stats.time}
             this.errorOut( '[ERR-10] There was an error loading the global variable file. It could be missing or there is a permission issue.' );
         }
 
-        let obj         = this.stripVariables( gls );
+        let obj = this.stripVariables( gls, 'G:' );
         this.globalVars = obj.vars;
         
     }
@@ -646,14 +661,12 @@ Compile completed in: ${this.stats.time}
      * release directory.
      * 
      * @param {string}  dir       The directory in question.
-     * @param {boolean} recursive False (null) by default, only process current dir.
-     *                            True process recursively.
      */
-    processDirs( dir, recursive ) {
+    processDirs( dir ) {
 
         // Create this directory in the release folder if its missing.
-        let dest = path.join( this.settings.releaseDir, dir );
-        if ( ! fs.existsSync( dest ) ) {
+        let dest = path.join( this.settings.releaseDir, dir.substr( 3 ) );
+        if ( ! fs.existsSync( dest ) && dir != 'www' ) {
             this.stats.dcopied += 1;
             fs.mkdirSync( dest, { recursive: true } );
         } else {
@@ -669,10 +682,10 @@ Compile completed in: ${this.stats.time}
             let stats    = fs.statSync( location );
             
             // Is this a directory?
-            if ( stats.isDirectory() && recursive == true ) {
+            if ( stats.isDirectory() ) {
                 // Yes. Only continue if this is a safe (requested) directory.
-                if ( ! this.settings.ignoreDir.includes( location ) ) {
-                    this.processDirs( location, true );
+                if ( ! this.settings.ignoreDir.includes( location.substr( 4 ) ) ) {
+                    this.processDirs( location );
                 }
             } else {
                 // TODO: Improve this.
@@ -683,7 +696,7 @@ Compile completed in: ${this.stats.time}
                         // Does this file actually need to be compiled?
                         if ( this.needsCompile( location ) ) {
                             let compiler = this.compilers[ ext ];
-                            this[ compiler ]( location );
+                            this[ compiler ]( location, dest );
                         }
                     } else if ( this.settings.safeFileExtensions.includes( ext ) ) {
                         // If this file is in the safe list copy it to release; no compile needed.
@@ -697,7 +710,11 @@ Compile completed in: ${this.stats.time}
 
     recordVersions() {
         // TODO: Implement.
-    };
+    }
+
+    removeWWW( dest ) {
+        return dest.replace( 'www' + path.sep, '' );
+    }
 
     /**
      * Attempt to run the users command.
@@ -777,7 +794,11 @@ Compile completed in: ${this.stats.time}
      * 
      * @param {string} file The contents of a file to pull variables from (if any). 
      */
-    stripVariables( file ) {
+    stripVariables( file, prepend ) {
+
+        if ( ! prepend ) {
+            prepend = '';
+        }
 
         let vars = {};
         let matches = file.match( /\${{.*}}.*\n/g );
@@ -786,7 +807,7 @@ Compile completed in: ${this.stats.time}
             matches.forEach( match => {
                 let key = match.match( /\${{(.*)}}/ )[1].toUpperCase();
                 let val = match.match( /= *(?:'|")(.*)(?:'|") *;/ )[1];
-                vars[ key ] = val;
+                vars[ prepend + key ] = val;
                 file = file.replace( match, '' );
             } );
         }

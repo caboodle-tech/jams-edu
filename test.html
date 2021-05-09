@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<!--
+Copyright 2014 Mozilla Foundation
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html dir="ltr" mozdisallowselectionprint>
+<head>
+    <meta charset="utf-8">
+    <script src="www/js/fa-all.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="google" content="notranslate">
+    <title>PDF.js viewer using built components</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        #wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .pdf-widget {
+            position: relative;
+            width: 100%;
+            border: 1px solid #323639;
+            background-color: #525659;
+        }
+        .pdf-widget .pdf-toolbar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto;
+            grid-template-areas: "page controls";
+            background-color: #323639;
+            width: 100%;
+            height: 50px;
+        }
+        .pdf-widget .pdf-toolbar .pdf-icon {
+            color: #f1f1f1;
+            font-size: 20px;
+        }
+        .pdf-widget .pdf-toolbar .pdf-button {
+            cursor: pointer;
+        }
+        .pdf-widget .pdf-toolbar .pdf-page-area {
+            grid-area: page;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            align-items: center;
+            font-family: monospace;
+        }
+        .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page {
+            background-color: #191b1c;
+            background-clip: padding-box;
+            border-radius: 5px;
+            height: 20px;
+            width: 40px;
+            text-align: center;
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffffff;
+            line-height: 20px;
+            padding: 5px;
+            -moz-appearance: textfield;
+            -webkit-appearance: none;
+            margin: 0;
+            box-shadow: none;
+            outline: none;
+            border: 0;
+        }
+        .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page:hover, .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page:focus {
+            -moz-appearance: textfield;
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[class="pdf-page"]::-webkit-inner-spin-button, 
+        input[class="pdf-page"]::-webkit-outer-spin-button {
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-slash {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ffffff;
+            margin: 0 5px;
+        }
+        .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-total {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .pdf-widget .pdf-toolbar .pdf-page-area .pdf-button {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 30px;
+            height: 40px;
+            border-radius: 5px;
+            /* background-color: grey; */
+        }
+        .pdf-widget .pdf-toolbar .pdf-page-area .pdf-button:first-of-type {
+            margin-left: 15px;
+            margin-right: 5px;
+        }
+        .pdf-widget .pdf-toolbar .pdf-page-area .pdf-button:last-of-type {
+            margin-right: 15px;
+            margin-left: 5px;
+        }
+        .pdf-widget .pdf-toolbar .pdf-control-area {
+            grid-area: controls;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .pdf-widget .pdf-toolbar .pdf-control-area .pdf-button {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 40px;
+            height: 40px;
+            /* border-radius: 50%; */
+            margin-right: 15px;
+            /* background-color: grey; */
+        }
+        .pdf-widget .pdf-container {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+        .pdf-widget .pdf-container .pdf-view-wrapper {
+            overflow: auto;
+            width: 100%;
+        }
+        .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer {
+            /* pointer-events: none; */
+        }
+        .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page {
+            position: relative;
+            margin: 15px auto;
+        }
+        .pdf-widget .pdf-controls {
+            position: absolute;
+            bottom: 40px;
+            right: 15px;
+            width: 50px;
+            z-index: 1000;
+        }
+        .pdf-widget .pdf-controls .pdf-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            color: #7d7d7d;
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+        .pdf-widget .pdf-controls .pdf-button .pdf-icon {
+            margin-top: 2px;
+        }
+        .pdf-widget .pdf-controls .pdf-fit {
+            margin-bottom: 30px;
+        }
+        .pdf-widget .pdf-controls .pdf-fit .pdf-width {
+            display: none;
+        }
+        .pdf-widget .pdf-controls .pdf-fit .pdf-reset {
+            display: none;
+        }
+        .pdf-widget .pdf-controls .pdf-fit.pdf-width .pdf-width {
+            display: block;
+        }
+        .pdf-widget .pdf-controls .pdf-fit.pdf-width .pdf-actual {
+            display: none;
+        }
+        .pdf-widget .pdf-controls .pdf-fit.pdf-width .pdf-reset {
+            display: none;
+        }
+        .pdf-widget .pdf-controls .pdf-fit.pdf-reset .pdf-reset {
+            display: block;
+        }
+        .pdf-widget .pdf-controls .pdf-fit.pdf-reset .pdf-actual {
+            display: none;
+        }
+        .pdf-widget .pdf-controls .pdf-fit.pdf-reset .pdf-width {
+            display: none;
+        }
+        .pdf-widget .pdf-controls .pdf-zoom-in {
+            margin-bottom: 15px;
+        }
+
+        .pdf-widget .pdf-password-box {
+            position: absolute;
+            top: 45%;
+            left: 25%;
+            right: 25%;
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: auto auto;
+            grid-template-areas:
+                "message"
+                "input";
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            color: #ffffff;
+            background-color: #323639;
+        }
+        .pdf-widget .pdf-password-box .pdf-message {
+            grid-area: message;
+            font-size: 1.25rem;
+            padding-bottom: 15px;
+        }
+        .pdf-widget .pdf-password-box .pdf-message .pdf-icon {
+            margin-right: 15px;
+        }
+        .pdf-widget .pdf-password-box .pdf-password {
+            grid-area: input;
+        }
+        .pdf-widget .pdf-password-box .pdf-password input {
+            height: 20px;
+            background-color: #191b1c;
+            background-clip: padding-box;
+            border-radius: 5px;
+            -moz-appearance: textfield;
+            -webkit-appearance: none;
+            margin: 0;
+            padding: 5px 10px;
+            box-shadow: none;
+            outline: none;
+            border: 0;
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .pdf-widget .pdf-password-box .pdf-password button {
+            grid-area: button;
+            margin-left: 15px;
+            padding: 5px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            -moz-appearance: textfield;
+            -webkit-appearance: none;
+            box-shadow: none;
+            outline: none;
+            border: 0;
+            border-radius: 2px;
+            color: #191b1c;
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+    </style>
+
+    <!-- <link rel="stylesheet" href="../../node_modules/pdfjs-dist/web/pdf_viewer.css"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.8.335/pdf_viewer.min.css" integrity="sha512-LkJXOeBvZ1jlYJlfN1lYUDLk930TUOdRDz2sfCS5alKTbuSUyqn/E9r5QVH+asjOcLyAom8pvEZRcD/YG3J+Hg==" crossorigin="anonymous" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.8.335/pdf.min.js" integrity="sha512-SG4yH2eYtAR5eK4/VL0bhqOsIb6AZSWAJjHOCmfhcaqTkDviJFoar/VYdG96iY7ouGhKQpAg3CMJ22BrZvhOUA==" crossorigin="anonymous"></script>
+    <!-- <script src="../../node_modules/pdfjs-dist/build/pdf.js"></script> -->
+    <!-- <script src="../../node_modules/pdfjs-dist/web/pdf_viewer.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.8.335/pdf_viewer.js" integrity="sha512-O6aDht9IROQup2Ag1xf8F87x34eEzI5ZjNRvt8qx/itgTuAj2Bu41kZafLn/RAnH6fK7AfAFCrcAbjSqXUSQyQ==" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div id="wrapper">
+        <div data-pdf="password.pdf"></div>
+    </div>
+    <script src="viewer.js"></script>
+</body>
+</html>

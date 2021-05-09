@@ -1,0 +1,70 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 320px;
+  text-rendering: optimizeLegibility;
+}
+html {
+  box-sizing: border-box;
+}
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  font-size: 62.5%;
+  overflow: hidden;
+}
+body .je-content {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 15px;
+}
+header#je-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9000;
+  height: 5rem;
+  font-size: 1.15rem;
+  border-bottom: 1px solid #cfcfcf;
+  background-color: #fafafb;
+}
+header#je-header #je-logo-container {
+  display: inline-block;
+  height: 5rem;
+  margin: -15px 0 0 -15px;
+}
+header#je-header #je-logo-container #je-logo {
+  height: 5rem;
+  width: auto;
+}
+header#je-header #je-mobile-nav-button {
+  display: flex;
+  align-items: center;
+  float: right;
+  height: 5rem;
+  font-size: 3rem;
+  padding: 0 15px;
+  margin: -15px -15px 0 0;
+}
+header#je-header #je-mobile-nav-button .je-icon {
+  color: #242729;
+}
+main#je-main {
+  flex: 1;
+  font-size: 1.15rem;
+}
+footer#je-footer {
+  font-size: 1.15rem;
+  border-top: 1px solid #cfcfcf;
+  background-color: #242729;
+}

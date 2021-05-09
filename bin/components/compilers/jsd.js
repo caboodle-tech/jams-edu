@@ -38,7 +38,7 @@ const swapTags = {
     'quote': 'blockquote'
 };
 
-module.exports = function( location, data, passBack ) {
+module.exports = function( location, dest, data, passBack ) {
 
     // Determine if we need to load the file or if we were sent the data already.
     let file = '';

@@ -2,7 +2,7 @@
 const fs   = require( 'fs' );
 const path = require( 'path' );
 
-module.exports = function( location, data, passBack ) {
+module.exports = function( location, dest, data, passBack ) {
 
     // Determine if we need to load the file or if we were sent the data already.
     let file = '';
@@ -25,8 +25,8 @@ module.exports = function( location, data, passBack ) {
     // Add the compile time to the variables object.
     vars[ 'TIMESTAMP' ] = this.getTimestamp();
 
-    // Add the global variables the variables object.
-    vars = Object.assign( vars, this.globalVars );
+    // Add any page variables to the global variables object; this places globals first.
+    vars = Object.assign( this.globalVars, vars );
 
     // Build the correct relative path and add that to the variables object.
     let count = location.replace( '.' + path.sep, '' ).split( path.sep ).length;
@@ -40,11 +40,25 @@ module.exports = function( location, data, passBack ) {
     }
     vars[ 'PATH' ] = rel;
 
-    // Replace template variables with their actual values in the file.
+    // Templates may need page variables, replace variables in the templates first.
     let parts = this.templates;
     for( const tempProp in parts ) {
         let temp = parts[ tempProp ];
-        let regex = new RegExp( '{{' + tempProp + '}}', 'gi' );
+        for( const varProp in vars ) {
+            let regex = new RegExp( '\\${{' + varProp + '}}', 'gi' );
+            temp = temp.replace( regex, vars[ varProp ] );
+            file = file.replace( regex, temp );
+        }
+        // Replace the template variables in the file with their actual values.
+        let regex = new RegExp( '{{T\\:' + tempProp + '}}', 'gi' );
+        file = file.replace( regex, temp );
+    }
+
+    // Do another check for template variables because templates can include templates.
+    parts = this.templates;
+    for( const tempProp in parts ) {
+        let temp = parts[ tempProp ];
+        let regex = new RegExp( '{{T\\:' + tempProp + '}}', 'gi' );
         file = file.replace( regex, temp );
     }
 
@@ -73,8 +87,7 @@ module.exports = function( location, data, passBack ) {
         out = '.' + out;
 
         // Build the path to the destination.
-        let dest = location.replace( name + ext, name + out );
-        dest     = path.join( 'release', dest );
+        dest = path.join( dest, name + out );
 
         this.saveCompiledFile( file, dest );
     }

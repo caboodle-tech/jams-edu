@@ -1,0 +1,113 @@
+${{author}}      = "Christopher Keers";
+${{title}}       = "Blocks - BYUI Style Guide";
+${{keywords}}    = "Style, Guide, Block, Blocks, Advanced, Theme, CIT, BYUI";
+${{description}} = "This is a style guide reference page for developers working on the BYUI CIT repository. Please follow these styles when designing course content and pages you intend to add to the repository. ";
+
+{{HEAD}}
+<body>
+    <div id="page">
+        <header>
+            <div class="content">
+                {{LOGO/MAIN}}
+                <div id="mobile-nav-button">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </header>
+        <main>
+            <div class="content">
+                <section id="main-content">
+                    <h1>Callout Block Styles</h1>
+                    <p>
+                        There are various built in blocks you can add to a page to call attention to specific information. Each block has a unique style to indicate what type of information it is calling attention to. Please do not overuse blocks, they are designed to convey extra importance and encourages extra attention from readers, overuse will cause readers to ignore blocks.
+                    </p>
+                    <h3>Quotes</h3>
+                    <p>
+                        Quotes can be added to pages or assignments using an HTML <code>blockquote</code>. If you would like to visually specify an author or source for your quote add the <code>cite</code> tag below your quote but inside the <code>blockquote</code>. Visual citations may be optional depending on how you referenced the quote but you should add a link to the original source in the <code>blockquote</code>'s inline cite line. See the simplified code example below:
+                    </p>
+                    <blockquote cite="https://example.com">
+                        <p>
+                            If future generations are to remember us more with gratitude than sorrow, we must achieve more than just the miracles of technology. We must also leave them a glimpse of the world as it was created, not just as it looked when we got through with it
+                        </p>
+                        <cite>
+                            Lyndon B. Johnson
+                        </cite>
+                    </blockquote>
+<pre class="lang-html">
+<code class="lang-html">&lt;blockquote cite="https://link-to-source.com"&gt;
+    &lt;p&gt;
+        Your quote here.
+    &lt;/p&gt;
+    &lt;cite&gt;
+        Author Here (Optional)
+    &lt;/cite&gt;
+&lt;/blockquote&gt;
+</code>
+</pre>
+                    <h3>Callout</h3>
+                    <p>
+                        Callouts are used to call attention to some important information. This should be used when instructors or students need to pay careful attention to something.
+                    </p>
+                    <div class="callout">
+                        <h2>Callouts:</h2>
+                        <p>
+                            Callouts are used to call attention to some important information. This should be used when instructors or students need to pay careful attention to something. Below is the HTML code for this element:
+                        </p>
+                    </div>
+<pre class="lang-html">
+<code class="lang-html">&lt;div class="callout"&gt;
+    &lt;h2&gt;Title Here:&lt;/h2&gt;
+    &lt;p&gt;
+        Content here.
+    &lt;/p&gt;
+&lt;/div&gt;
+</code>
+</pre>
+                    <h3>Rubric</h3>
+                    <p>
+                        A rubric callout is used to highlight the assignments grading requirements and is usually placed at the end of an assignment. These style callouts can be used as part of assignment steps to highlight specific criteria a student or instructor should look for at that step.
+                    </p>
+                    <div class="rubric">
+                        <h4><strong>Rubric:</strong></h4>
+                        <p>
+                            A rubric specific callout is used to highlight the assignments grading requirements and is usually placed at the end of an assignment. These style callouts can be used as part of assignment steps to highlight specific criteria a student or instructor should look for at that step. Below is the HTML code for this element:
+                        </p>
+                    </div>
+<pre class="lang-html">
+<code class="lang-html">&lt;div class="rubric"&gt;
+    &lt;h2&gt;Title Here:&lt;/h2&gt;
+    &lt;p&gt;
+        Content here.
+    &lt;/p&gt;
+&lt;/div&gt;
+</code>
+</pre>
+                    <h3>License</h3>
+                    <p>
+                        A license specific callout is used to notify the reader that the previous or following content is under some alternative or additional license. Most times this is a reminder that copyrighted material has been incorporated in a fair use manner for educational use. You should not need to add this for every piece of content but it is advisable to add this when a copyright holder has not given express permission or a strict license is attached to the original content.
+                    </p>
+                    <div class="license">
+                        <p>
+                            The above or following content is licensed as _____ by _____. All rights are reserved. Used with permission. Used according to fair use for educational purposes.
+                        </p>
+                    </div>
+<pre class="lang-html">
+<code class="lang-html">&lt;div class="license"&gt;
+    &lt;p&gt;
+        Additional license or notice explanation here...
+        ...for educational use under the &lt;a href="https://en.wikipedia.org/wiki/Fair_use"&gt;Fair Use&lt;/a&gt; doctrine.
+    &lt;/p&gt;
+&lt;/div&gt;
+</code>
+</pre>
+                </section>
+                <aside id="sidebar">
+                    {{NAVIGATION/MAIN}} 
+                    {{COMPILED}}
+                </aside>
+            </div>
+        </main>
+        {{FOOTER}}
+    </div>
+</body>
+</html>

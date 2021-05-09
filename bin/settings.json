@@ -3,18 +3,16 @@
         "jhtm": "compilerDefault",
         "jsd": "compilerShortdown"
     },
-    "compileDirectories": [
-        "css",
-        "js"
-    ],
-    "compileFiles": [],
     "ignoreDir": [
-        "bin"
+        "style-guide"
     ],
     "ignoreFile": [
         "LICENSE.txt",
         "README.md",
         "SECURITY.md"
+    ],
+    "keepFiles": [
+        "style-guide/lists.jhtm"
     ],
     "output": {
         "jhtm": "html",
@@ -25,8 +23,12 @@
     "safeFileExtensions": [
         "7z",
         "css",
+        "doc",
+        "docx",
+        "drawio",
         "gif",
         "htaccess",
+        "htm",
         "html",
         "jpeg",
         "jpg",
@@ -35,13 +37,18 @@
         "md",
         "mp3",
         "mp4",
+        "odt",
         "ogg",
+        "pdf",
         "png",
+        "ppt",
+        "pptx",
         "svg",
         "ttf",
         "txt",
         "woff",
         "woff2",
+        "xml",
         "zip"
     ]
 }
