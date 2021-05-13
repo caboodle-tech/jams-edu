@@ -43,6 +43,12 @@ limitations under the License.
             width: 100%;
             height: 50px;
         }
+        .pdf-widget .pdf-toolbar.pdf-locked .pdf-page-area .pdf-button,
+        .pdf-widget .pdf-toolbar.pdf-locked .pdf-page-area input.pdf-page,
+        .pdf-widget .pdf-toolbar.pdf-locked .pdf-control-area .pdf-button {
+            opacity: .5;
+            cursor: not-allowed;
+        }
         .pdf-widget .pdf-toolbar .pdf-icon {
             color: #f1f1f1;
             font-size: 20px;
@@ -108,13 +114,18 @@ limitations under the License.
             border-radius: 5px;
             /* background-color: grey; */
         }
-        .pdf-widget .pdf-toolbar .pdf-page-area .pdf-button:first-of-type {
+        .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-up {
             margin-left: 15px;
             margin-right: 5px;
         }
-        .pdf-widget .pdf-toolbar .pdf-page-area .pdf-button:last-of-type {
+        .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-down {
             margin-right: 15px;
             margin-left: 5px;
+        }
+        .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-up.pdf-disabled,
+        .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-down.pdf-disabled {
+            opacity: .5;
+            cursor: not-allowed;
         }
         .pdf-widget .pdf-toolbar .pdf-control-area {
             grid-area: controls;
@@ -133,6 +144,9 @@ limitations under the License.
             margin-right: 15px;
             /* background-color: grey; */
         }
+        .pdf-widget .pdf-toolbar .pdf-control-area .pdf-button.pdf-disabled {
+            display: none;
+        }
         .pdf-widget .pdf-container {
             position: relative;
             overflow: hidden;
@@ -141,9 +155,6 @@ limitations under the License.
         .pdf-widget .pdf-container .pdf-view-wrapper {
             overflow: auto;
             width: 100%;
-        }
-        .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer {
-            /* pointer-events: none; */
         }
         .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page {
             position: relative;
@@ -155,6 +166,9 @@ limitations under the License.
             right: 15px;
             width: 50px;
             z-index: 1000;
+        }
+        .pdf-widget .pdf-controls.pdf-locked {
+            display: none;
         }
         .pdf-widget .pdf-controls .pdf-button {
             display: flex;
@@ -262,6 +276,31 @@ limitations under the License.
             background-color: #f1f1f1;
             cursor: pointer;
         }
+
+        .pdf-widget .pdf-bookmark-links {
+            position: absolute;
+            right: 0;
+            top: 50px;
+            bottom: 0;
+            overflow-y: auto;
+            z-index: 1000;
+            padding: 15px;
+            max-width: 320px;
+            background-color: #323639;
+        }
+        .pdf-widget .pdf-bookmark-links .pdf-bookmark-link {
+            padding-bottom: 7px;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        .pdf-widget .pdf-bookmark-links ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+        .pdf-widget .pdf-bookmark-links ul ul {
+            padding-left: 15px;
+        }
     </style>
 
     <!-- <link rel="stylesheet" href="../../node_modules/pdfjs-dist/web/pdf_viewer.css"> -->
@@ -274,7 +313,7 @@ limitations under the License.
 
 <body>
     <div id="wrapper">
-        <div data-pdf="password.pdf"></div>
+        <div data-pdf="test.pdf"></div>
     </div>
     <script src="viewer.js"></script>
 </body>
