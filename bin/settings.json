@@ -3,17 +3,6 @@
         "jhtm": "compilerDefault",
         "jsd": "compilerShortdown"
     },
-    "ignoreDir": [
-        "style-guide"
-    ],
-    "ignoreFile": [
-        "LICENSE.txt",
-        "README.md",
-        "SECURITY.md"
-    ],
-    "keepFiles": [
-        "style-guide/lists.jhtm"
-    ],
     "output": {
         "jhtm": "html",
         "jsd": "html"
@@ -22,11 +11,13 @@
     "releaseDir": "release",
     "safeFileExtensions": [
         "7z",
+        "bcmap",
         "css",
         "doc",
         "docx",
         "drawio",
         "gif",
+        "gz",
         "htaccess",
         "htm",
         "html",

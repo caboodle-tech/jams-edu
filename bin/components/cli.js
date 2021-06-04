@@ -4,6 +4,7 @@ const initSqlJs = require( './sql-wasm' );
 const md5       = require( './md5' );
 const path      = require('path');
 const process   = require('process');
+const AVLTree   = require('./avl-tree');
 
 /**
  * CALL IN (REQUIRE) YOUR COMPILER FILES
@@ -21,9 +22,11 @@ const compilerShortdown = require( './compilers/jsd' );
 class CLI {
 
     constructor() {
+        this.AVLTree      = null;
         this.compilers    = {};
         this.cwd          = '';
         this.DB           = null;
+        this.dirRegex     = '';
         this.forceCompile = false;
         this.globalVars   = {};
         this.ready        = false;
@@ -32,7 +35,7 @@ class CLI {
         this.stats        = {};
         this.SQL          = null;
         this.templates    = {};
-        this.versions     = { 'jamsedu': '1.5.5' };
+        this.versions     = { 'jamsedu': '1.9.59' };
         this.initialize();
     }
 
@@ -111,8 +114,8 @@ class CLI {
         }
         // Loop through all the template files and see if one has changed.
         let items = fs.readdirSync( base );
-        items.forEach( item => {
-            let location = path.join( base, item );
+        for ( let i in items ) {
+            let location = path.join( base, items[i] );
             let stats    = fs.statSync( location );
             if ( stats.isDirectory() ) {
                 this.checkTemplatesForCompile( location );
@@ -122,9 +125,53 @@ class CLI {
                 let result = this.getFileTrackingStatus( hash, mtime );
                 if ( ! this.forceCompile && ! result ) {
                     this.forceCompile = true;
+                    break;
                 }
             }
-        } );
+        }
+    }
+
+    cleanReleaseDir( tree ) {
+        if ( tree.size() > 0 ) {
+            let compilers = this.settings.output;
+            let extMap = {};
+            for ( const prop in compilers ) {
+                if ( ! extMap[ compilers[prop] ] ) {
+                    extMap[ compilers[prop] ] = [ prop ];
+                } else {
+                    extMap[ compilers[prop] ].push( prop );
+                }
+            }
+            let files = [];
+
+            let that = this;
+            tree.forEach( function( item ) {
+                let url = item.val;
+
+                // https://stackoverflow.com/a/42505874/3193156
+                that.rimraf( url );
+
+                // Switch to WWW
+                url = url.substring( that.settings.releaseDir.length );
+                url = 'www' + url;
+   
+                let ext = path.parse( url ).ext.replace( '.', '' );
+
+                if ( extMap[ ext ] ) {
+                    extMap[ ext ].forEach( function( posExt ) {
+                        files.push( url.replace( '.' + ext, '.' + posExt ) );
+                    } );
+                } else {
+                    files.push( url );
+                }
+
+                
+            } );
+
+            files.forEach( function( file ) {
+                that.DB.exec( "DELETE FROM history WHERE file = '" + md5(file) + "';" );
+            } );
+        }
     }
 
     /**
@@ -141,6 +188,10 @@ class CLI {
      */
     compile() {
 
+        //let recordedCount = 0;
+
+        //let result = this.DB.exec( "SELECT modified FROM history WHERE file = '_____FILE_COUNT_____';" );
+
         // Make the release directory if its missing.
         try {
             if ( ! fs.existsSync( this.settings.releaseDir ) ) {
@@ -149,6 +200,30 @@ class CLI {
         } catch( err ) {
             this.errorOut( '[ERR-06] We could not create the release directory. You may have a permission problem. We will be unable to compile a release until this is resolved.' );
         }
+
+        let compare = function( a, b ) {
+            if ( typeof a != 'object' ) {
+                a = { id: a };
+            }
+            if ( typeof b != 'object' ) {
+                b = { id: b };
+            }
+            if ( a.id < b.id ) { return -1 };
+            if ( a.id > b.id ) { return 1 };
+            return 0;
+        }
+
+        let tree = new AVLTree( compare );
+        this.recursiveHash( tree, this.settings.releaseDir );
+
+        // console.log('============================');
+        // tree.forEach( function( item ) {
+        //     console.log( item.val );
+        // } );
+        //console.log('SIZE: (start)', tree.size() );
+        // console.log('============================');
+
+        //process.exit();
 
         // Reset stats.
         this.stats = {
@@ -161,6 +236,9 @@ class CLI {
             'time': process.hrtime()
         }
         
+        this.processDirs( null, 'bin/components/required', 'bin/components/required', 'www' );
+
+        // console.log('SIZE: (skip)', tree.size() );
 
         // Compile the root directory without recursion.
         //this.processDirs( '.', false );
@@ -170,46 +248,57 @@ class CLI {
         //     this.processDirs( dir, true );
         // } );
 
-        this.processDirs( 'www' );
+        this.processDirs( tree, 'www', 'www', this.settings.releaseDir );
+
+        //console.log('SIZE: (after)', tree.size() );
+        this.cleanReleaseDir( tree );
+
+        // console.log('============================');
+        // tree.forEach( function( item ) {
+        //     console.log( item.val );
+        // } );
+        // console.log('#============================');
+
+        // process.exit();
 
         /**
          * Compile files listed in the settings file. These are files
          * that may have been excluded by the ignoreDir setting but
          * are still wanted.
          */
-        this.settings.keepFiles.forEach( file => {
+        // this.settings.keepFiles.forEach( file => {
 
-            // Normalize the path to this file (if any); makes the path OS safe.
-            file = path.normalize( file );
+        //     // Normalize the path to this file (if any); makes the path OS safe.
+        //     file = path.normalize( file );
             
-            // Make sure the dir path exists first or create it.
-            let filename = path.parse( file ).name + path.parse( file ).ext
-            let dest     = path.join( this.settings.releaseDir, file.replace( filename, '' ) );
-            if ( ! fs.existsSync( dest ) ) {
-                // let ext  = path.parse( dir ).ext;
-                // let name = path.parse( dir ).name;
-                // dir = dir.replace( name + ext, '' );
-                fs.mkdirSync( dest, { recursive: true } );
-                this.stats.dcopied += 1;
-                // DO NOT ADD to the ignored count here.
-            }
+        //     // Make sure the dir path exists first or create it.
+        //     let filename = path.parse( file ).name + path.parse( file ).ext
+        //     let dest     = path.join( this.settings.releaseDir, file.replace( filename, '' ) );
+        //     if ( ! fs.existsSync( dest ) ) {
+        //         // let ext  = path.parse( dir ).ext;
+        //         // let name = path.parse( dir ).name;
+        //         // dir = dir.replace( name + ext, '' );
+        //         fs.mkdirSync( dest, { recursive: true } );
+        //         this.stats.dcopied += 1;
+        //         // DO NOT ADD to the ignored count here.
+        //     }
 
-            let location = path.normalize( 'www' + path.sep + file );
+        //     let location = path.normalize( 'www' + path.sep + file );
 
-            // No. Compile the file if its extension is in the compile list.
-            let ext = path.parse( location ).ext.replace( '.', '' );
-            if ( this.compilers.types.includes( ext ) ) {
-                // Does this file actually need to be compiled?
-                if ( this.needsCompile( location ) ) {
-                    let compiler = this.compilers[ ext ];
-                    this[ compiler ]( location, dest );
-                }
-            } else if ( this.settings.safeFileExtensions.includes( ext ) ) {
-                // If this file is in the safe list copy it to release; no compile needed.
-                this.copyFileToRelease( location );
-            }
+        //     // No. Compile the file if its extension is in the compile list.
+        //     let ext = path.parse( location ).ext.replace( '.', '' );
+        //     if ( this.compilers.types.includes( ext ) ) {
+        //         // Does this file actually need to be compiled?
+        //         if ( this.needsCompile( location ) ) {
+        //             let compiler = this.compilers[ ext ];
+        //             this[ compiler ]( location, dest );
+        //         }
+        //     } else if ( this.settings.safeFileExtensions.includes( ext ) ) {
+        //         // If this file is in the safe list copy it to release; no compile needed.
+        //         this.copyFileToRelease( location );
+        //     }
 
-        } );
+        // } );
 
         /**
          * The compiling may have updated database records.
@@ -261,7 +350,7 @@ class CLI {
                             files.forEach( function( file ) {
                                 if ( fs.existsSync( path.join( 'sass', file + '.sass' ) ) ) {
                                     cmdLine.execSync( 
-                                        'sass sass/' + file + '.sass css/' + file + '.css',
+                                        'sass sass/' + file + '.sass www/css/' + file + '.css',
                                         { stdio: 'pipe' }
                                     ).toString().trim();
                                 }
@@ -277,10 +366,11 @@ class CLI {
                             {stdio: 'pipe' }
                         ).toString().trim();
                         if ( ver.match( regex ) ) {
+                            let release = this.settings.releaseDir;
                             files.forEach( function( file ) {
                                 if ( fs.existsSync( path.join( 'less', file + '.less' ) ) ) {
                                     cmdLine.execSync( 
-                                        'lessc less/' + file + '.less css/' + file + '.css',
+                                        'lessc less/' + file + '.less www/css/' + file + '.css',
                                         { stdio: 'pipe' }
                                     ).toString().trim();
                                 }
@@ -304,9 +394,9 @@ class CLI {
      * 
      * @param {string} location The location of the file in question.
      */
-    copyFileToRelease( location ) {
+    copyFileToRelease( location, dest ) {
 
-        let dest    = path.join( this.settings.releaseDir, location.substr( 3 ) );
+        //let dest    = path.join( this.settings.releaseDir, location.substr( 3 ) );
         let hash    = md5( location );
         let mtime   = new Date( fs.statSync( location ).mtime );
         mtime       = mtime.toGMTString();
@@ -465,6 +555,15 @@ Compile completed in: ${this.stats.time}
 
     }
 
+    // https://gist.github.com/iperelivskiy/4110988
+    hash( str ) {
+        let h = 9;
+        for ( let i = 0; i < str.length; ) {
+            h = Math.imul( h ^ str.charCodeAt(i++), 387420489 );
+        }
+        return h ^ h >>> 9;
+    }
+
     /**
      * Start the application and make sure everything is in place or error out.
      */
@@ -482,9 +581,16 @@ Compile completed in: ${this.stats.time}
                 this.errorOut( '[ERR-01] Node could not change your working directory. There may be permission issues keeping the compiler from running.' );
             }
         } else {
+            // Add the following path parts to the cwd parts.
+            let check = [ 'bin', 'components', 'cli.js' ];
+            check = cwd.concat( check );
+            // Flatten to a full absolute file path.
+            check = check.join( path.sep );
+            // Return cwd back to its string state.
             this.cwd = cwd.join( path.sep );
             try {
-                if ( ! fs.existsSync( this.cwd + path.sep + 'bin' + path.sep + 'cli.js' ) ) {
+                // If the cli.js is found in the spot we expect don't error out.
+                if ( ! fs.existsSync( check ) ) {
                     this.errorOut( '[ERR-03] You attempted to run the compiler from an unexpected directory, moved the compiler file, or renamed the compiler file.' );
                 }
             } catch ( err ) {
@@ -529,6 +635,14 @@ Compile completed in: ${this.stats.time}
             // TODO ADD ERROR
             console.log( err )
         } );
+
+        let sep = path.sep;
+        if ( sep == '/' ) {
+            sep = '\\/';
+        } else if ( sep == '\\' ) {
+            sep = '\\\\';
+        }
+        this.dirRegex = new RegExp( '\\\.' + sep + '|\\\.\\\.' + sep, 'g' );
 
         this.recordVersions();
         this.buildCompilers();
@@ -614,7 +728,7 @@ Compile completed in: ${this.stats.time}
      * A file needs compiling, process and record it.
      * @param {string} location The path to the file in question.
      */
-    needsCompile( location ) {
+    needsCompile( location, dest ) {
 
         // Setup key variables.
         let result = false;
@@ -622,19 +736,19 @@ Compile completed in: ${this.stats.time}
         let mtime  = new Date( fs.statSync( location ).mtime );
         mtime      = mtime.toGMTString();
 
-        // Determine what the output file type should be.
-        let ext = path.parse( location ).ext;
-        let out = this.compilers.outputs[ ext.replace( '.', '' ) ];
-        if ( ! out ) {
-            // Default to HTML.
-            out = 'html';
-        }
-        out = '.' + out;
+        // // Determine what the output file type should be.
+        // let ext = path.parse( location ).ext;
+        // let out = this.compilers.outputs[ ext.replace( '.', '' ) ];
+        // if ( ! out ) {
+        //     // Default to HTML.
+        //     out = 'html';
+        // }
+        // out = '.' + out;
         
         // Replace the original file and extension from the path (location).
-        let name = path.parse( location ).name;
-        let dest = location.replace( name + ext, name + out );
-        dest     = path.join( this.settings.releaseDir, dest );
+        // let name = path.parse( location ).name;
+        // let dest = location.replace( name + ext, name + out );
+        // dest     = path.join( this.settings.releaseDir, this.removeWWW( dest ) );
 
         // If this file is missing from the release directory compile it.
         if ( ! fs.existsSync( dest ) ) {
@@ -662,20 +776,23 @@ Compile completed in: ${this.stats.time}
      * 
      * @param {string}  dir       The directory in question.
      */
-    processDirs( dir ) {
+    processDirs( tree, dir, base, output ) {
 
-        // Create this directory in the release folder if its missing.
-        let dest = path.join( this.settings.releaseDir, dir.substr( 3 ) );
-        if ( ! fs.existsSync( dest ) && dir != 'www' ) {
+        let dest = path.join( output, dir.replace( base, '' ) );
+        if ( ! fs.existsSync( dest ) ) {
             this.stats.dcopied += 1;
             fs.mkdirSync( dest, { recursive: true } );
         } else {
             this.stats.dignored += 1;
         }
+        
+        if ( tree != null ) {
+            if ( dest.indexOf('style-guide') > 0 ) {
+                console.log( dest );
+            }
+            tree.remove( this.hash( dest ) );
+        }
 
-        // TODO: Need to add better checks here for skipping files and dirs in the compile.
-
-        // Loop through all items in this directory and process accordingly.
         let items = fs.readdirSync( dir );
         items.forEach( item => {
             let location = path.join( dir, item );
@@ -683,37 +800,89 @@ Compile completed in: ${this.stats.time}
             
             // Is this a directory?
             if ( stats.isDirectory() ) {
-                // Yes. Only continue if this is a safe (requested) directory.
-                if ( ! this.settings.ignoreDir.includes( location.substr( 4 ) ) ) {
-                    this.processDirs( location );
-                }
+                this.processDirs( tree, location, base, output );
             } else {
-                // TODO: Improve this.
-                if ( ! this.settings.ignoreFile.includes( location ) ) {
-                    // No. Compile the file if its extension is in the compile list.
-                    let ext = path.parse( location ).ext.replace( '.', '' );
-                    if ( this.compilers.types.includes( ext ) ) {
-                        // Does this file actually need to be compiled?
-                        if ( this.needsCompile( location ) ) {
-                            let compiler = this.compilers[ ext ];
-                            this[ compiler ]( location, dest );
-                        }
-                    } else if ( this.settings.safeFileExtensions.includes( ext ) ) {
-                        // If this file is in the safe list copy it to release; no compile needed.
-                        this.copyFileToRelease( location );
+                // Does this file need to be compiled?
+                //let ext = path.parse( location ).ext.replace( '.', '' );
+                let output = "";
+                let ext = path.parse( location ).ext.replace( '.', '' );
+                if ( this.compilers.types.includes( ext ) ) {
+                    // Determine what the output file type should be.
+                    let name = path.parse( location ).name;
+                    let out  = this.compilers.outputs[ ext ];
+                    if ( ! out ) {
+                        // Default to HTML.
+                        out = 'html';
                     }
+                    out = '.' + out;
+                    output = path.join( dest, name + out );
+                    
+                    if ( tree != null ){
+                        tree.remove( this.hash( output ) );
+                    }
+
+                    if ( this.needsCompile( location, output ) ) {
+                        let compiler = this.compilers[ ext ];
+                        this[ compiler ]( location, output );
+                    }
+                } else if ( this.settings.safeFileExtensions.includes( ext ) ) {
+                    // No, if this file is in the safe list copy it to release.
+                    output = path.join( dest, item );
+                    if ( tree != null ){
+                        tree.remove( this.hash( output ) );
+                    }
+                    this.copyFileToRelease( location, output );
                 }
             }
         } );
 
     }
 
+    recursiveHash( tree, dir ) {
+        let items = fs.readdirSync( dir );
+        items.forEach( item => { 
+            let location = path.join( dir, item );
+            let stats    = fs.statSync( location );
+            //console.log( location );
+            tree.insert( { 'id': this.hash( location ), 'val': location } );
+            if ( stats.isDirectory() ) {
+                this.recursiveHash( tree, location );
+            }
+        } );
+    }
+
     recordVersions() {
         // TODO: Implement.
     }
 
-    removeWWW( dest ) {
-        return dest.replace( 'www' + path.sep, '' );
+    /**
+     * Remove files and directories recursively.
+     * 
+     * @param {string} dir_path
+     * @see https://stackoverflow.com/a/42505874/3193156
+     */
+    rimraf( location ) {
+        // Security check to prevent deleting system files.
+        location = location.replace( this.dirRegex, '' );
+        if ( ! location.includes( process.cwd() ) ) {
+            location = path.join( process.cwd(), location );
+        }
+        if( fs.existsSync( location ) ) {
+            if ( fs.lstatSync( location ).isDirectory() ) {
+                let that = this;
+                fs.readdirSync( location ).forEach( function( file ) {
+                    file = path.join( location, file );
+                    if ( fs.lstatSync( file ).isDirectory() ) {
+                        that.rimraf( file );
+                    } else {
+                        fs.unlinkSync( file );
+                    }
+                } );
+                fs.rmdirSync( location );
+            } else {
+                fs.unlinkSync( location );
+            }
+        }
     }
 
     /**
@@ -738,7 +907,7 @@ Compile completed in: ${this.stats.time}
                 break;
             case 'compile':
                 if ( this.isReady( 'compile', flags ) ) {
-                    if ( this.containsAny( flags, [ '--style', '--styles' ] ) ) {
+                    if ( this.containsAny( flags, [ '-style', '--style', '-styles', '--styles' ] ) ) {
                         this.compileStyles();
                     }
                     this.compile();

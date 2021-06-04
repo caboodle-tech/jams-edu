@@ -14,69 +14,19 @@ if (window.NodeList && !NodeList.prototype.forEach) {
 
 var JAMSEDU = ( function() {
 
-    /*
-    var attachAnchors = function() {
+    var debounceFuncs = {}
+    var debounceTimer = null;
 
-        var anchors = document.querySelectorAll( 'ol > li' );
-        var a  = null;
-        var h1 = null;
-
-        anchors.forEach( function( anchor, index ){
-            anchor.id = 'anchor-' + ( index + 1);
-            h1 = anchor.querySelector( 'h2' );
-            if ( h1 ) {
-                a = document.createElement( 'a' );
-                a.href = window.location.origin + window.location.pathname + '#anchor-' + ( index + 1 );
-                a.innerHTML = h1.innerHTML;
-                h1.innerHTML = '';
-                h1.appendChild( a );
-            }
-        } );
-
+    var PATHS = {
+        'absolute': '',
+        'relative': ''
     };
-    */
 
     var attachCollapsible = function() {
         var collapsibles = document.querySelectorAll( '.collapsible' );
         collapsibles.forEach( function( collapsible ){
             collapsible.addEventListener( 'click', toggleCollapsible );
         } );
-    };
-
-    /**
-     * Add event listeners to JamsEDU elements.
-     */
-    var attachListeners = function() {
-
-        // Is the sidebar on this page?
-        if ( document.getElementById('sidebar' ) ) {
-            // Yes, if it exists attach the listener to the mobile nav button.
-            if ( document.getElementById('mobile-nav-button' ) ) {
-                document.getElementById( 'mobile-nav-button' ).addEventListener( 'click', toggleNav );
-            }
-        } else {
-            // No, hide the mobile nav button if it exists.
-            if ( document.getElementById('mobile-nav-button' ) ) {
-                document.getElementById( 'mobile-nav-button' ).style.display = 'none';
-            }
-        }
-
-        // Attach listeners to any JamsEDU nav collapsible more sections.
-        var mores = document.querySelectorAll( 'nav .more' );
-        mores.forEach( function( more ) {
-            more.addEventListener( 'click', toggleMore );
-        } );
-
-        // Attach listeners to any JamsEDU nav placeholder sections.
-        var links = document.querySelectorAll( 'nav .link' );
-        links.forEach( function( link ) {
-            var empty = link.querySelector( 'a' );
-            if ( ! empty ) {
-                // Pass click over to the more button, this is a placeholder link.
-                link.addEventListener( 'click', passToMore );
-            }
-        } );
-
     };
 
     var convertImages = function() {
@@ -143,6 +93,26 @@ var JAMSEDU = ( function() {
 
     };
 
+    var convertQuotes = function() {
+
+        var quotes = document.querySelectorAll( 'blockquote' );
+
+        quotes.forEach( function( quote ) {
+            var url = quote.cite;
+            var cite = quote.querySelector( 'cite' );
+            if ( cite && url.length > 5 ) {
+                var a = document.createElement('A');
+                var newCite = document.createElement('CITE');
+                a.innerHTML = cite.innerHTML;
+                a.setAttribute( 'href', url );
+                a.setAttribute( 'target', '_blank' );
+                a.setAttribute( 'rel', 'noopener noreferrer' );
+                newCite.appendChild( a );
+                quote.replaceChild( newCite, cite );
+            }
+        } );
+    };
+
     var convertVideoLinks = function() {
 
         var videos = document.querySelectorAll( '[data-video]' );
@@ -160,7 +130,28 @@ var JAMSEDU = ( function() {
                 processVideo( type, video );
             }
         } );
+    };
 
+    // https://stackoverflow.com/a/52256801/3193156
+    var debounce = function( func ) {
+        time = 250;
+        hash = 'F' + getStringHash( func.toString() );
+        if ( ! debounceFuncs[ hash ] ) {
+            debounceFuncs[ hash ] = [ func, event ];
+            return function( event ) {
+                if ( debounceTimer ) {
+                    clearTimeout( debounceTimer );
+                }
+                debounceTimer = setTimeout( doDebounce, time );
+            }   
+        }
+    };
+
+    var doDebounce = function() {
+        for( var prop in debounceFuncs ) {
+            var parts = debounceFuncs[ prop ];
+            parts[0].call( null, parts[1] );
+        }
     };
 
     /**
@@ -185,12 +176,13 @@ var JAMSEDU = ( function() {
         }
     };
 
+    var getAbsolutePath = function() {
+        return PATHS.absolute;
+    };
+
     // https://stackoverflow.com/a/47305680/3193156
     var getCookie = function( name ) {
-        var dc,
-            prefix,
-            begin,
-            end;
+        var dc, prefix, begin, end;
     
         dc = document.cookie;
         prefix = name + "=";
@@ -215,6 +207,21 @@ var JAMSEDU = ( function() {
         }
     
         return decodeURI(dc.substring(begin + prefix.length, end) ).replace(/\"/g, ''); 
+    };
+
+    var getRelativePath = function() {
+        return PATHS.relative;
+    };
+
+    var getStringHash = function( string ) {
+        var hash = 0, i = 0, len = string.length;
+        while ( i < len ) {
+            hash  = ((hash << 5) - hash + string.charCodeAt(i++)) << 0;
+        }
+        if ( hash < 0 ) {
+            hash *= -1;
+        }
+        return hash;
     };
 
     var highlightAnchor = function() {
@@ -243,19 +250,19 @@ var JAMSEDU = ( function() {
     var initialize = function() {
 
         loadAssets();
-        attachListeners();
         highlightAnchor();
         attachCollapsible();
         convertImages();
-        convertTables();
+        convertQuotes();
         convertVideoLinks();
+        convertTables();
 
     };
 
     // https://stackoverflow.com/a/4793630/3193156
     var insertAfter = function( newNode, referenceNode ) {
         referenceNode.parentNode.insertBefore( newNode, referenceNode.nextSibling );
-    }
+    };
 
     /**
      * Load all of the CSS and JS files needed for JamsEDU's features
@@ -269,7 +276,7 @@ var JAMSEDU = ( function() {
         var root     = ''
         var absPath  = document.location.href.substring( 0, document.location.href.lastIndexOf( '/' ) );
         var relPath  = '';
-        var darkMode = false
+        var darkMode = false;
 
         // Check for dark mode cookie.
         if ( getCookie( 'jamsedu-dark-mode' ) ) {
@@ -309,11 +316,15 @@ var JAMSEDU = ( function() {
             count--;
         }
 
+        // Record paths so the rest of the app can use them.
+        PATHS.absolute = absPath;
+        PATHS.relative = relPath;
+
         if ( ! ( disabled.includes( 'FA' ) || disabled.includes( 'FONT' ) ) ) {
 
             // Load the Font Awesome script into the current page.
             var tag   = document.createElement( 'SCRIPT' );
-            tag.defer = true;
+            tag.async = true;
             tag.type  = 'text/javascript';
             tag.src   = relPath + 'js/fa-all.min.js';
             document.head.appendChild( tag );
@@ -340,11 +351,36 @@ var JAMSEDU = ( function() {
 
             // Load the Highlight JS script into the current page.
             tag       = document.createElement( 'SCRIPT' );
-            tag.defer = true;
+            tag.async = true;
             tag.type  = 'text/javascript';
             tag.src   = relPath + 'js/highlight.min.js';
             document.head.appendChild( tag );
             loadHighlight( 0 );
+
+        }
+
+        if ( ! ( disabled.includes( 'PDF' ) ) ) {
+
+            // Load ...
+            tag       = document.createElement( 'SCRIPT' );
+            tag.async = true;
+            tag.type  = 'text/javascript';
+            tag.src   = relPath + 'js/pdf.min.js';
+            document.head.appendChild( tag );
+
+            // Load ...
+            tag       = document.createElement( 'SCRIPT' );
+            tag.async = true;
+            tag.type  = 'text/javascript';
+            tag.src   = relPath + 'js/pdf-viewer.js';
+
+            // Load ...
+            tag       = document.createElement( 'SCRIPT' );
+            tag.async = true;
+            tag.type  = 'text/javascript';
+            tag.src   = relPath + 'js/pdf-je-viewer.js';
+            document.head.appendChild( tag );
+            loadPDF( 0 );
 
         }
 
@@ -358,7 +394,7 @@ var JAMSEDU = ( function() {
 
             // Load the Katex script into the current page.
             tag       = document.createElement( 'SCRIPT' );
-            tag.defer = true;
+            tag.async = true;
             tag.type  = 'text/javascript';
             tag.src   = relPath + 'js/katex.min.js';
             document.head.appendChild( tag );
@@ -376,7 +412,7 @@ var JAMSEDU = ( function() {
 
             // Load the Mermaid script into the current page.
             tag       = document.createElement( 'SCRIPT' );
-            tag.defer = true;
+            tag.async = true;
             tag.type  = 'text/javascript';
             tag.src   = relPath + 'js/mermaid.min.js';
             document.head.appendChild( tag );
@@ -410,6 +446,29 @@ var JAMSEDU = ( function() {
 
     };
 
+     /**
+     * Calls the function to initialize Katex once it loads. 
+     * @param {integer} count How many times this funciton has been called by setTimeout().
+     *                        Times out after 3 seconds of trying. 
+     */
+      var loadKatex = function( count ) {
+
+        if ( count > 30 ) {
+            return;
+        }
+
+        if ( typeof katex !== 'undefined' ) {
+            // Render all Katex math blocks.
+            katexAreas = document.querySelectorAll( '.katex' );
+            katexAreas.forEach( function( elem ) {
+                katex.render( elem.innerHTML, elem, { throwOnError: false } );
+            } );
+        } else {
+            setTimeout( loadKatex.bind( null, count++ ), 100 );
+        }
+
+    };
+
     /**
      * Calls the function to initialize Mermaid once it loads. 
      * @param {integer} count How many times this funciton has been called by setTimeout().
@@ -436,37 +495,37 @@ var JAMSEDU = ( function() {
     };
 
     /**
-     * Calls the function to initialize Katex once it loads. 
+     * Calls the function to initialize PDFs once it loads. 
      * @param {integer} count How many times this funciton has been called by setTimeout().
-     *                        Times out after 3 seconds of trying. 
+     *                        Times out after 5 seconds of trying.
      */
-    var loadKatex = function( count ) {
+     var loadPDF = function( count ) {
 
-        if ( count > 30 ) {
+        if ( count > 50 ) {
             return;
         }
 
-        if ( typeof katex !== 'undefined' ) {
-            // Render all Katex math blocks.
-            katexAreas = document.querySelectorAll( '.katex' );
-            katexAreas.forEach( function( elem ) {
-                katex.render( elem.innerHTML, elem, { throwOnError: false } );
-            } );
-        } else {
-            setTimeout( loadKatex.bind( null, count++ ), 100 );
-        }
+        if ( typeof PDFMiniViewers !== 'undefined' ) {
 
-    };
-
-    var passToMore = function() {
-        var more = this.nextElementSibling;
-        if ( more ) {
-            if ( more.classList.contains( 'more' ) ) {
-                toggleMore.call( more );
+            // Load ...AVOIDS A RACE CONDITION
+            if ( typeof pdfjsViewer == 'undefined' ) {
+                var tag   = document.createElement( 'SCRIPT' );
+                tag.async = true;
+                tag.type  = 'text/javascript';
+                tag.src   = PATHS.relative + 'js/pdf-viewer.js';
+                document.head.appendChild( tag );
+                setTimeout( loadPDF.bind( null, count++ ), 100 );
+            } else {
+                // Initialize PDFJS to format all PDFs on the page.
+                PDFMiniViewers.initialize();
             }
-        }
-    };
 
+        } else {
+            setTimeout( loadPDF.bind( null, count++ ), 100 );
+        }
+
+    };
+    
     var processVideo = function( type, link ) {
 
         // Set a flag if this video is inside a paragraph tag.
@@ -537,50 +596,138 @@ var JAMSEDU = ( function() {
         this.classList.toggle( 'open' );
     };
 
+    domReady( initialize );
+
+    return {
+        'debounce': debounce,
+        'domReady': domReady,
+        'getAbsolutePath': getAbsolutePath,
+        'getCookie': getCookie,
+        'getRelativePath': getRelativePath
+    };
+
+} )();
+
+var JAMSEDU_NAV = ( function() {
+
+    var elems = {};
+    var intervals = {};
+
+    /**
+     * Add event listeners to JamsEDU elements.
+     */
+    var attachListeners = function() {
+
+        // Is the sidebar on this page?
+        if ( elems.sidebar ) {
+            // Yes, if it exists attach the listener to the mobile nav button.
+            if ( elems.mobileNavButton ) {
+                elems.mobileNavButton.addEventListener( 'click', toggleNav );
+            }
+        } else {
+            // No, hide the mobile nav button if it exists.
+            if ( elems.mobileNavButton ) {
+                elems.mobileNavButton.style.display = 'none';
+            }
+        }
+
+        // Attach listeners to any JamsEDU nav collapsible more sections.
+        var mores = elems.sidebar.querySelectorAll( 'nav .je-more' );
+        mores.forEach( function( more ) {
+            more.addEventListener( 'click', toggleMore );
+        } );
+
+        // Attach listeners to any JamsEDU nav placeholder sections.
+        var links = elems.sidebar.querySelectorAll( 'nav .je-link' );
+        links.forEach( function( link ) {
+            var empty = link.querySelector( 'a' );
+            if ( ! empty ) {
+                // Pass click over to the more button, this is a placeholder link.
+                link.addEventListener( 'click', passToMore );
+            }
+        } );
+
+    };
+
+    var handleWindowResize = function() {
+        var nav = elems.sidebar;
+        var pageWidth = window.innerWidth;
+
+        if ( pageWidth < 769 ) {
+            if ( nav.dataset.previous ) {
+                nav.style.right = nav.dataset.previous;
+            }
+        } else {
+            var right = nav.style.right;
+            nav.dataset.previous = right;
+            nav.style.right = 0;
+        }
+    };
+
+    var initialize = function() {
+
+        elems.sidebar = document.getElementById('je-sidebar' );
+        elems.mobileNavButton = document.getElementById('je-mobile-nav-button' );
+
+        attachListeners();
+
+        // Attach window resize listener.
+        window.addEventListener( 'resize', JAMSEDU.debounce( handleWindowResize ), true );
+    };
+
+    var passToMore = function() {
+        var more = this.nextElementSibling;
+        if ( more ) {
+            if ( more.classList.contains( 'more' ) ) {
+                toggleMore.call( more );
+            }
+        }
+    };
+
     var toggleMore = function() {
-        if ( this.classList.contains( 'open' ) ) {
+        if ( this.classList.contains( 'je-open' ) ) {
             // Close open child menu.
-            this.classList.remove( 'open' );
+            this.classList.remove( 'je-open' );
             if ( this.nextElementSibling ) {
-                this.nextElementSibling.classList.remove( 'open' );
+                this.nextElementSibling.classList.remove( 'je-open' );
                 // Also close any remaining open child menus.
-                var menus = this.nextElementSibling.querySelectorAll( '.open' );
+                var menus = this.nextElementSibling.querySelectorAll( '.je-open' );
                 menus.forEach( function( menu ) {
-                    menu.classList.remove( 'open' );
+                    menu.classList.remove( 'je-open' );
                 } );
             }
         } else {
             // Open child menu.
-            this.classList.add( 'open' );
+            this.classList.add( 'je-open' );
             if ( this.nextElementSibling ) {
-                this.nextElementSibling.classList.add( 'open' );
+                this.nextElementSibling.classList.add( 'je-open' );
             }
         }
     };
 
     var toggleNav = function() {
         
-        var nav = document.getElementById( 'sidebar' );
+        var nav = elems.sidebar;
 
-        if ( ! nav.classList.contains( 'block' ) ) {
+        if ( ! nav.classList.contains( 'je-block-interaction' ) ) {
 
-            nav.classList.add( 'block' );
+            nav.classList.add( 'je-block-interaction' );
             var width = nav.offsetWidth;
 
-            if ( nav.classList.contains( 'open' ) ) {
+            if ( nav.classList.contains( 'je-open' ) ) {
 
-                nav.classList.remove( 'open' );
+                nav.classList.remove( 'je-open' );
 
                 // Close the menu.
                 intervals.nav = setInterval( function(){
 
-                    var nav   = document.getElementById( 'sidebar' );
+                    var nav   = elems.sidebar;
                     var width = nav.offsetWidth;
                     var right = parseInt( nav.style.right ) - 10;
 
                     if ( right < -width ) {
                         nav.style.right = '-' + width + 'px';
-                        nav.classList.remove( 'block' );
+                        nav.classList.remove( 'je-block-interaction' );
                         clearInterval( intervals.nav );
                     } else {
                         nav.style.right = right + 'px';
@@ -590,33 +737,28 @@ var JAMSEDU = ( function() {
 
             } else {
 
-                nav.classList.add( 'open' );
+                nav.classList.add( 'je-open' );
                 nav.style.right = '-' + width + 'px';
 
                 // Open the menu.
                 intervals.nav = setInterval( function(){
 
-                    var nav   = document.getElementById( 'sidebar' );
+                    var nav   = elems.sidebar;
                     var right = parseInt( nav.style.right ) + 10;
 
                     if ( right >= 0 ) {
                         nav.style.right = '0';
-                        nav.classList.remove( 'block' );
+                        nav.classList.remove( 'je-block-interaction' );
                         clearInterval( intervals.nav );
                     } else {
                         nav.style.right = right + 'px';
                     }
 
                 }, 20 );
-
             }
-
         }
-
     };
 
-    domReady( initialize );
-
-    return {};
+    JAMSEDU.domReady( initialize );
 
 } )();

@@ -1,0 +1,56 @@
+figure {
+    display: block;
+    margin: @spacing auto;
+    text-align: center;
+
+    img {
+        width: auto;
+        max-width: 90%;
+        .drop-shadow();
+
+        &.no-shadow {
+            .remove-drop-shadow();
+        }
+    }
+    
+    figcaption {
+        text-align: center;
+        margin: @spacing / 2 0 0 0;
+    }
+
+    &.left {
+        display: inline-block;
+        max-width: 50%;
+        float: left;
+        margin: @spacing + 5px @spacing * 2 @spacing + 5px 0;
+    }
+
+    &.right {
+        display: inline-block;
+        max-width: 50%;
+        float: right;
+        margin: @spacing + 5px 0 @spacing + 5px @spacing * 2;
+    }
+}
+
+.video {
+    position: relative;
+    height: 0;
+    width: 100%;
+    margin: @spacing 0 @spacing * 1.5 0;
+    padding-bottom: 56.25%;
+    overflow: hidden;
+
+    iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+}
+
+.video-fallback {
+    font-style: italic;
+    margin: @spacing / 2 0;
+}

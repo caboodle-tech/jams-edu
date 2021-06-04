@@ -30,6 +30,7 @@ module.exports = function( location, dest, data, passBack ) {
 
     // Build the correct relative path and add that to the variables object.
     let count = location.replace( '.' + path.sep, '' ).split( path.sep ).length;
+    count--;
     if ( count > 0 ) {
         count--;
     }
@@ -76,19 +77,19 @@ module.exports = function( location, dest, data, passBack ) {
         return file;
     } else {
 
-        // Determine what the output file type should be.
-        let ext  = path.parse( location ).ext;
-        let name = path.parse( location ).name;
-        let out  = this.compilers.outputs[ ext.replace( '.', '' ) ];
-        if ( ! out ) {
-            // Default to HTML.
-            out = 'html';
-        }
-        out = '.' + out;
+        // // Determine what the output file type should be.
+        // let ext  = path.parse( location ).ext;
+        // let name = path.parse( location ).name;
+        // let out  = this.compilers.outputs[ ext.replace( '.', '' ) ];
+        // if ( ! out ) {
+        //     // Default to HTML.
+        //     out = 'html';
+        // }
+        // out = '.' + out;
 
-        // Build the path to the destination.
-        dest = path.join( dest, name + out );
-
+        // // Build the path to the destination.
+        // dest = path.join( dest, name + out );
+        
         this.saveCompiledFile( file, dest );
     }
 
