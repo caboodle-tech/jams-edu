@@ -223,13 +223,14 @@ exports.DefaultAnnotationLayerFactory = DefaultAnnotationLayerFactory;
 
 
 
-var pdfjsLib;
+// var pdfjsLib;
+var pdfjsLib = window["pdfjs-dist/build/pdf"]; // FORCE THIS OPTION ALWAYS.
 
-if (typeof window !== "undefined" && window["pdfjs-dist/build/pdf"]) {
-  pdfjsLib = window["pdfjs-dist/build/pdf"];
-} else {
-  pdfjsLib = require("../build/pdf.js");
-}
+// if (typeof window !== "undefined" && window["pdfjs-dist/build/pdf"]) {
+//   pdfjsLib = window["pdfjs-dist/build/pdf"];
+// } else {
+//   pdfjsLib = require("../build/pdf.js");
+// }
 
 module.exports = pdfjsLib;
 

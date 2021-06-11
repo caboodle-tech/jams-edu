@@ -16,7 +16,8 @@ var JAMSEDU = ( function() {
 
     var debounceFuncs = {}
     var debounceTimer = null;
-
+    var IFRAME = null;
+    var PARAMS = {};
     var PATHS = {
         'absolute': '',
         'relative': '',
@@ -464,6 +465,29 @@ var JAMSEDU = ( function() {
         return hash;
     };
 
+    var getUrlParamaters = function( url ) {
+        var results = {};
+        if ( ! url ) {
+            url = window.location.href;
+        }
+        if ( url.lastIndexOf('?') > -1 ) {
+            url = url.substring( url.lastIndexOf('?') + 1 );
+            if ( url.lastIndexOf('#') > -1 ) {
+                url = url.substring( 0, url.lastIndexOf('#') );
+            }
+            var params = url.split('&');
+            for ( var i = 0; i < params.length; i++ ) {
+                var parts = params[i].split('=');
+                if ( parts[1] ) {
+                    results[ parts[0] ] = decodeURIComponent( parts[1].replace(/\+/g, ' ' ) );
+                } else {
+                    results[ parts[0] ] = ''
+                }
+            }
+        }
+        return results;
+    };
+
     var highlightAnchor = function() {
 
         var anchor = window.location.hash;
@@ -490,6 +514,31 @@ var JAMSEDU = ( function() {
 
     var initialize = function() {
 
+        IFRAME = isInFrame();
+        PARAMS = getUrlParamaters();
+
+        // Allow hiding the header and footer when the page is in an iFrame.
+        if ( IFRAME ) {
+            if ( PARAMS['header'] && PARAMS['header'].toLowerCase() == 'false' ) {
+                var h = document.getElementById('header');
+                if ( h ) {
+                    h.style.display = 'none';
+                }
+            }
+            if ( PARAMS['sidebar'] && PARAMS['sidebar'].toLowerCase() == 'false' ) {
+                var s = document.getElementById('sidebar');
+                if ( s ) {
+                    s.style.display = 'none';
+                }
+            }
+            if ( PARAMS['footer'] && PARAMS['footer'].toLowerCase() == 'false' ) {
+                var f = document.getElementById('footer');
+                if ( f ) {
+                    f.style.display = 'none';
+                }
+            }
+        }
+
         loadAssets();
         highlightAnchor();
         attachAnchor();
@@ -506,6 +555,17 @@ var JAMSEDU = ( function() {
     // https://stackoverflow.com/a/4793630/3193156
     var insertAfter = function( newNode, referenceNode ) {
         referenceNode.parentNode.insertBefore( newNode, referenceNode.nextSibling );
+    };
+
+    // https://stackoverflow.com/a/65381881/3193156
+    var isInFrame = function() {
+        var windowLen = window.frames.length;
+        var parentLen = parent.frames.length;
+        if (windowLen == 0 && parentLen >= 1) {
+            this.isInIframe = true
+            return true;
+        }
+        return false;
     };
 
     /**
