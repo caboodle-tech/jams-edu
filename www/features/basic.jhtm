@@ -1,0 +1,164 @@
+${{title}}       = "Basic Features | JamsEDU";
+${{author}}      = "Caboodle Tech";
+${{keywords}}    = "Demo, JamsEDU, Tables, Headers, Horizontal Rule, Mark, Kbd, Del, Delete, Ins, Insert";
+${{description}} = "A demo of the basic features available in JamsEDU; Headers, Horizontal Rule, Mark, Kbd, Tables, Code, and so on.";
+${{navigation}}  = "main";
+
+{{T:HEAD}}
+<body>
+    {{T:HEADER}}
+    <section id="main-content" class="go-back">
+        <h1>
+            Basic Elements
+        </h1>
+        <p>
+            Block quotes and callouts are used to call attention to some important information. JamsEDU supports many different styles for callouts by default. This page will demonstrate how to customize callouts for your needs.
+        </p>
+        <h2 id="demo-go-back">
+            Go Back
+        </h2>
+        <p>
+            There are two ways to add the <strong>Go Back</strong> link on a page. You can manually add the link to a page by placing the following HTML code above the <code>h1</code> tag for the page:
+        </p>
+<pre class="lang-html"><code>&lt;div id="go-back"&gt;
+    &lt;a href="../"&gt;&lt;i class="fas fa-chevron-left icon"&gt;&lt;/i&gt; Go Back&lt;/a&gt;
+&lt;/div&gt;
+</code></pre>
+        <p>
+            An easier way to accomplish this automatically is by adding the class <code>go-back</code> to the main content section. Here is what the main content section looks like with this class added to it:
+        </p>
+<pre class="lang-html"><code>&lt;section id="main-content" class="go-back"&gt;
+</code></pre>
+        <h2 id="demo-headings">Headings</h2>
+        <p>
+            Headings are used for accessibility and to visually notify sighted users of a section of content. The <code>h1</code> or heading level 1 tag has the most importance and should be used at the top of every page. In contrast the <code>h6</code> or heading level 6 tag has the lowest importance. You may use any amount of header tags on a single page but it is best practice to limit duplication as much as possible. For JamsEDU site headings are styled relatively the same. Below is the HTML code for all possible headings. This page is using quite a few of them already.
+        </p>
+<pre class="lang-html"><code>&lt;h1&gt;Header 1&lt;/h1&gt;
+&lt;h2&gt;Header 2&lt;/h2&gt;
+&lt;h3&gt;Header 3&lt;/h3&gt;
+&lt;h4&gt;Header 4&lt;/h4&gt;
+&lt;h5&gt;Header 5&lt;/h5&gt;
+&lt;h6&gt;Header 6&lt;/h6&gt;
+</code></pre>
+        <div class="callout callout">
+            <h2>Anchors:</h2>
+            <p>
+                A common feature for web browsers is the ability to link directly to part of a web page, this is known as anchoring. JamsEDU will automatically generate <i>anchors</i> for headings with an <code>id</code> attribute. You can learn more about the <a href="https://www.w3schools.com/html/html_id.asp" target="_blank" rel="noreferrer nofollow">id attribute here</a>. To see how anchors work try clicking on one of the <a href="http://127.0.0.1:5500/jams-edu/release/features/basic.html#demo-headings" class="anchor"><i class="fas fa-link"></i></a> icons on this page.
+            </p>
+        </div>
+        <h2 id="demo-id">Horizontal Rule</h2>
+        <p>
+            Horizontal rules allow you to draw a line across the page to separate sections of content. You can use this when you want to create space or a break between content and a header does not make sense to use. Here is a demo of the <code>hr</code> tag in action, its HTML code follows:
+        </p>
+        <hr>
+<pre class="lang-html"><code>&lt;hr&gt;
+</code></pre>
+        <h2 id="demo-mark">Mark</h2>
+        <p>
+            The mark tag is an HTML5 tag that allows you to <mark>highlight</mark> a word or words to call attention to them. JamsEDU slightly modifies the default style of this tag.
+        </p>
+<pre class="lang-html"><code>&lt;mark&gt;highlight&lt;/mark&gt;
+</code></pre>
+        <h2 id="demo-kbd">Kbd</h2>
+        <p>
+            The kdb tag is used to define keyboard input: <kbd>↑</kbd> <kbd>↑</kbd> <kbd>↓</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> <kbd>←</kbd> <kbd>→</kbd> <kbd>B</kbd> <kbd>A</kbd>
+        </p>
+<pre class="lang-html"><code>&lt;kbd&gt;Konami Code&lt;/kbd&gt;
+</code></pre>
+        <h2 id="demo-table">Tables</h2>
+        <p>
+            Tables are supported by JamsEDU and have been designed with mobile-first design principles. The following table is from <a href="https://www.w3schools.com/html/html_tables.asp">W3School's HTML Table</a> tutorial and demonstrates how a table looks in JamsEDU. Following the demo is the code to make up to the first row of this table.
+        </p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Contact</th>
+                    <th>Country</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Alfreds Futterkiste</td>
+                    <td>Maria Anders</td>
+                    <td>Germany</td>
+                </tr>
+                <tr>
+                    <td>Centro comercial Moctezuma</td>
+                    <td>Francisco Chang</td>
+                    <td>Mexico</td>
+                </tr>
+                <tr>
+                    <td>Ernst Handel</td>
+                    <td>Roland Mendel</td>
+                    <td>Austria</td>
+                </tr>
+                <tr>
+                    <td>Island Trading</td>
+                    <td>Helen Bennett</td>
+                    <td>UK</td>
+                </tr>
+                <tr>
+                    <td>Laughing Bacchus Winecellars</td>
+                    <td>Yoshi Tannamuri</td>
+                    <td>Canada</td>
+                </tr>
+                <tr>
+                    <td>Magazzini Alimentari Riuniti</td>
+                    <td>Giovanni Rovelli</td>
+                    <td>Italy</td>
+                </tr>
+            </tbody>
+        </table>
+<pre class="lang-html"><code>&lt;table&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th&gt;Company&lt;/th&gt;
+            &lt;th&gt;Contact&lt;/th&gt;
+            &lt;th&gt;Country&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+        &lt;tr&gt;
+            &lt;td&gt;Alfreds Futterkiste&lt;/td&gt;
+            &lt;td&gt;Maria Anders&lt;/td&gt;
+            &lt;td&gt;Germany&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/tbody&gt;
+&lt;/table&gt;
+</code></pre>
+        <h2 id="demo-code">Code</h2>
+        <p>
+            The code tag <code>code</code> can be used for short snippets of inline code. It looks similar to the <kbd>kbd</kbd> tag but uses a bold font and lighter drop shadow:
+        </p>
+<pre class="lang-html"><code>&lt;code&gt;inline code here&lt;/code&gt;
+</code></pre>
+        <p>
+            If you have larger blocks of code you wish to share on a page you should use a code block instead. The following code demonstrates an example you could use on your site. Please keep the following important points in mind when using a code block:
+        </p>
+        <ul class="smaller indent">
+            <li>
+                By default JamsEDU only supports the languages in the common package of <a href="https://highlightjs.org/download/" target="_blank" rel="noreferrer nofollow">Highlight JS</a>.
+            </li>
+            <li>
+                You need to change the <code>lang</code> (language) attribute to match the language of your code; again it must be in the supported list. The demo below uses <code>lang-html</code> because it is an HTML example.
+            </li>
+            <li>
+                Your first line of code should start on the same line as the opening <code>pre</code> and <code>code</code> tag, otherwise your code example will have an empty space at the top.
+            </li>
+            <li>
+                If you place the closing <code>pre</code> tag on its own line you may end up with extra bottom margin on some browsers.
+            </li>
+            <li>
+                You must replace any greater than (&lt;) or less than symbols (&gt;) with their HTML entities: <code>&amp;lt;</code> is &lt; and <code>&amp;gt;</code> is &gt;.
+            </li>
+        </ul>
+<pre class="lang-html"><code>&lt;pre class="lang-html">&lt;code>Your code inside here...
+This demo uses HTML...
+Over 3 lines.
+&lt;/code>&lt;/pre>
+</code></pre>
+    </section>
+    {{T:FOOTER}}
+</body>
+</html>

@@ -19,13 +19,106 @@ var JAMSEDU = ( function() {
 
     var PATHS = {
         'absolute': '',
-        'relative': ''
+        'relative': '',
+        'self': ''
+    };
+
+    var attachAnchor = function() {
+        var main = document.getElementById('main-content');
+        if ( main ) {
+            var anchors = main.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]');
+            anchors.forEach( function( anchor ) {
+                var link = document.createElement('A');
+                link.href = PATHS.self + '#' + anchor.id;
+                link.classList.add('anchor');
+                link.innerHTML = '<i class="fas fa-link"></i>';
+                anchor.appendChild( link );
+            } );
+        }
     };
 
     var attachCollapsible = function() {
         var collapsibles = document.querySelectorAll( '.collapsible' );
         collapsibles.forEach( function( collapsible ){
             collapsible.addEventListener( 'click', toggleCollapsible );
+        } );
+    };
+
+    var attachGoBack = function() {
+        var main = document.getElementById('main-content');
+        if ( main ) {
+            if ( main.classList.contains('go-back') ) {
+                var div = document.createElement('DIV');
+                div.id = 'go-back';
+                div.innerHTML = '<a href="../"><i class="fas fa-chevron-left icon"></i> Go Back</a>';
+                main.prepend( div );
+            }
+        }
+    };
+
+    var convertAudioLinks = function() {
+
+        var map = {
+            'ogg': 'ogg',
+            'mp3': 'mpeg',
+            'wav': 'wav'
+        }
+
+        var audioLinks = document.querySelectorAll( '[data-audio]' );
+
+        audioLinks.forEach( function( link ) {
+
+            // Set a flag if this audio is inside a paragraph tag; we'll need to move it.
+            var current   = link.parentElement;
+            var linkInPar = false;
+            while ( current != null ) {
+                if ( current.tagName == 'P' ) {
+                    linkInPar = true;
+                    break;
+                }
+                current = current.parentElement;
+            }
+
+            var html  = '';
+            var src = link.href;
+            var audio = document.createElement('AUDIO');
+            audio.setAttribute( 'preload', 'metadata' );
+            audio.setAttribute( 'id', uid( 14 ) );
+            var type  = src.substring( src.lastIndexOf('.') + 1 ).toLowerCase();
+            var alts  = link.dataset.audio.split(',');
+            html += '<source src="' + src + '" type="audio/' + map[ type ] + '">';
+            alts.forEach( function( alt ) {
+                html += '<source src="' + src.replace( '.' + type, '.' + alt );
+                html += '" type="audio/' + map[ alt ] + '">';
+            } );
+            audio.innerHTML = html;
+            var audioDiv = document.createElement('DIV');
+            audioDiv.classList.add('audio');
+
+            link.dataset.title = link.innerHTML;
+
+            // In case the user used Author instead of Artists.
+            if ( link.dataset.author ) {
+                link.dataset.artist = link.dataset.author;
+            }
+
+            generateAudioHTML( link.dataset.title, link.dataset.artist, link.dataset.transcript, audioDiv, audio );
+
+            // Swap out the link and replace with the video and fallback divs.
+            if ( ! linkInPar ) {
+                // Replace the current link in place.
+                link.parentElement.replaceChild( audio, link );
+                insertAfter( audioDiv, audio );
+            } else {
+                // Original link is in a paragraph, delete the link and add the video wrapper after the paragraph.
+                var current = link;
+                while ( current.tagName != 'P' ) {
+                    current = current.parentElement
+                }
+                link.parentElement.removeChild( link );
+                insertAfter( audo, current );
+                insertAfter( audioDiv, audio );
+            }
         } );
     };
 
@@ -118,16 +211,16 @@ var JAMSEDU = ( function() {
         var videos = document.querySelectorAll( '[data-video]' );
 
         videos.forEach( function( video ) {
-            var type = video.dataset.video;
-            if ( type ) {
+            var src = video.href;
+            if ( src ) {
                 /**
                  * Make sure all video links open in new tabs and are marked properly for security.
                  * This only will effect links that end up not being processed.
                  */
                 video.setAttribute( 'target', '_blank' );
                 video.setAttribute( 'rel', 'noopener noreferrer' );
-                type = type.trim();
-                processVideo( type, video );
+                src = src.trim();
+                processVideo( src, video );
             }
         } );
     };
@@ -176,8 +269,155 @@ var JAMSEDU = ( function() {
         }
     };
 
+    var generateAudioHTML = function( title, author, transcript, div, audio ) {
+        audio.onloadedmetadata = function() {
+            // Attach the first audio source as the current Audio element.
+            div.dataset.playing = audio.id;
+            // Create times.
+            var start = '0:00';
+            var end   = '0:00';
+            var max   = '0';
+            var dur   = audio.duration;
+            if ( ! isNaN( dur ) ) {
+                max   = Math.floor( dur );
+                end   = getSecondsToStamp( max );
+                start = end.replace( /[0-9]/g, '0' );
+            }
+            // Variable for parts of HTML.
+            var html = '';
+            // Create and add the author and title.
+            var metadata = document.createElement('DIV');
+            metadata.classList.add( 'metadata' );
+            // Display title and author if present.
+            if ( title ) {
+                html += '<div class="title">' + title + '</div>';
+            }
+            if ( author ) {
+                if ( author.indexOf(':') > 0 ) {
+                    var href = author.substring( author.indexOf(':') + 1 );
+                    author   = author.substring( 0, author.indexOf(':') );
+                    html += '<div class="artist">&nbsp;|&nbsp;<a href="' + href + '" ';
+                    html += 'target="_blank">' + author + '</a></div>';
+                } else {
+                    html += '<div class="artist">&nbsp;|&nbsp;' + author + '</div>';
+                }
+            }
+            metadata.innerHTML = html;
+            div.appendChild( metadata );
+            // Play/pause controls.
+            var controlsOne = document.createElement('DIV');
+            controlsOne.classList.add( 'controls-one' );
+            controlsOne.innerHTML = '<div class="play"><i class="fas fa-play icon"></i></div><div class="pause"><i class="fas fa-pause icon pause"></i></div>';
+            div.appendChild( controlsOne );
+            // Time display.
+            var timeWrapper = document.createElement('DIV');
+            timeWrapper.classList.add( 'time' );
+            timeWrapper.innerHTML = '<div class="current">' + start + '</div><div class="seperator">/</div><div class="total">' + end + '</div>';
+            div.appendChild( timeWrapper );
+            // Seeker.
+            var seeker = document.createElement('DIV');
+            seeker.classList.add( 'seeker' );
+            seeker.innerHTML = '<input class="range" type="range" min="0" max="' + dur + '" step="1" value="0">';
+            div.appendChild( seeker );
+            // Build the transcript button if we have a transcript.
+            html = '';
+            if ( transcript ) {
+                html = '<a href="' + transcript + '" target="_blank" class="transcript" download><i class="fas fa-file-alt icon"></i></a>';
+            }
+            // Volume and transcript controls.
+            var controlsTwo = document.createElement('DIV');
+            controlsTwo.classList.add( 'controls-two' );
+            controlsTwo.innerHTML = '<div class="volume"><i class="fas fa-volume-up icon"></i></div><div class="mute"><i class="fas fa-volume-mute icon"></i></div>' + html + '<div class="volume-wrapper"><input class="range" type="range" min="0" max="100" step="1" value="100"></div>';
+            div.appendChild( controlsTwo );
+
+            var scrubber     = seeker.querySelector('.range');
+            var volumeButton = controlsTwo.querySelector('.volume');
+            var volumeMute   = controlsTwo.querySelector('.mute');
+            var volume       = controlsTwo.querySelector('.volume-wrapper .range');
+
+            audio.addEventListener( 'timeupdate', audioUpdate.bind( div, seeker, timeWrapper ) );
+            audio.addEventListener( 'ended', audioEnded.bind( div, controlsOne ) );
+
+            scrubber.addEventListener( 'change', audioScrub.bind( div, scrubber ) );
+            scrubber.addEventListener( 'input', audioScrub.bind( div, scrubber ) );
+
+            controlsOne.addEventListener( 'click', audioToggle.bind( div, controlsOne ) );
+            
+            volumeButton.addEventListener( 'click', audioToggleVolume.bind( div, controlsTwo ) );
+            volumeMute.addEventListener( 'click', audioToggleVolume.bind( div, controlsTwo ) );
+            volume.addEventListener( 'change', audioVolume.bind( div, volume, controlsTwo ) );
+            volume.addEventListener( 'input', audioVolume.bind( div, volume, controlsTwo ) );
+        };
+    };
+
+    var audioEnded = function( wrapper ) {
+        wrapper.classList.remove('playing');
+    };
+
+    var audioScrub = function( scrubber ) {
+        var audio = document.getElementById( this.dataset.playing );
+        audio.currentTime = scrubber.value;
+    };
+
+    var audioVolume = function( volume, wrapper ) {
+        var audio = document.getElementById( this.dataset.playing );
+        var level = ( parseInt( volume.value ) * 0.01 ).toFixed(2);
+        audio.volume = level;
+        volume.setAttribute( 'value', ( parseFloat( level ) * 100 ).toFixed(0) );
+        if ( level <= 0 ) {
+            wrapper.classList.add('volume-muted');
+        } else {
+            wrapper.classList.remove('volume-muted');
+        }
+    };
+
+    var audioUpdate = function( seeker, times ) {
+        var audio = document.getElementById( this.dataset.playing );
+        var current = times.querySelector('.current');
+        var range   = seeker.querySelector('.range');
+        var time    = Math.floor( audio.currentTime );
+        var stamp   = getSecondsToStamp( time );
+        range.value =  time
+        range.setAttribute( 'value', time );
+        current.innerHTML = stamp;
+    };
+
+    var audioToggleVolume = function( wrapper ) {
+        wrapper.classList.toggle('volume-open');
+    };
+
+    var audioToggle = function( wrapper ) {
+        var audio = document.getElementById( this.dataset.playing );
+        if ( wrapper.classList.contains('playing') ) {
+            audio.pause();
+            wrapper.classList.remove('playing');
+        } else {
+            audio.play();
+            wrapper.classList.add('playing');
+        }
+    };
+
     var getAbsolutePath = function() {
         return PATHS.absolute;
+    };
+
+    // https://stackoverflow.com/a/6313008/3193156
+    var getSecondsToStamp = function( sec ) {
+        var sec_num = parseInt(sec, 10);
+        var hours   = Math.floor(sec_num / 3600);
+        var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+        var seconds = sec_num - (hours * 3600) - (minutes * 60);
+        var result = '';
+        if ( hours > 0 ) {
+            result += hours + ':';
+        }
+        if ( minutes > 0 ) {
+            result += minutes + ':';
+        } else {
+            result += '0:';
+        }
+        if (seconds < 10) { seconds = '0' + seconds; }
+        return result + seconds;
     };
 
     // https://stackoverflow.com/a/47305680/3193156
@@ -236,6 +476,7 @@ var JAMSEDU = ( function() {
             if ( anchor ) {
 
                 anchor.classList.add( 'highlight' );
+                anchor.scrollIntoView( { behavior: "smooth", block: "center", inline: "nearest" } );
 
                 setTimeout( function() {
                     var anchor = document.querySelector( '.highlight' );
@@ -251,10 +492,13 @@ var JAMSEDU = ( function() {
 
         loadAssets();
         highlightAnchor();
+        attachAnchor();
         attachCollapsible();
+        attachGoBack();
         convertImages();
         convertQuotes();
         convertVideoLinks();
+        convertAudioLinks();
         convertTables();
 
     };
@@ -276,6 +520,7 @@ var JAMSEDU = ( function() {
         var root     = ''
         var absPath  = document.location.href.substring( 0, document.location.href.lastIndexOf( '/' ) );
         var relPath  = '';
+        var selfPath = document.location.href;
         var darkMode = false;
 
         // Check for dark mode cookie.
@@ -316,9 +561,18 @@ var JAMSEDU = ( function() {
             count--;
         }
 
+        // Clean self path.
+        if ( window.location.hash ) {
+            selfPath = selfPath.replace( window.location.hash, '' );
+        }
+        if ( window.location.search ) {
+            selfPath = selfPath.replace( window.location.search, '' );
+        }
+
         // Record paths so the rest of the app can use them.
         PATHS.absolute = absPath;
         PATHS.relative = relPath;
+        PATHS.self     = selfPath;
 
         if ( ! ( disabled.includes( 'FA' ) || disabled.includes( 'FONT' ) ) ) {
 
@@ -378,7 +632,7 @@ var JAMSEDU = ( function() {
             tag       = document.createElement( 'SCRIPT' );
             tag.async = true;
             tag.type  = 'text/javascript';
-            tag.src   = relPath + 'js/pdf-je-viewer.js';
+            tag.src   = relPath + 'js/pdf-viewer.js';
             document.head.appendChild( tag );
             loadPDF( 0 );
 
@@ -525,10 +779,74 @@ var JAMSEDU = ( function() {
         }
 
     };
-    
-    var processVideo = function( type, link ) {
 
-        // Set a flag if this video is inside a paragraph tag.
+    var processSelfhostedVideo = function( src, link ) {
+        // Build the video element.
+        var type  = src.substring( src.lastIndexOf('.') + 1 );
+        var video = document.createElement('video');
+        video.setAttribute('preload', 'metadata');
+        video.setAttribute('controlsList', 'nodownload');
+        video.setAttribute('controls', '');
+        // Add a poster image if there is one.
+        if ( link.dataset.poster ) {
+            video.setAttribute( 'poster', link.dataset.poster );
+        }
+        // Add the original video source.
+        var html = '<source src="' + src + '" type="video/' + type + '">';
+        // Add any alternate video sources.
+        var alts = link.dataset.video;
+        if ( alts ) {
+            alts = alts.toLowerCase().trim();
+            alts = alts.replace( /,|\./g, '' );
+            alts = alts.split(' ');
+            alts.forEach( function( alt ) {
+                html += '<source src="' + src.replace( '.' + type, '.' + alt ) + '" ';
+                html += 'type="video/' + alt + '">';
+            } );
+        }
+        // Add any closed captions.
+        var ccs = link.dataset.captions;
+        if ( ccs ) {
+            var def = ' default';
+            ccs = ccs.split(',');
+            ccs.forEach( function( cc ) {
+                var parts = cc.split(':');
+                var label = parts[0].trim();
+                var lang  = parts[1].substring( 0, cc.lastIndexOf('.') );
+                lang = lang.substring( cc.lastIndexOf('.') );
+                html += '<track label="' + label + '" ';
+                html += 'kind="captions" srclang="' + lang + '" ';
+                html += 'src="' + parts[1].trim() + '"' + def + '>';
+                def = '';
+            } );
+        }
+        // Add any subtitles
+        var subs = link.dataset.subtitles;
+        if ( subs ) {
+            subs = ccs.split(',');
+            subs.forEach( function( sub ) {
+                var parts = sub.split(':');
+                var label = parts[0].trim();
+                var lang  = parts[1].substring( cc.indexOf('.'), cc.lastIndexOf('.') ).trim();
+                html += '<track label="' + label + '" ';
+                html += 'kind="subtitles" srclang="' + lang + '" ';
+                html += 'src="' + parts[1].trim() + '">';
+            } );
+        }
+        // Add the no support message.
+        video.innerHTML = html + '\nYour browser does not support the video tag.';
+        return video;
+    };
+    
+    var processVideo = function( src, link ) {
+
+        // Should we consider this video self-hosted?
+        var selfhosted = false;
+        if ( src.includes( window.location.hostname ) || link.dataset.selfHosted ) {
+            selfhosted = true;
+        }
+
+        // Set a flag if this video is inside a paragraph tag; we'll need to move it.
         var current   = link.parentElement;
         var linkInPar = false;
         while ( current != null ) {
@@ -539,61 +857,88 @@ var JAMSEDU = ( function() {
             current = current.parentElement;
         }
 
-        switch ( type.toUpperCase() ) {
-            case 'YOUTUBE':
-                // Get the video source or bail.
-                var src = link.href;
-                if ( src ) {
-                    src = src.substring( src.lastIndexOf( '/' ) + 1 );
-                    if ( src.length < 5 ) {
-                        return;
-                    }
-                }
-                // Build the iframe.
-                var frame = document.createElement( 'IFRAME' );
-                frame.setAttribute( 'allowFullScreen', '' );
-                frame.setAttribute( 'allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' );
-                frame.setAttribute( 'frameborder', '0' );
-                frame.setAttribute( 'src', 'https://www.youtube-nocookie.com/embed/' + src );
-                // Make the fallback link.
-                var a = document.createElement( 'A' );
-                a.setAttribute( 'href', link.href );
-                a.setAttribute( 'target', '_blank' );
-                a.setAttribute( 'rel', 'noopener noreferrer' );
-                a.innerHTML = '&#x2139;&nbsp;&nbsp;' + link.innerHTML;
-                // Make the fallback link div.
-                var fallback = document.createElement( 'DIV' );
-                fallback.classList.add( 'video-fallback' );
-                fallback.innerHTML = '&mdash;&nbsp;&nbsp;';
-                fallback.appendChild( a );
-                // Make the video wrapper div and add the frame to it.
-                var html = document.createElement( 'DIV' );
-                html.classList.add( 'video' );
-                html.appendChild( frame );
-                // Swap out the link and replace with the video and fallback divs.
-                if ( ! linkInPar ) {
-                    // Replace the current link in place.
-                    link.parentElement.replaceChild( html, link );
-                    insertAfter( fallback, html );
-                } else {
-                    /**
-                     * The original link was in a paragraph, delete the link and
-                     * add the video wrapper after the paragraph.
-                     */
-                    var current = link;
-                    while ( current.tagName != 'P' ) {
-                        current = current.parentElement
-                    }
-                    link.parentElement.removeChild( link );
-                    insertAfter( html, current );
-                    insertAfter( fallback, html );
-                }
-                break;
+        var frame = '';
+        var fallback = document.createElement( 'DIV' );
+        fallback.classList.add( 'video-fallback' );
+
+        if ( selfhosted ) {
+            frame = processSelfhostedVideo( src, link );
+            // Make the fallback link div.
+            fallback.innerHTML = '&mdash;&nbsp;&nbsp;&#x2139;&nbsp;&nbsp;' + link.innerHTML;
+        } else {
+
+            var provider = link.hostname.toLowerCase();
+            provider = provider.split('.');
+            
+            if ( provider.includes('youtube') || provider.includes('youtu') ) {
+                src = src.substring( src.lastIndexOf( '/' ) + 1 );
+                src = 'https://www.youtube-nocookie.com/embed/' + src;
+            } else if ( provider.includes('vimeo') ) {
+                src = src.substring( src.lastIndexOf( '/' ) + 1 );
+                src = 'https://player.vimeo.com/video/' + src;
+            } else if ( provider.includes('dailymotion') || provider.includes('dai') ) {
+                src = src.substring( src.lastIndexOf( '/' ) + 1 );
+                src = 'https://www.dailymotion.com/embed/video/' + src;
+            }
+
+            // Build the iframe.
+            frame = document.createElement( 'IFRAME' );
+            frame.setAttribute( 'allowFullScreen', '' );
+            frame.setAttribute( 'allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' );
+            frame.setAttribute( 'frameborder', '0' );
+            frame.setAttribute( 'sandbox', 'allow-scripts allow-same-origin' );
+            frame.setAttribute( 'src', src );
+            // Make the fallback link.
+            var a = document.createElement( 'A' );
+            a.setAttribute( 'href', link.href );
+            a.setAttribute( 'target', '_blank' );
+            a.setAttribute( 'rel', 'noopener noreferrer' );
+            a.innerHTML = '&#x2139;&nbsp;&nbsp;' + link.innerHTML;
+            // Make the fallback link div.
+            fallback.innerHTML = '&mdash;&nbsp;&nbsp;';
+            fallback.appendChild( a );
+        }
+
+        // Make the video wrapper div and add the frame to it.
+        var html = '';
+        if ( selfhosted ) {
+            html = frame;
+        } else {
+            html = document.createElement( 'DIV' );
+            html.classList.add( 'video' );
+            html.appendChild( frame );
+        }
+
+       
+        // Swap out the link and replace with the video and fallback divs.
+        if ( ! linkInPar ) {
+            // Replace the current link in place.
+            link.parentElement.replaceChild( html, link );
+            insertAfter( fallback, html );
+        } else {
+            // Original link is in a paragraph, delete the link and add the video wrapper after the paragraph.
+            var current = link;
+            while ( current.tagName != 'P' ) {
+                current = current.parentElement
+            }
+            link.parentElement.removeChild( link );
+            insertAfter( html, current );
+            insertAfter( fallback, html );
         }
     };
 
     var toggleCollapsible = function() {
         this.classList.toggle( 'open' );
+    };
+
+    /**
+     * Generate a fairly unique ID for use as an HTML ID.
+     * {@link https://gist.github.com/gordonbrander/2230317#gistcomment-1713405|Source}
+     * 
+     * @return {String} A 14 character unique ID.
+     */
+    var uid = function() {
+        return ( Date.now().toString(36) + Math.random().toString(36).substr(2, 6) ).toUpperCase();
     };
 
     domReady( initialize );
@@ -603,7 +948,8 @@ var JAMSEDU = ( function() {
         'domReady': domReady,
         'getAbsolutePath': getAbsolutePath,
         'getCookie': getCookie,
-        'getRelativePath': getRelativePath
+        'getRelativePath': getRelativePath,
+        'uid': uid
     };
 
 } )();
@@ -629,16 +975,18 @@ var JAMSEDU_NAV = ( function() {
             if ( elems.mobileNavButton ) {
                 elems.mobileNavButton.style.display = 'none';
             }
+            // No need to attach listeners.
+            return;
         }
 
         // Attach listeners to any JamsEDU nav collapsible more sections.
-        var mores = elems.sidebar.querySelectorAll( 'nav .je-more' );
+        var mores = elems.sidebar.querySelectorAll( 'nav .more' );
         mores.forEach( function( more ) {
             more.addEventListener( 'click', toggleMore );
         } );
 
         // Attach listeners to any JamsEDU nav placeholder sections.
-        var links = elems.sidebar.querySelectorAll( 'nav .je-link' );
+        var links = elems.sidebar.querySelectorAll( 'nav .link' );
         links.forEach( function( link ) {
             var empty = link.querySelector( 'a' );
             if ( ! empty ) {
@@ -650,24 +998,26 @@ var JAMSEDU_NAV = ( function() {
     };
 
     var handleWindowResize = function() {
-        var nav = elems.sidebar;
-        var pageWidth = window.innerWidth;
+        if ( elems.sidebar ) {
+            var nav = elems.sidebar;
+            var pageWidth = window.innerWidth;
 
-        if ( pageWidth < 769 ) {
-            if ( nav.dataset.previous ) {
-                nav.style.right = nav.dataset.previous;
+            if ( pageWidth < 769 ) {
+                if ( nav.dataset.previous ) {
+                    nav.style.right = nav.dataset.previous;
+                }
+            } else {
+                var right = nav.style.right;
+                nav.dataset.previous = right;
+                nav.style.right = 0;
             }
-        } else {
-            var right = nav.style.right;
-            nav.dataset.previous = right;
-            nav.style.right = 0;
         }
     };
 
     var initialize = function() {
 
-        elems.sidebar = document.getElementById('je-sidebar' );
-        elems.mobileNavButton = document.getElementById('je-mobile-nav-button' );
+        elems.sidebar = document.getElementById('sidebar' );
+        elems.mobileNavButton = document.getElementById('mobile-nav-button' );
 
         attachListeners();
 
@@ -685,22 +1035,22 @@ var JAMSEDU_NAV = ( function() {
     };
 
     var toggleMore = function() {
-        if ( this.classList.contains( 'je-open' ) ) {
+        if ( this.classList.contains( 'open' ) ) {
             // Close open child menu.
-            this.classList.remove( 'je-open' );
+            this.classList.remove( 'open' );
             if ( this.nextElementSibling ) {
-                this.nextElementSibling.classList.remove( 'je-open' );
+                this.nextElementSibling.classList.remove( 'open' );
                 // Also close any remaining open child menus.
-                var menus = this.nextElementSibling.querySelectorAll( '.je-open' );
+                var menus = this.nextElementSibling.querySelectorAll( '.open' );
                 menus.forEach( function( menu ) {
-                    menu.classList.remove( 'je-open' );
+                    menu.classList.remove( 'open' );
                 } );
             }
         } else {
             // Open child menu.
-            this.classList.add( 'je-open' );
+            this.classList.add( 'open' );
             if ( this.nextElementSibling ) {
-                this.nextElementSibling.classList.add( 'je-open' );
+                this.nextElementSibling.classList.add( 'open' );
             }
         }
     };
@@ -709,14 +1059,14 @@ var JAMSEDU_NAV = ( function() {
         
         var nav = elems.sidebar;
 
-        if ( ! nav.classList.contains( 'je-block-interaction' ) ) {
+        if ( ! nav.classList.contains( 'block-interaction' ) ) {
 
-            nav.classList.add( 'je-block-interaction' );
+            nav.classList.add( 'block-interaction' );
             var width = nav.offsetWidth;
 
-            if ( nav.classList.contains( 'je-open' ) ) {
+            if ( nav.classList.contains( 'open' ) ) {
 
-                nav.classList.remove( 'je-open' );
+                nav.classList.remove( 'open' );
 
                 // Close the menu.
                 intervals.nav = setInterval( function(){
@@ -727,7 +1077,7 @@ var JAMSEDU_NAV = ( function() {
 
                     if ( right < -width ) {
                         nav.style.right = '-' + width + 'px';
-                        nav.classList.remove( 'je-block-interaction' );
+                        nav.classList.remove( 'block-interaction' );
                         clearInterval( intervals.nav );
                     } else {
                         nav.style.right = right + 'px';
@@ -737,7 +1087,7 @@ var JAMSEDU_NAV = ( function() {
 
             } else {
 
-                nav.classList.add( 'je-open' );
+                nav.classList.add( 'open' );
                 nav.style.right = '-' + width + 'px';
 
                 // Open the menu.
@@ -748,7 +1098,7 @@ var JAMSEDU_NAV = ( function() {
 
                     if ( right >= 0 ) {
                         nav.style.right = '0';
-                        nav.classList.remove( 'je-block-interaction' );
+                        nav.classList.remove( 'block-interaction' );
                         clearInterval( intervals.nav );
                     } else {
                         nav.style.right = right + 'px';

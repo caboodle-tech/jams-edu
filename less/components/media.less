@@ -54,3 +54,286 @@ figure {
     font-style: italic;
     margin: @spacing / 2 0;
 }
+
+video {
+    max-width: 100%;
+    height: auto;
+    background-color: #000000;
+    font: #ffffff;
+}
+
+.audio {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    grid-template-rows: auto auto auto;
+    grid-column-gap: 10px;
+    padding: @spacing / 2 @spacing * 1.25;
+    border-radius: 4px;
+    background-color: @audio-bg;
+    border: 1px solid @audio-border;
+    .drop-shadow( 0px 1px 2px 0px; 0, 0, 0; 0.1 );
+
+    .icon {
+        display: inline-block;
+        font-size: @font-size;
+        line-height: @font-size;
+        cursor: pointer;
+    }
+
+    .metadata {
+        display: inline-flex;
+        grid-row: 1;
+        grid-column: ~'1/5';
+    }
+
+    .controls-one {
+        grid-row: 2;
+        grid-column: 1;
+
+        .pause {
+            display: none;
+        }
+
+        &.playing  {
+            .play {
+                display: none;
+            }
+            .pause {
+                display: inline-block;
+            }
+        }
+    
+    }
+
+    .time {
+        grid-row: 2;
+        grid-column: ~'2/4';
+        font-family: 'Roboto Mono', monospace;
+        display: inline-flex;
+        font-size: @font-size * .9;
+        margin: 0 @spacing / 2;
+        justify-content: center;
+
+        .seperator {
+            margin: 0 3px;
+        }
+    }
+
+    .seeker {
+        grid-row: 3;
+        grid-column: ~'1/5';
+        flex-basis: 100%;
+        display: flex;
+        align-items: center;
+        padding: @spacing / 2 0;
+
+        .range {
+            width: 100%;
+        }
+    }
+
+    .controls-two {
+        grid-row: 2;
+        grid-column: 4;
+        display: inline-flex;
+
+        .volume {
+            grid-row: 2;
+            grid-column: 1;
+            margin: 0 @spacing / 2;
+        }
+    
+        .mute {
+            display: none;
+            margin: 0 @spacing / 2;
+        }
+    
+        .transcript {
+            margin-left: @spacing / 2;
+        }
+
+        .volume-wrapper {
+            position: absolute;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            right: @spacing;
+            top: @spacing - 5;
+            padding: @spacing / 1.25 @spacing;
+            border-radius: @spacing;
+            z-index: 100;
+            width: 100%;
+            height: @spacing;
+            max-width: 125px;
+            background-color: darken( @audio-bg, 5% );
+            .drop-shadow( 0px 1px 2px 0px; 0, 0, 0; 0.15 );
+    
+            .range {
+                background-color: darken( @audio-bg, 5% );
+                outline: none;
+                border: none;
+    
+                &:focus {
+                    outline: none;
+                    
+                    &::-webkit-slider-runnable-track {
+                        background: darken( @audio-bg, 5% );
+                    }
+        
+                    &::-moz-range-track {
+                        background:  darken( @audio-bg, 5% );
+                    }
+                }
+            }
+        }
+
+        &.volume-open {
+            .volume-wrapper {
+                display: flex;
+            }
+        }
+
+        &.volume-muted {
+            .volume {
+                display: none;
+            }
+            .mute {
+                display: block;
+            }
+        }
+    }
+
+    .range {
+        position: relative;
+        -webkit-appearance: none;
+        appearance: none;
+        border: 1px solid @audio-bg;
+        width: 100%;
+        background: @audio-bg;
+
+        &:focus {
+            outline: none;
+            
+            &::-webkit-slider-runnable-track {
+                background: @audio-bg;
+            }
+
+            &::-moz-range-track {
+                background:  @audio-bg;
+            }
+
+            &::-ms-fill-lower {
+                background: darken( @audio-border, 30% );
+                border-radius: 50%;
+            }
+        }
+
+        &::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            border: 1px solid darken( @audio-border, 30% );
+            border-radius: 6px;
+        }
+        
+        &::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            border: none;
+            height: @spacing;
+            width: @spacing;
+            border-radius: 50%;
+            background: #000000;
+            margin-top: -4px;
+        }
+
+        &::-moz-range-progress {
+            background: darken( @audio-border, 30% );
+        }
+
+        &::-moz-range-track {
+            width: 100%;
+            height: 6px;
+            border: 1px solid darken( @audio-border, 30% );
+            border-radius: 6px;
+            background: transparent;
+        }
+
+        &::-moz-range-thumb {
+            -moz-appearance: none;
+            appearance: none;
+            border: none;
+            height: @spacing;
+            width: @spacing;
+            border-radius: 50%;
+            background: #000000;
+            margin-top: -4px;
+        }
+
+        &:-moz-focusring {
+            // Hide the outline behind the border.
+            outline: 1px solid @audio-bg;
+            outline-offset: -1px;
+        }
+
+        &::-ms-track {
+            width: 100%;
+            height: 6px;
+            border-radius: 6px;
+            // Remove bg colour from the track, we'll use ms-fill-lower and ms-fill-upper instead.
+            background-color: transparent;
+            // Leave room for the larger thumb to overflow with a transparent border.
+            border-color: transparent;
+            border-width: 6px 0;
+            // Remove default tick marks.
+            color: transparent;
+        }
+
+        &::-ms-fill-lower {
+            background: darken( @audio-border, 30% );
+            border-radius: 50%;
+        }
+
+        &::-ms-thumb {
+            border: none;
+            height: @spacing;
+            width: @spacing;
+            border-radius: 50%;
+            background: #000000;
+            margin-top: -4px;
+        }
+    }
+
+    @media ( min-width: 768px ) {
+        grid-template-columns: auto auto 1fr auto;
+        grid-template-rows: auto auto;
+
+        .metadata {
+            display: inline-flex;
+            grid-row: 1;
+            grid-column: ~'1/5';
+        }
+    
+        .controls-one {
+            grid-row: 2;
+            grid-column: 1;
+        }
+    
+        .time {
+            grid-row: 2;
+            grid-column: 2;
+            justify-content: center;
+        }
+    
+        .seeker {
+            grid-row: 2;
+            grid-column: 3;
+            padding: @spacing / 3 0;
+        }
+    
+        .controls-two {
+            grid-row: 2;
+            grid-column: 4;
+        }
+    }
+}

@@ -40,7 +40,7 @@ body {
   background-color: #fafafb;
   overflow-x: hidden;
 }
-body .je-content {
+body .content {
   position: relative;
   max-width: 1200px;
   margin: 0 auto;
@@ -57,16 +57,16 @@ body a:hover,
 body a:visited:hover {
   color: #008de9;
 }
-body header#je-header,
-body aside#je-sidebar,
-body main#je-main,
-body footer#je-footer {
+body header#header,
+body aside#sidebar,
+body main#main,
+body footer#footer {
   font-family: 'Roboto Slab', 'Times New Roman', Times, serif;
   font-size: 1.15rem;
   font-weight: normal;
   line-height: 1.7825rem;
 }
-body header#je-header {
+body header#header {
   grid-area: header;
   height: 4rem;
   margin-bottom: 2rem;
@@ -76,7 +76,7 @@ body header#je-header {
   -moz-box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.25);
   box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.25);
 }
-body header#je-header .je-content {
+body header#header .content {
   display: grid;
   grid-template-columns: auto 1fr auto;
   grid-template-rows: auto;
@@ -84,7 +84,7 @@ body header#je-header .je-content {
   grid-column-gap: 15px;
   z-index: 5000;
 }
-body header#je-header #je-logo-container {
+body header#header #logo-container {
   grid-area: logo;
   height: 6rem;
   margin: -15px 0 0 -15px;
@@ -95,12 +95,12 @@ body header#je-header #je-logo-container {
   -moz-box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
   box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
 }
-body header#je-header #je-logo-container #je-logo {
+body header#header #logo-container #logo {
   height: 6rem;
   max-height: 100%;
   width: auto;
 }
-body header#je-header #je-company-container {
+body header#header #company-container {
   grid-area: company;
   display: none;
   align-items: center;
@@ -108,7 +108,7 @@ body header#je-header #je-company-container {
   margin-top: -15px;
   font-size: 1.4375rem;
 }
-body header#je-header #je-mobile-nav-button {
+body header#header #mobile-nav-button {
   grid-area: nav-button;
   display: flex;
   align-items: center;
@@ -118,35 +118,35 @@ body header#je-header #je-mobile-nav-button {
   padding: 0 15px;
   margin: -15px -15px 0 0;
 }
-body header#je-header #je-mobile-nav-button .je-icon {
+body header#header #mobile-nav-button .icon {
   color: #242729;
 }
-body header#je-header #je-mobile-nav-button.je-closed .je-icon.je-close-button {
+body header#header #mobile-nav-button.closed .icon.close-button {
   display: block;
 }
-body header#je-header #je-mobile-nav-button.je-closed .je-icon.je-close-button {
+body header#header #mobile-nav-button.closed .icon.close-button {
   display: none;
 }
-body header#je-header #je-mobile-nav-button.je-open .je-icon.je-close-button {
+body header#header #mobile-nav-button.open .icon.close-button {
   display: none;
 }
-body header#je-header #je-mobile-nav-button.je-open .je-icon.je-close-button {
+body header#header #mobile-nav-button.open .icon.close-button {
   display: block;
 }
 @media (min-width: 425px) {
-  body header#je-header #je-company-container {
+  body header#header #company-container {
     display: flex;
   }
 }
 @media (min-width: 769px) {
-  body header#je-header #je-mobile-nav-button {
+  body header#header #mobile-nav-button {
     display: none;
   }
 }
-body main#je-main {
+body main#main {
   grid-area: main;
 }
-body main#je-main .je-content {
+body main#main .content {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr;
@@ -155,13 +155,12 @@ body main#je-main .je-content {
   padding: 30px 15px;
   z-index: 2500;
 }
-body main#je-main .je-content section#je-main-content {
+body main#main .content section#main-content {
   grid-area: content;
   position: relative;
-  overflow-y: hidden;
-  text-align: justify;
+  overflow: hidden;
 }
-body main#je-main .je-content section#je-main-content .collapsible {
+body main#main .content section#main-content .collapsible {
   position: relative;
   color: #000;
   background-color: #f0f0f0;
@@ -176,7 +175,7 @@ body main#je-main .je-content section#je-main-content .collapsible {
   -moz-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.2);
   box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.2);
 }
-body main#je-main .je-content section#je-main-content .collapsible:after {
+body main#main .content section#main-content .collapsible:after {
   position: absolute;
   font-family: FontAwesome;
   content: '\f065';
@@ -185,12 +184,12 @@ body main#je-main .je-content section#je-main-content .collapsible:after {
   font-size: 2.07rem;
   font-weight: bold;
 }
-body main#je-main .je-content section#je-main-content .collapsible.open:after {
+body main#main .content section#main-content .collapsible.open:after {
   font-family: FontAwesome;
   content: '\f066';
   top: 6.5px;
 }
-body main#je-main .je-content section#je-main-content .collapsible.open + .collapsible-content {
+body main#main .content section#main-content .collapsible.open + .collapsible-content {
   max-height: none;
   border-left: 1px dashed #b0b0b0;
   border-right: 1px dashed #b0b0b0;
@@ -199,31 +198,31 @@ body main#je-main .je-content section#je-main-content .collapsible.open + .colla
   margin: 0 auto;
   padding: 15px;
 }
-body main#je-main .je-content section#je-main-content .collapsible-content {
+body main#main .content section#main-content .collapsible-content {
   position: relative;
   max-height: 0;
   overflow: hidden;
   margin: -2px -15px 0px;
   transition: max-height 0.2s ease-out;
 }
-body main#je-main .je-content section#je-main-content p > span.katex {
+body main#main .content section#main-content p > span.katex {
   font-size: 1.17875rem;
   line-height: 1.725rem;
 }
-body main#je-main .je-content section#je-main-content div.katex {
+body main#main .content section#main-content div.katex {
   font-size: 1.725rem;
   text-align: center;
   margin: 45px 0;
 }
-body main#je-main .je-content section#je-main-content div.mermaid,
-body main#je-main .je-content section#je-main-content div.diagram {
+body main#main .content section#main-content div.mermaid,
+body main#main .content section#main-content div.diagram {
   text-align: center;
   margin: 45px 0;
 }
-body main#je-main .je-content section#je-main-content abbr {
+body main#main .content section#main-content abbr {
   text-decoration: underline dashed;
 }
-body main#je-main .je-content section#je-main-content code {
+body main#main .content section#main-content code {
   font-family: 'Roboto Mono', monospace;
   font-weight: bold;
   font-size: 0.9775rem;
@@ -236,15 +235,15 @@ body main#je-main .je-content section#je-main-content code {
   -moz-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
   box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
 }
-body main#je-main .je-content section#je-main-content del {
+body main#main .content section#main-content del {
   color: #e45e5e;
   opacity: 0.9;
   text-decoration: line-through;
 }
-body main#je-main .je-content section#je-main-content ins {
+body main#main .content section#main-content ins {
   color: #32a248;
 }
-body main#je-main .je-content section#je-main-content pre {
+body main#main .content section#main-content pre {
   display: block;
   clear: both;
   overflow-x: auto;
@@ -255,7 +254,7 @@ body main#je-main .je-content section#je-main-content pre {
   -moz-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
   box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
 }
-body main#je-main .je-content section#je-main-content pre code {
+body main#main .content section#main-content pre code {
   font-size: 1.15rem;
   font-weight: normal;
   line-height: 1.6675rem;
@@ -264,49 +263,64 @@ body main#je-main .je-content section#je-main-content pre code {
   -moz-box-shadow: 0px 0px 0px 0px rgba(255, 255, 255, 0);
   box-shadow: 0px 0px 0px 0px rgba(255, 255, 255, 0);
 }
-body main#je-main .je-content section#je-main-content table {
+body main#main .content section#main-content table {
   border-collapse: collapse;
+  width: 100%;
 }
-body main#je-main .je-content section#je-main-content table th {
+body main#main .content section#main-content table th {
   white-space: nowrap;
   border-bottom: 1px solid #a0a7ac;
 }
-body main#je-main .je-content section#je-main-content table th,
-body main#je-main .je-content section#je-main-content table td {
+body main#main .content section#main-content table th,
+body main#main .content section#main-content table td {
   min-width: 125px;
   padding: 2px 15px 2px 2px;
   text-align: left;
   vertical-align: top;
+  white-space: nowrap;
 }
-body main#je-main .je-content section#je-main-content table tr:nth-child(odd) {
+body main#main .content section#main-content table tbody tr:nth-child(odd) {
   background-color: #efeff2;
 }
-body main#je-main .je-content section#je-main-content table tr:first-of-type {
-  background-color: transparent;
+body main#main .content section#main-content table tbody tr:last-of-type {
+  border-bottom: 1px solid #a0a7ac;
 }
-body main#je-main .je-content section#je-main-content h1 {
+body main#main .content section#main-content h1 {
   font-size: 2.3rem;
   line-height: 2.875rem;
   font-weight: normal;
   margin: 15px 0 45px;
   border-bottom: 2px solid rgba(0, 0, 0, 0.3);
 }
-body main#je-main .je-content section#je-main-content h2,
-body main#je-main .je-content section#je-main-content h3,
-body main#je-main .je-content section#je-main-content h4,
-body main#je-main .je-content section#je-main-content h5,
-body main#je-main .je-content section#je-main-content h6 {
+body main#main .content section#main-content h2,
+body main#main .content section#main-content h3,
+body main#main .content section#main-content h4,
+body main#main .content section#main-content h5,
+body main#main .content section#main-content h6 {
   font-size: 1.725rem;
   line-height: 2.3rem;
   font-weight: normal;
   margin: 45px 0 30px 0;
   border-bottom: 2px solid rgba(0, 0, 0, 0.3);
 }
-body main#je-main .je-content section#je-main-content hr {
+body main#main .content section#main-content .highlight {
+  background-color: #fff49f;
+}
+body main#main .content section#main-content .anchor {
+  position: relative;
+  top: -3px;
+  opacity: 0.5;
+  font-size: 1.15rem;
+  margin-left: 10px;
+}
+body main#main .content section#main-content .anchor:hover {
+  opacity: 1;
+}
+body main#main .content section#main-content hr {
   margin: 45px 0;
   border: 1px dashed rgba(0, 0, 0, 0.3);
 }
-body main#je-main .je-content section#je-main-content kbd {
+body main#main .content section#main-content kbd {
   font-family: 'Roboto Mono', monospace;
   font-size: 1.035rem;
   line-height: 1.15rem;
@@ -319,97 +333,117 @@ body main#je-main .je-content section#je-main-content kbd {
   -moz-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.2);
   box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.2);
 }
-body main#je-main .je-content section#je-main-content mark {
+body main#main .content section#main-content mark {
   margin: 0 -3px;
   padding: 0 6px;
   background-color: #fff49f;
 }
-body main#je-main .je-content section#je-main-content q {
+body main#main .content section#main-content q {
   font-style: italic;
 }
-body main#je-main .je-content section#je-main-content #go-back {
+body main#main .content section#main-content #go-back {
   position: absolute;
   top: 0;
   right: 0;
   font-size: 1.725rem;
   line-height: 1.725rem;
 }
-body main#je-main .je-content section#je-main-content #go-back .je-icon {
+body main#main .content section#main-content #go-back .je-icon {
   font-size: 1.15rem;
   vertical-align: inherit;
 }
-body main#je-main .je-content section#je-main-content blockquote {
+body main#main .content section#main-content blockquote {
   position: relative;
-  margin: 15px 0;
+  width: 99.5%;
+  margin: 15px auto;
   padding: 15px 30px 15px 4.6rem;
   background-color: #f5f5f5;
   -webkit-box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
   -moz-box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
   box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
-  text-align: justify;
   font-style: italic;
 }
-body main#je-main .je-content section#je-main-content blockquote p,
-body main#je-main .je-content section#je-main-content blockquote div {
+body main#main .content section#main-content blockquote p,
+body main#main .content section#main-content blockquote div {
   display: block;
   margin: 0;
   padding: 0;
 }
-body main#je-main .je-content section#je-main-content blockquote cite {
+body main#main .content section#main-content blockquote cite {
   display: block;
   padding-top: 15px;
   font-size: 1.035rem;
 }
-body main#je-main .je-content section#je-main-content blockquote cite:before {
+body main#main .content section#main-content blockquote cite:before {
   content: "\2014 \2009";
 }
-body main#je-main .je-content section#je-main-content blockquote:before {
+body main#main .content section#main-content blockquote:before {
   font-family: Georgia, 'Times New Roman', Times, serif;
   content: "\201c";
   position: absolute;
-  top: 3.45rem;
+  top: 3.22rem;
   left: 10px;
   font-size: 6.9rem;
 }
-body main#je-main .je-content section#je-main-content .je-block {
+body main#main .content section#main-content .callout {
   position: relative;
-  margin: 15px 0;
+  width: 99.5%;
+  margin: 15px auto;
   padding: 15px 30px;
   background-color: #f5f5f5;
   -webkit-box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
   -moz-box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
   box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
-  text-align: justify;
 }
-body main#je-main .je-content section#je-main-content .je-block h2,
-body main#je-main .je-content section#je-main-content .je-block h3,
-body main#je-main .je-content section#je-main-content .je-block h4,
-body main#je-main .je-content section#je-main-content .je-block h5,
-body main#je-main .je-content section#je-main-content .je-block h6,
-body main#je-main .je-content section#je-main-content .je-block .je-title {
+body main#main .content section#main-content .callout h2,
+body main#main .content section#main-content .callout h3,
+body main#main .content section#main-content .callout h4,
+body main#main .content section#main-content .callout h5,
+body main#main .content section#main-content .callout h6,
+body main#main .content section#main-content .callout .title {
   display: block;
   margin: 15px 0;
-  font-weight: bold;
+  border-bottom: 0;
 }
-body main#je-main .je-content section#je-main-content .je-block p {
+body main#main .content section#main-content .callout p {
   margin: 15px 0;
 }
-body main#je-main .je-content section#je-main-content .je-block.callout {
+body main#main .content section#main-content .callout .anchor {
+  top: initial;
+  margin: 0 2px;
+}
+body main#main .content section#main-content .callout.notice {
   background-color: #fffbdb;
 }
-body main#je-main .je-content section#je-main-content .je-block.message {
+body main#main .content section#main-content .callout.message {
   background-color: #cce5ff;
 }
-body main#je-main .je-content section#je-main-content .je-block.success {
+body main#main .content section#main-content .callout.success {
   background-color: #ebffcc;
 }
-body main#je-main .je-content section#je-main-content .je-block.warning {
+body main#main .content section#main-content .callout.warning {
   background-color: #ffecec;
 }
-body main#je-main .je-content section#je-main-content .je-block.copyright-icon {
+body main#main .content section#main-content .callout.notice-icon {
   padding-left: 4.945rem;
 }
-body main#je-main .je-content section#je-main-content .je-block.copyright-icon:before {
+body main#main .content section#main-content .callout.notice-icon:before {
+  font-family: FontAwesome;
+  content: "\f06a";
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 15px;
+  bottom: 0;
+  width: 2.875rem;
+  font-size: 2.875rem;
+}
+body main#main .content section#main-content .callout.copyright-icon {
+  padding-left: 4.945rem;
+}
+body main#main .content section#main-content .callout.copyright-icon:before {
   font-family: FontAwesome;
   content: "\f1f9";
   display: flex;
@@ -419,15 +453,15 @@ body main#je-main .je-content section#je-main-content .je-block.copyright-icon:b
   top: 0;
   left: 15px;
   bottom: 0;
-  width: 3.45rem;
-  font-size: 3.45rem;
+  width: 2.875rem;
+  font-size: 2.875rem;
 }
-body main#je-main .je-content section#je-main-content .je-block.success-icon {
+body main#main .content section#main-content .callout.success-icon {
   padding-left: 4.945rem;
 }
-body main#je-main .je-content section#je-main-content .je-block.success-icon:before {
+body main#main .content section#main-content .callout.success-icon:before {
   font-family: FontAwesome;
-  content: "\f00c";
+  content: "\f058";
   display: flex;
   justify-content: center;
   align-items: center;
@@ -435,15 +469,15 @@ body main#je-main .je-content section#je-main-content .je-block.success-icon:bef
   top: 0;
   left: 15px;
   bottom: 0;
-  width: 3.45rem;
-  font-size: 3.45rem;
+  width: 2.875rem;
+  font-size: 2.875rem;
 }
-body main#je-main .je-content section#je-main-content .je-block.warning-icon {
+body main#main .content section#main-content .callout.warning-icon {
   padding-left: 4.945rem;
 }
-body main#je-main .je-content section#je-main-content .je-block.warning-icon:before {
+body main#main .content section#main-content .callout.warning-icon:before {
   font-family: FontAwesome;
-  content: "\f12a";
+  content: "\f071";
   display: flex;
   justify-content: center;
   align-items: center;
@@ -451,27 +485,27 @@ body main#je-main .je-content section#je-main-content .je-block.warning-icon:bef
   top: 0;
   left: 15px;
   bottom: 0;
-  width: 3.45rem;
-  font-size: 3.45rem;
+  width: 2.875rem;
+  font-size: 2.875rem;
 }
-body main#je-main .je-content section#je-main-content ol {
+body main#main .content section#main-content ol {
   list-style: none;
   margin: 0;
   padding: 0;
   counter-reset: custom-counter;
 }
-body main#je-main .je-content section#je-main-content ol li {
+body main#main .content section#main-content ol li {
   position: relative;
   margin: 0 0 30px 0;
   padding-left: 4.14rem;
 }
-body main#je-main .je-content section#je-main-content ol > li {
+body main#main .content section#main-content ol > li {
   counter-increment: custom-counter;
 }
-body main#je-main .je-content section#je-main-content ol > li:nth-child(-n + 9):before {
+body main#main .content section#main-content ol > li:nth-child(-n + 9):before {
   content: '0' counter(custom-counter);
 }
-body main#je-main .je-content section#je-main-content ol > li:before {
+body main#main .content section#main-content ol > li:before {
   content: counter(custom-counter);
   font-family: 'Roboto Mono', monospace;
   position: absolute;
@@ -479,104 +513,122 @@ body main#je-main .je-content section#je-main-content ol > li:before {
   font-weight: bold;
   font-size: 2.07rem;
 }
-body main#je-main .je-content section#je-main-content ol ol {
+body main#main .content section#main-content ol ol {
   counter-reset: custom-counter;
 }
-body main#je-main .je-content section#je-main-content ol ol li {
+body main#main .content section#main-content ol ol li {
   counter-increment: custom-counter;
 }
-body main#je-main .je-content section#je-main-content ol ol > li:nth-child(-n + 9):before {
+body main#main .content section#main-content ol ol > li:nth-child(-n + 9):before {
   content: '0' counter(custom-counter);
 }
-body main#je-main .je-content section#je-main-content ol ol > li:before {
+body main#main .content section#main-content ol ol > li:before {
   content: counter(custom-counter);
 }
-body main#je-main .je-content section#je-main-content ul {
+body main#main .content section#main-content ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-body main#je-main .je-content section#je-main-content ul li {
+body main#main .content section#main-content ul li {
   position: relative;
   margin: 0 0 30px 0;
   padding-left: 4.14rem;
 }
-body main#je-main .je-content section#je-main-content ul > li:before {
+body main#main .content section#main-content ul > li:before {
   content: "\27A4";
   position: absolute;
   left: 0;
   font-weight: bold;
   font-size: 2.07rem;
 }
-body main#je-main .je-content section#je-main-content ol ol li,
-body main#je-main .je-content section#je-main-content ol ul li,
-body main#je-main .je-content section#je-main-content ul ul li,
-body main#je-main .je-content section#je-main-content ul ol li {
+body main#main .content section#main-content ol ol li,
+body main#main .content section#main-content ol ul li,
+body main#main .content section#main-content ul ul li,
+body main#main .content section#main-content ul ol li {
   padding-left: 2.99rem;
 }
-body main#je-main .je-content section#je-main-content ol ol li:before,
-body main#je-main .je-content section#je-main-content ol ul li:before,
-body main#je-main .je-content section#je-main-content ul ul li:before,
-body main#je-main .je-content section#je-main-content ul ol li:before {
+body main#main .content section#main-content ol ol li:before,
+body main#main .content section#main-content ol ul li:before,
+body main#main .content section#main-content ul ul li:before,
+body main#main .content section#main-content ul ol li:before {
   content: "\2299";
   font-size: 1.495rem;
 }
-body main#je-main .je-content section#je-main-content dl dt {
+body main#main .content section#main-content dl dt {
   font-weight: bold;
   text-transform: capitalize;
   padding-bottom: 7.5px;
 }
-body main#je-main .je-content section#je-main-content dl dd {
+body main#main .content section#main-content dl dd {
   margin-left: 45px;
   padding-bottom: 7.5px;
 }
-body main#je-main .je-content section#je-main-content ul.smaller li,
-body main#je-main .je-content section#je-main-content ol.smaller li {
+body main#main .content section#main-content ul h1,
+body main#main .content section#main-content ol h1,
+body main#main .content section#main-content ul h2,
+body main#main .content section#main-content ol h2,
+body main#main .content section#main-content ul h3,
+body main#main .content section#main-content ol h3,
+body main#main .content section#main-content ul h4,
+body main#main .content section#main-content ol h4,
+body main#main .content section#main-content ul h5,
+body main#main .content section#main-content ol h5,
+body main#main .content section#main-content ul h6,
+body main#main .content section#main-content ol h6 {
+  margin: 15px 0;
+  border-bottom: 0;
+  font-size: 1.6675rem;
+  font-weight: bold;
+  line-height: 1.7825rem;
+}
+body main#main .content section#main-content ul.smaller li,
+body main#main .content section#main-content ol.smaller li {
   padding-left: 2.99rem;
 }
-body main#je-main .je-content section#je-main-content ul.smaller li:before,
-body main#je-main .je-content section#je-main-content ol.smaller li:before {
-  content: "\2299";
+body main#main .content section#main-content ul.smaller li:before,
+body main#main .content section#main-content ol.smaller li:before {
+  content: "\27A4";
   font-size: 1.495rem;
 }
-body main#je-main .je-content section#je-main-content ul.indent li,
-body main#je-main .je-content section#je-main-content ol.indent li {
+body main#main .content section#main-content ul.indent li,
+body main#main .content section#main-content ol.indent li {
   margin: 15px 0 15px 2.99rem;
 }
-body main#je-main .je-content section#je-main-content figure {
+body main#main .content section#main-content figure {
   display: block;
   margin: 15px auto;
   text-align: center;
 }
-body main#je-main .je-content section#je-main-content figure img {
+body main#main .content section#main-content figure img {
   width: auto;
   max-width: 90%;
   -webkit-box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
   -moz-box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
   box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.3);
 }
-body main#je-main .je-content section#je-main-content figure img.no-shadow {
+body main#main .content section#main-content figure img.no-shadow {
   -webkit-box-shadow: 0px 0px 0px 0px rgba(255, 255, 255, 0);
   -moz-box-shadow: 0px 0px 0px 0px rgba(255, 255, 255, 0);
   box-shadow: 0px 0px 0px 0px rgba(255, 255, 255, 0);
 }
-body main#je-main .je-content section#je-main-content figure figcaption {
+body main#main .content section#main-content figure figcaption {
   text-align: center;
   margin: 7.5px 0 0 0;
 }
-body main#je-main .je-content section#je-main-content figure.left {
+body main#main .content section#main-content figure.left {
   display: inline-block;
   max-width: 50%;
   float: left;
   margin: 20px 30px 20px 0;
 }
-body main#je-main .je-content section#je-main-content figure.right {
+body main#main .content section#main-content figure.right {
   display: inline-block;
   max-width: 50%;
   float: right;
   margin: 20px 0 20px 30px;
 }
-body main#je-main .je-content section#je-main-content .video {
+body main#main .content section#main-content .video {
   position: relative;
   height: 0;
   width: 100%;
@@ -584,24 +636,260 @@ body main#je-main .je-content section#je-main-content .video {
   padding-bottom: 56.25%;
   overflow: hidden;
 }
-body main#je-main .je-content section#je-main-content .video iframe {
+body main#main .content section#main-content .video iframe {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
 }
-body main#je-main .je-content section#je-main-content .video-fallback {
+body main#main .content section#main-content .video-fallback {
   font-style: italic;
   margin: 7.5px 0;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget {
+body main#main .content section#main-content video {
+  max-width: 100%;
+  height: auto;
+  background-color: #000000;
+  font: #ffffff;
+}
+body main#main .content section#main-content .audio {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  grid-template-rows: auto auto auto;
+  grid-column-gap: 10px;
+  padding: 7.5px 18.75px;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  border: 1px solid #e6e6e6;
+  -webkit-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.1);
+}
+body main#main .content section#main-content .audio .icon {
+  display: inline-block;
+  font-size: 1.15rem;
+  line-height: 1.15rem;
+  cursor: pointer;
+}
+body main#main .content section#main-content .audio .metadata {
+  display: inline-flex;
+  grid-row: 1;
+  grid-column: 1/5;
+}
+body main#main .content section#main-content .audio .controls-one {
+  grid-row: 2;
+  grid-column: 1;
+}
+body main#main .content section#main-content .audio .controls-one .pause {
+  display: none;
+}
+body main#main .content section#main-content .audio .controls-one.playing .play {
+  display: none;
+}
+body main#main .content section#main-content .audio .controls-one.playing .pause {
+  display: inline-block;
+}
+body main#main .content section#main-content .audio .time {
+  grid-row: 2;
+  grid-column: 2/4;
+  font-family: 'Roboto Mono', monospace;
+  display: inline-flex;
+  font-size: 1.035rem;
+  margin: 0 7.5px;
+  justify-content: center;
+}
+body main#main .content section#main-content .audio .time .seperator {
+  margin: 0 3px;
+}
+body main#main .content section#main-content .audio .seeker {
+  grid-row: 3;
+  grid-column: 1/5;
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  padding: 7.5px 0;
+}
+body main#main .content section#main-content .audio .seeker .range {
+  width: 100%;
+}
+body main#main .content section#main-content .audio .controls-two {
+  grid-row: 2;
+  grid-column: 4;
+  display: inline-flex;
+}
+body main#main .content section#main-content .audio .controls-two .volume {
+  grid-row: 2;
+  grid-column: 1;
+  margin: 0 7.5px;
+}
+body main#main .content section#main-content .audio .controls-two .mute {
+  display: none;
+  margin: 0 7.5px;
+}
+body main#main .content section#main-content .audio .controls-two .transcript {
+  margin-left: 7.5px;
+}
+body main#main .content section#main-content .audio .controls-two .volume-wrapper {
+  position: absolute;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  right: 15px;
+  top: 10px;
+  padding: 12px 15px;
+  border-radius: 15px;
+  z-index: 100;
+  width: 100%;
+  height: 15px;
+  max-width: 125px;
+  background-color: #e3e3e3;
+  -webkit-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.15);
+}
+body main#main .content section#main-content .audio .controls-two .volume-wrapper .range {
+  background-color: #e3e3e3;
+  outline: none;
+  border: none;
+}
+body main#main .content section#main-content .audio .controls-two .volume-wrapper .range:focus {
+  outline: none;
+}
+body main#main .content section#main-content .audio .controls-two .volume-wrapper .range:focus::-webkit-slider-runnable-track {
+  background: #e3e3e3;
+}
+body main#main .content section#main-content .audio .controls-two .volume-wrapper .range:focus::-moz-range-track {
+  background: #e3e3e3;
+}
+body main#main .content section#main-content .audio .controls-two.volume-open .volume-wrapper {
+  display: flex;
+}
+body main#main .content section#main-content .audio .controls-two.volume-muted .volume {
+  display: none;
+}
+body main#main .content section#main-content .audio .controls-two.volume-muted .mute {
+  display: block;
+}
+body main#main .content section#main-content .audio .range {
+  position: relative;
+  -webkit-appearance: none;
+  appearance: none;
+  border: 1px solid #f0f0f0;
+  width: 100%;
+  background: #f0f0f0;
+}
+body main#main .content section#main-content .audio .range:focus {
+  outline: none;
+}
+body main#main .content section#main-content .audio .range:focus::-webkit-slider-runnable-track {
+  background: #f0f0f0;
+}
+body main#main .content section#main-content .audio .range:focus::-moz-range-track {
+  background: #f0f0f0;
+}
+body main#main .content section#main-content .audio .range:focus::-ms-fill-lower {
+  background: #9a9a9a;
+  border-radius: 50%;
+}
+body main#main .content section#main-content .audio .range::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px;
+  border: 1px solid #9a9a9a;
+  border-radius: 6px;
+}
+body main#main .content section#main-content .audio .range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  background: #000000;
+  margin-top: -4px;
+}
+body main#main .content section#main-content .audio .range::-moz-range-progress {
+  background: #9a9a9a;
+}
+body main#main .content section#main-content .audio .range::-moz-range-track {
+  width: 100%;
+  height: 6px;
+  border: 1px solid #9a9a9a;
+  border-radius: 6px;
+  background: transparent;
+}
+body main#main .content section#main-content .audio .range::-moz-range-thumb {
+  -moz-appearance: none;
+  appearance: none;
+  border: none;
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  background: #000000;
+  margin-top: -4px;
+}
+body main#main .content section#main-content .audio .range:-moz-focusring {
+  outline: 1px solid #f0f0f0;
+  outline-offset: -1px;
+}
+body main#main .content section#main-content .audio .range::-ms-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 6px;
+  background-color: transparent;
+  border-color: transparent;
+  border-width: 6px 0;
+  color: transparent;
+}
+body main#main .content section#main-content .audio .range::-ms-fill-lower {
+  background: #9a9a9a;
+  border-radius: 50%;
+}
+body main#main .content section#main-content .audio .range::-ms-thumb {
+  border: none;
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  background: #000000;
+  margin-top: -4px;
+}
+@media (min-width: 768px) {
+  body main#main .content section#main-content .audio {
+    grid-template-columns: auto auto 1fr auto;
+    grid-template-rows: auto auto;
+  }
+  body main#main .content section#main-content .audio .metadata {
+    display: inline-flex;
+    grid-row: 1;
+    grid-column: 1/5;
+  }
+  body main#main .content section#main-content .audio .controls-one {
+    grid-row: 2;
+    grid-column: 1;
+  }
+  body main#main .content section#main-content .audio .time {
+    grid-row: 2;
+    grid-column: 2;
+    justify-content: center;
+  }
+  body main#main .content section#main-content .audio .seeker {
+    grid-row: 2;
+    grid-column: 3;
+    padding: 5px 0;
+  }
+  body main#main .content section#main-content .audio .controls-two {
+    grid-row: 2;
+    grid-column: 4;
+  }
+}
+body main#main .content section#main-content .pdf-widget {
   position: relative;
   width: 100%;
   border: 1px solid #323639;
   background-color: #525659;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto;
@@ -610,14 +898,14 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar {
   width: 100%;
   height: 50px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-icon {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-icon {
   color: #f1f1f1;
   font-size: 20px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-button {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-button {
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-page-area {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-page-area {
   grid-area: page;
   display: flex;
   flex-direction: row;
@@ -625,7 +913,7 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .
   align-items: center;
   font-family: monospace;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-button {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-button {
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -633,23 +921,23 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .
   height: 40px;
   border-radius: 5px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-up {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-up {
   margin-left: 15px;
   margin-right: 5px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-up.pdf-disabled {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-up.pdf-disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-down {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-down {
   margin-right: 15px;
   margin-left: 5px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-down.pdf-disabled {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-down.pdf-disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page {
   background-color: #191b1c;
   background-clip: padding-box;
   border-radius: 5px;
@@ -669,36 +957,36 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .
   outline: none;
   border: 0;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page:hover,
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page :focus {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page:hover,
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page :focus {
   -moz-appearance: textfield;
   -webkit-appearance: none;
   margin: 0;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-page-area input[class="pdf-page"]::-webkit-inner-spin-button,
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-page-area input[class="pdf-page"]::-webkit-outer-spin-button {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-page-area input[class="pdf-page"]::-webkit-inner-spin-button,
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-page-area input[class="pdf-page"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-slash {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-slash {
   font-size: 18px;
   font-weight: bold;
   color: #ffffff;
   margin: 0 5px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-total {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-page-area .pdf-page-total {
   font-size: 16px;
   font-weight: bold;
   color: #ffffff;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-control-area {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-control-area {
   grid-area: controls;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
   align-items: center;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-control-area .pdf-button {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-control-area .pdf-button {
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -708,28 +996,28 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .
   margin-right: 15px;
   /* background-color: grey; */
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-control-area .pdf-button.pdf-disabled {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-control-area .pdf-button.pdf-disabled {
   display: none;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar .pdf-control-area .pdf-button:hover {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar .pdf-control-area .pdf-button:hover {
   background-color: #525659;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar.pdf-locked .pdf-page-area .pdf-button,
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar.pdf-locked .pdf-page-area input.pdf-page,
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-toolbar.pdf-locked .pdf-control-area .pdf-button {
+body main#main .content section#main-content .pdf-widget .pdf-toolbar.pdf-locked .pdf-page-area .pdf-button,
+body main#main .content section#main-content .pdf-widget .pdf-toolbar.pdf-locked .pdf-page-area input.pdf-page,
+body main#main .content section#main-content .pdf-widget .pdf-toolbar.pdf-locked .pdf-control-area .pdf-button {
   opacity: 0.5;
   cursor: not-allowed;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container {
+body main#main .content section#main-content .pdf-widget .pdf-container {
   position: relative;
   overflow: hidden;
   width: 100%;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper {
   overflow: auto;
   width: 100%;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page {
   position: relative;
   margin: 15px auto;
   direction: ltr;
@@ -768,7 +1056,7 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
                      * limitations under the License.
                      */
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer {
   position: absolute;
   left: 0;
   top: 0;
@@ -778,38 +1066,38 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   opacity: 0.2;
   line-height: 1;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer > span {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer > span {
   color: transparent;
   position: absolute;
   white-space: pre;
   cursor: text;
   transform-origin: 0% 0%;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer .highlight {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer .highlight {
   margin: -1px;
   padding: 1px;
   background-color: #b400aa;
   border-radius: 4px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer .highlight.begin {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer .highlight.begin {
   border-radius: 4px 0 0 4px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer .highlight.end {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer .highlight.end {
   border-radius: 0 4px 4px 0;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer .highlight.middle {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer .highlight.middle {
   border-radius: 0;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer .highlight.selected {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer .highlight.selected {
   background-color: #006400;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer::-moz-selection {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer::-moz-selection {
   background: #0000ff;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer::selection {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer::selection {
   background: #0000ff;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer .endOfContent {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer .endOfContent {
   display: block;
   position: absolute;
   left: 0;
@@ -822,14 +1110,14 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   -moz-user-select: none;
   user-select: none;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer .endOfContent.active {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .textLayer .endOfContent.active {
   top: 0;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer section {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer section {
   position: absolute;
   text-align: initial;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .linkAnnotation > a {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .linkAnnotation > a {
   position: absolute;
   font-size: 1em;
   top: 0;
@@ -837,12 +1125,12 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   width: 100%;
   height: 100%;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .linkAnnotation > a:hover {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .linkAnnotation > a:hover {
   opacity: 0.2;
   background: #ffff00;
   box-shadow: 0 2px 10px #ffff00;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.pushButton > a {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.pushButton > a {
   position: absolute;
   font-size: 1em;
   top: 0;
@@ -850,16 +1138,16 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   width: 100%;
   height: 100%;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.pushButton > a:hover {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.pushButton > a:hover {
   opacity: 0.2;
   background: #ffff00;
   box-shadow: 0 2px 10px #ffff00;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textAnnotation img {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textAnnotation img {
   position: absolute;
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation input {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation input {
   background-color: rgba(0, 54, 255, 0.13);
   border: 1px solid transparent;
   box-sizing: border-box;
@@ -870,14 +1158,14 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   vertical-align: top;
   width: 100%;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation input:hover {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation input:hover {
   border: 1px solid #000000;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation input:focus {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation input:focus {
   background: none;
   border: 1px solid transparent;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation textarea {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation textarea {
   background-color: rgba(0, 54, 255, 0.13);
   border: 1px solid transparent;
   box-sizing: border-box;
@@ -890,32 +1178,32 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   font-size: 9px;
   resize: none;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation textarea:hover {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation textarea:hover {
   border: 1px solid #000000;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation textarea:focus {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation textarea:focus {
   background: none;
   border: 1px solid transparent;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation input[disabled] {
-  background: none;
-  border: 1px solid transparent;
-  cursor: not-allowed;
-}
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation textarea[disabled] {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation input[disabled] {
   background: none;
   border: 1px solid transparent;
   cursor: not-allowed;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation input.comb {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation textarea[disabled] {
+  background: none;
+  border: 1px solid transparent;
+  cursor: not-allowed;
+}
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation input.comb {
   font-family: monospace;
   padding-left: 2px;
   padding-right: 0;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation input.comb:focus {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .textWidgetAnnotation input.comb:focus {
   width: 115%;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .choiceWidgetAnnotation select {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .choiceWidgetAnnotation select {
   background-color: rgba(0, 54, 255, 0.13);
   border: 1px solid transparent;
   box-sizing: border-box;
@@ -926,22 +1214,22 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   vertical-align: top;
   width: 100%;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .choiceWidgetAnnotation select option {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .choiceWidgetAnnotation select option {
   padding: 0;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .choiceWidgetAnnotation select:hover {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .choiceWidgetAnnotation select:hover {
   border: 1px solid #000000;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .choiceWidgetAnnotation select:focus {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .choiceWidgetAnnotation select:focus {
   background: none;
   border: 1px solid transparent;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .choiceWidgetAnnotation select[disabled] {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .choiceWidgetAnnotation select[disabled] {
   background: none;
   border: 1px solid transparent;
   cursor: not-allowed;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.checkBox input {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.checkBox input {
   background-color: rgba(0, 54, 255, 0.13);
   border: 1px solid transparent;
   box-sizing: border-box;
@@ -956,10 +1244,10 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   appearance: none;
   padding: 0;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.checkBox input:hover {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.checkBox input:hover {
   border: 1px solid #000000;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:before {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:before {
   background-color: #000000;
   content: "";
   display: block;
@@ -969,7 +1257,7 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   width: 1px;
   transform: rotate(45deg);
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:after {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.checkBox input:checked:after {
   background-color: #000000;
   content: "";
   display: block;
@@ -979,12 +1267,12 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   width: 1px;
   transform: rotate(-45deg);
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.checkBox input[disabled] {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.checkBox input[disabled] {
   background: none;
   border: 1px solid transparent;
   cursor: not-allowed;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.radioButton input {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.radioButton input {
   background-color: rgba(0, 54, 255, 0.13);
   border: 1px solid transparent;
   box-sizing: border-box;
@@ -1000,10 +1288,10 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   appearance: none;
   padding: 0;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.radioButton input:hover {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.radioButton input:hover {
   border: 1px solid #000000;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.radioButton input:checked:before {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.radioButton input:checked:before {
   background-color: #000000;
   content: "";
   display: block;
@@ -1014,16 +1302,16 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   top: 20%;
   width: 50%;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.radioButton input[disabled] {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .buttonWidgetAnnotation.radioButton input[disabled] {
   background: none;
   border: 1px solid transparent;
   cursor: not-allowed;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .popupWrapper {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .popupWrapper {
   position: absolute;
   width: 20em;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .popup {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .popup {
   position: absolute;
   z-index: 200;
   max-width: 20em;
@@ -1038,71 +1326,71 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   white-space: normal;
   word-wrap: break-word;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .popup > * {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .popup > * {
   font-size: 9px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .popup h1 {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .popup h1 {
   display: inline-block;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .popup span {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .popup span {
   display: inline-block;
   margin-left: 5px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .popup p {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .popup p {
   border-top: 1px solid #333333;
   margin-top: 2px;
   padding-top: 2px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .highlightAnnotation {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .highlightAnnotation {
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .underlineAnnotation {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .underlineAnnotation {
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .squigglyAnnotation {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .squigglyAnnotation {
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .strikeoutAnnotation {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .strikeoutAnnotation {
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .freeTextAnnotation {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .freeTextAnnotation {
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .lineAnnotation svg line {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .lineAnnotation svg line {
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .squareAnnotation svg rect {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .squareAnnotation svg rect {
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .circleAnnotation svg ellipse {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .circleAnnotation svg ellipse {
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .polylineAnnotation svg polyline {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .polylineAnnotation svg polyline {
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .polygonAnnotation svg polygon {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .polygonAnnotation svg polygon {
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .caretAnnotation {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .caretAnnotation {
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .inkAnnotation svg polyline {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .inkAnnotation svg polyline {
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .stampAnnotation {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .stampAnnotation {
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .fileAttachmentAnnotation {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .annotationLayer .fileAttachmentAnnotation {
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaLayer {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaLayer {
   position: absolute;
   top: 0;
   left: 0;
   z-index: 200;
   transform-origin: 0 0;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaLayer * {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaLayer * {
   color: inherit;
   font: inherit;
   -webkit-font-kerning: inherit;
@@ -1113,7 +1401,7 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   vertical-align: inherit;
   box-sizing: border-box;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaFont {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaFont {
   color: black;
   font-weight: normal;
   -webkit-font-kerning: none;
@@ -1124,48 +1412,48 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   text-decoration: none;
   vertical-align: 0;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaDraw {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaDraw {
   z-index: 200;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaExclgroup {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaExclgroup {
   z-index: 300;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaField {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaField {
   z-index: 300;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaSubform {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaSubform {
   z-index: 100;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaLabel {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaLabel {
   display: flex;
   flex-direction: row;
   align-items: center;
   width: 100%;
   height: 100%;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaLabel > input[type="checkbox"] {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaLabel > input[type="checkbox"] {
   position: absolute;
   left: -99999px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaLabel > input[type="checkbox"]:focus .xfaCheckboxMark {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaLabel > input[type="checkbox"]:focus .xfaCheckboxMark {
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaCaption {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaCaption {
   flex: 1 1 auto;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaTextfield {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaTextfield {
   width: 100%;
   height: 100%;
   flex: 1 1 auto;
   border: none;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaSelect {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaSelect {
   width: 100%;
   height: 100%;
   flex: 1 1 auto;
   border: none;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaCheckboxMark {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaCheckboxMark {
   cursor: pointer;
   flex: 0 0 auto;
   border-style: solid;
@@ -1181,75 +1469,75 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   flex-direction: row;
   align-items: center;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaCheckbox:checked .xfaCheckboxMark::after {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaCheckbox:checked .xfaCheckboxMark::after {
   content: attr(mark);
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaButton {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaButton {
   cursor: pointer;
   width: 100%;
   height: 100%;
   border: none;
   text-align: center;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaButton:hover {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaButton:hover {
   background: Highlight;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaLrTb {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaLrTb {
   display: block;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaLrTb > div {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaLrTb > div {
   display: inline;
   float: left;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaRlTb {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaRlTb {
   display: block;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaRlTb > div {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaRlTb > div {
   display: inline;
   float: right;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaTb {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaTb {
   display: block;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaPosition {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaPosition {
   display: block;
   position: relative;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaValignMiddle {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaValignMiddle {
   display: flex;
   align-items: center;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaTable {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaTable {
   display: flex;
   flex-direction: column;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaTable .xfaRow {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaTable .xfaRow {
   display: flex;
   flex-direction: row;
   flex: 1 1 auto;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaTable .xfaRow > div {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaTable .xfaRow > div {
   flex: 1 1 auto;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaTable .xfaRlRow {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaTable .xfaRlRow {
   display: flex;
   flex-direction: row-reverse;
   flex: 1;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaTable .xfaRlRow > div {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .xfaTable .xfaRlRow > div {
   flex: 1;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .canvasWrapper {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .canvasWrapper {
   overflow: hidden;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page canvas {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page canvas {
   margin: 0;
   display: block;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page canvas[hidden] {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page canvas[hidden] {
   display: none;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .loadingIcon {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .loadingIcon {
   position: absolute;
   display: block;
   left: 0;
@@ -1258,88 +1546,88 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container
   bottom: 0;
   background: url("../assets/loading-icon.gif") center no-repeat;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .removePageBorders {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .removePageBorders {
   margin-left: 0;
   margin-right: 0;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .removePageBorders .page {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .removePageBorders .page {
   margin: 0 auto 10px;
   border: none;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .removePageBorders .spread .page {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .removePageBorders .spread .page {
   margin-left: 5px;
   margin-right: 5px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .singlePageView {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .singlePageView {
   display: inline-block;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .singlePageView .page {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .singlePageView .page {
   margin: 0;
   border: none;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .scrollHorizontal {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .scrollHorizontal {
   margin-left: 3.5px;
   margin-right: 3.5px;
   text-align: center;
   white-space: nowrap;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .scrollHorizontal .spread {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .scrollHorizontal .spread {
   margin-left: 0;
   margin-right: 0;
   display: inline-block;
   vertical-align: middle;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .scrollHorizontal .page {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .scrollHorizontal .page {
   display: inline-block;
   vertical-align: middle;
   margin-left: -3.5px;
   margin-right: -3.5px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .scrollWrapped {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .scrollWrapped {
   margin-left: 3.5px;
   margin-right: 3.5px;
   text-align: center;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .scrollWrapped .spread {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .scrollWrapped .spread {
   margin-left: 0;
   margin-right: 0;
   display: inline-block;
   vertical-align: middle;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .scrollWrapped .page {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .scrollWrapped .page {
   display: inline-block;
   vertical-align: middle;
   margin-left: -3.5px;
   margin-right: -3.5px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .spread {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .spread {
   margin-left: 3.5px;
   margin-right: 3.5px;
   text-align: center;
   white-space: nowrap;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .spread .page {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .spread .page {
   display: inline-block;
   vertical-align: middle;
   margin-left: -3.5px;
   margin-right: -3.5px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .removePageBorders.scrollHorizontal .page {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .removePageBorders.scrollHorizontal .page {
   margin-left: 5px;
   margin-right: 5px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .removePageBorders.scrollWrapped .page {
+body main#main .content section#main-content .pdf-widget .pdf-container .pdf-view-wrapper .pdf-viewer .page .removePageBorders.scrollWrapped .page {
   margin-left: 5px;
   margin-right: 5px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-controls {
+body main#main .content section#main-content .pdf-widget .pdf-controls {
   position: absolute;
   bottom: 40px;
   right: 15px;
   width: 50px;
   z-index: 1000;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-controls .pdf-button {
+body main#main .content section#main-content .pdf-widget .pdf-controls .pdf-button {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1352,43 +1640,43 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-controls 
   -webkit-box-shadow: 0px 1px 3px 3px rgba(0, 0, 0, 0.2);
   box-shadow: 0px 1px 3px 3px rgba(0, 0, 0, 0.2);
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-controls .pdf-button .pdf-icon {
+body main#main .content section#main-content .pdf-widget .pdf-controls .pdf-button .pdf-icon {
   margin-top: 2px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-controls .pdf-fit {
+body main#main .content section#main-content .pdf-widget .pdf-controls .pdf-fit {
   margin-bottom: 30px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-controls .pdf-fit .pdf-width {
+body main#main .content section#main-content .pdf-widget .pdf-controls .pdf-fit .pdf-width {
   display: none;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-controls .pdf-fit .pdf-reset {
+body main#main .content section#main-content .pdf-widget .pdf-controls .pdf-fit .pdf-reset {
   display: none;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-controls .pdf-fit.pdf-width .pdf-width {
+body main#main .content section#main-content .pdf-widget .pdf-controls .pdf-fit.pdf-width .pdf-width {
   display: block;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-controls .pdf-fit.pdf-width .pdf-actual {
+body main#main .content section#main-content .pdf-widget .pdf-controls .pdf-fit.pdf-width .pdf-actual {
   display: none;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-controls .pdf-fit.pdf-width .pdf-reset {
+body main#main .content section#main-content .pdf-widget .pdf-controls .pdf-fit.pdf-width .pdf-reset {
   display: none;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-controls .pdf-fit.pdf-reset .pdf-reset {
+body main#main .content section#main-content .pdf-widget .pdf-controls .pdf-fit.pdf-reset .pdf-reset {
   display: block;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-controls .pdf-fit.pdf-reset .pdf-actual {
+body main#main .content section#main-content .pdf-widget .pdf-controls .pdf-fit.pdf-reset .pdf-actual {
   display: none;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-controls .pdf-fit.pdf-reset .pdf-width {
+body main#main .content section#main-content .pdf-widget .pdf-controls .pdf-fit.pdf-reset .pdf-width {
   display: none;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-controls .pdf-zoom-in {
+body main#main .content section#main-content .pdf-widget .pdf-controls .pdf-zoom-in {
   margin-bottom: 15px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-controls.pdf-locked {
+body main#main .content section#main-content .pdf-widget .pdf-controls.pdf-locked {
   display: none;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-password-box {
+body main#main .content section#main-content .pdf-widget .pdf-password-box {
   position: absolute;
   top: 45%;
   left: 25%;
@@ -1403,18 +1691,18 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-password-
   color: #ffffff;
   background-color: #323639;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-password-box .pdf-message {
+body main#main .content section#main-content .pdf-widget .pdf-password-box .pdf-message {
   grid-area: message;
   font-size: 1.25rem;
   padding-bottom: 15px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-password-box .pdf-message .pdf-icon {
+body main#main .content section#main-content .pdf-widget .pdf-password-box .pdf-message .pdf-icon {
   margin-right: 15px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-password-box .pdf-password {
+body main#main .content section#main-content .pdf-widget .pdf-password-box .pdf-password {
   grid-area: input;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-password-box .pdf-password input {
+body main#main .content section#main-content .pdf-widget .pdf-password-box .pdf-password input {
   height: 20px;
   background-color: #191b1c;
   background-clip: padding-box;
@@ -1431,7 +1719,7 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-password-
   font-weight: bold;
   color: #ffffff;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-password-box .pdf-password button {
+body main#main .content section#main-content .pdf-widget .pdf-password-box .pdf-password button {
   grid-area: button;
   margin-left: 15px;
   padding: 5px 15px;
@@ -1447,7 +1735,7 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-password-
   background-color: #f1f1f1;
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-password-box .pdf-bookmark-links {
+body main#main .content section#main-content .pdf-widget .pdf-password-box .pdf-bookmark-links {
   display: none;
   position: absolute;
   right: 0;
@@ -1459,23 +1747,23 @@ body main#je-main .je-content section#je-main-content .pdf-widget .pdf-password-
   max-width: 320px;
   background-color: #323639;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-password-box .pdf-bookmark-links .pdf-bookmark-link {
+body main#main .content section#main-content .pdf-widget .pdf-password-box .pdf-bookmark-links .pdf-bookmark-link {
   padding-bottom: 7px;
   color: #ffffff;
   cursor: pointer;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-password-box .pdf-bookmark-links ul {
+body main#main .content section#main-content .pdf-widget .pdf-password-box .pdf-bookmark-links ul {
   list-style-type: none;
   margin: 0;
   padding: 0;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-password-box .pdf-bookmark-links ul ul {
+body main#main .content section#main-content .pdf-widget .pdf-password-box .pdf-bookmark-links ul ul {
   padding-left: 15px;
 }
-body main#je-main .je-content section#je-main-content .pdf-widget .pdf-password-box .pdf-bookmark-links.pdf-active {
+body main#main .content section#main-content .pdf-widget .pdf-password-box .pdf-bookmark-links.pdf-active {
   display: block;
 }
-body main#je-main .je-content aside#je-sidebar {
+body main#main .content aside#sidebar {
   position: absolute;
   top: -2rem;
   right: -300px;
@@ -1490,22 +1778,22 @@ body main#je-main .je-content aside#je-sidebar {
   -moz-box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
 }
-body main#je-main .je-content aside#je-sidebar nav ul {
+body main#main .content aside#sidebar nav ul {
   list-style-type: none;
   margin: 0;
   padding: 0;
 }
 @media (min-width: 769px) {
-  body main#je-main .je-content {
+  body main#main .content {
     display: grid;
     grid-template-columns: 1fr auto;
     grid-template-rows: 1fr;
     grid-template-areas: "content sidebar";
   }
-  body main#je-main .je-content section#je-main-content {
+  body main#main .content section#main-content {
     padding: 15px 0;
   }
-  body main#je-main .je-content aside#je-sidebar {
+  body main#main .content aside#sidebar {
     position: relative;
     grid-area: sidebar;
     top: 0;
@@ -1521,62 +1809,62 @@ body main#je-main .je-content aside#je-sidebar nav ul {
     box-shadow: 0px 0px 0px 0px rgba(255, 255, 255, 0);
   }
 }
-body footer#je-footer {
+body footer#footer {
   grid-area: footer;
   padding: 15px 0;
   color: #f5f5f5;
   background-color: #242729;
 }
-body footer#je-footer a,
-body footer#je-footer a:visited {
+body footer#footer a,
+body footer#footer a:visited {
   text-decoration: none;
   color: #5eaee4;
   cursor: pointer;
 }
-body footer#je-footer a:hover,
-body footer#je-footer a:visited:hover {
+body footer#footer a:hover,
+body footer#footer a:visited:hover {
   color: #8ac4eb;
 }
-body footer#je-footer .je-content {
+body footer#footer .content {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: auto auto auto;
   grid-template-areas: "links" "copyright" "updated";
 }
-body footer#je-footer .je-content #je-footer-links {
+body footer#footer .content #footer-links {
   grid-area: links;
   text-align: center;
   padding-bottom: 15px;
 }
-body footer#je-footer .je-content #je-copyright {
+body footer#footer .content #copyright {
   grid-area: copyright;
   text-align: center;
 }
-body footer#je-footer .je-content #je-copyright .je-icon-heart {
+body footer#footer .content #copyright .icon-heart {
   color: #e45e5e;
   margin: 0 2px;
 }
-body footer#je-footer .je-content #je-compile-time {
+body footer#footer .content #compile-time {
   grid-area: updated;
   text-align: center;
   font-size: 0.9775rem;
 }
 @media (min-width: 769px) {
-  body footer#je-footer .je-content {
+  body footer#footer .content {
     grid-template-columns: 1fr auto;
     grid-template-rows: auto auto;
     grid-template-areas: "links copyright" "links updated";
   }
-  body footer#je-footer .je-content #je-footer-links {
+  body footer#footer .content #footer-links {
     text-align: left;
     padding-bottom: 0;
     padding-right: 15px;
   }
-  body footer#je-footer .je-content #je-copyright {
+  body footer#footer .content #copyright {
     text-align: right;
     padding-left: 15px;
   }
-  body footer#je-footer .je-content #je-compile-time {
+  body footer#footer .content #compile-time {
     text-align: right;
     padding-left: 15px;
   }

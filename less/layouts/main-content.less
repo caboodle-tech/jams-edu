@@ -1,7 +1,7 @@
-main#je-main {
+main#main {
     grid-area: main;
     
-    .je-content {
+    .content {
         display: grid;
         grid-template-columns: 1fr;
         grid-template-rows: 1fr;
@@ -11,21 +11,20 @@ main#je-main {
         padding: @spacing * 2 @spacing;
         z-index: 2500;
         
-        section#je-main-content {
+        section#main-content {
             grid-area: content;
             position: relative;
-            overflow-y: hidden;
-            text-align: justify;
+            overflow: hidden;
 
             @import "../components/advanced.less";
             @import "../components/basic.less";
-            @import "../components/blocks.less";
+            @import "../components/callout.less";
             @import "../components/lists.less";
             @import "../components/media.less";
             @import "../components/pdf-viewer.less";
         }
 
-        aside#je-sidebar {
+        aside#sidebar {
             position: absolute;
             top: -2rem;
             right: -300px;
@@ -53,18 +52,18 @@ main#je-main {
     }
 
     @media ( min-width: 769px ) {
-        .je-content {
+        .content {
             display: grid;
             grid-template-columns: 1fr auto;
             grid-template-rows: 1fr;
             grid-template-areas: 
                 "content sidebar";
 
-            section#je-main-content {
+            section#main-content {
                 padding: @spacing 0;
             }
 
-            aside#je-sidebar {
+            aside#sidebar {
                 position: relative;
                 grid-area: sidebar;
                 top: 0;

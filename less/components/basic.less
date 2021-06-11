@@ -44,6 +44,7 @@ pre {
 
 table {
     border-collapse: collapse;
+    width: 100%;
 
     th {
         white-space: nowrap;
@@ -55,16 +56,17 @@ table {
         padding: 2px @spacing 2px 2px;
         text-align: left;
         vertical-align: top;
+        white-space: nowrap;
     }
 
-    tr {
-
-        &:nth-child(odd) {
-            background-color: darken( @page-bg, 4% );
-        }
-
-        &:first-of-type {
-            background-color: transparent;
+    tbody {
+        tr {
+            &:nth-child(odd) {
+                background-color: darken( @page-bg, 4% );
+            }
+            &:last-of-type {
+                border-bottom: 1px solid lighten( @footer-bg, 50% );
+            }
         }
     }
 
@@ -84,6 +86,22 @@ h2, h3, h4, h5, h6 {
     font-weight: normal;
     margin: @spacing * 3 0 @spacing * 2 0;
     border-bottom: 2px solid fade( @page-font, 30% );
+}
+
+.highlight {
+    background-color: @highlight;
+}
+
+.anchor {
+    position: relative;
+    top: -3px;
+    opacity: .5;
+    font-size: @font-size;
+    margin-left: @spacing - 5;
+
+    &:hover {
+        opacity: 1;
+    }
 }
 
 hr {

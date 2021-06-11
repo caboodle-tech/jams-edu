@@ -1,105 +1,14 @@
-${{title}} = "Demo";
-${{navigation}} = 'main';
+${{title}}       = "Demo";
+${{author}}      = "Caboodle Tech";
+${{keywords}}    = "";
+${{description}} = "";
+${{navigation}}  = 'main';
 
 {{T:HEAD}}
 <body>
     {{T:HEADER}}
-    <section id="je-main-content" class="go-back">
-        <h1>Advance Element Styles</h1>
-                    <p>
-                        There are several advanced elements you can use when designing a page. Collapsible sections and code blocks are explained below. Adding math equations with Katex or diagrams with Mermaid are briefly demonstrated below. To take full advantage of Katex or Mermaid you will need to study their respective documentation.
-                    </p>
-                    <h3>Collapsible Content</h3>
-                    <p>
-                        You can also have sections of collapsible content. This content by default starts collapsed and requires a user to click on the title bar to expand it. To open a collapsible section by default add <code>open</code> to the buttons class. The HTML for this element is below the following example:
-                    </p>
-                    <button type="button" class="collapsible">Collapsible Section</button>
-                    <div class="collapsible-content">
-                        <p>
-                            Collapsible content. Remember you can add the class of <code>open</code> to the button class and it will start opened.
-                        </p>
-                    </div>
-<pre class="lang-html">
-<code class="lang-html">&lt;button type="button" class="collapsible"&gt;Title&lt;/button&gt;
-&lt;div class="collapsible-content"&gt;
-    &lt;p&gt;
-        The hidden collapsible content.
-    &lt;/p&gt;
-&lt;/div&gt;
-</code></pre>
-                    <h3 id="code-block">Code Blocks</h3>
-                    <p>
-                        Throughout this style guide we have used several HTML code examples. Code examples can be added to any page or assignment using the code below. Please keep the following in mind:
-                    </p>
-                    <ul class="smaller indent">
-                        <li>
-                            We support only the languages in the common package of <a href="https://highlightjs.org/download/">Highlight JS</a>.
-                        </li>
-                        <li>
-                            You need to change the <code>lang</code> (language) attribute to match the language of your code; again it must be in the supported list.
-                        </li>
-                        <li>
-                            If you place the closing <code>pre</code> tag on its own line you may end up with extra bottom margin.
-                        </li>
-                        <li>
-                            You must replace any greater than (<) or less than symbols (>) with their HTML entities: <code>&#38;lt;</code> = < and <code>&#38;gt;</code> = >
-                        </li>
-                    </ul>
-<pre class="lang-html"><code>&lt;pre class="lang-html"&gt;&lt;code&gt;
-Your code inside here. This demo uses HTML.
-&lt;/code&gt;&lt;/pre&gt;
-</code></pre>
-                    <h3>Katex (Math)</h3>
-                    <p>
-                        Adding a math block to your page is rather simple, all you need is a <code>div</code> with the <code>katex</code> class. If you would like to add a little snippet of inline math like <span class="katex">1 + 1 = 2</span> make sure to use a <code>span</code> instead. Here is the code for the inline example:
-                    </p>                
-<pre class="lang-html">
-<code class="lang-html">&lt;span class="katex"&gt;1 + 1 = 2&lt;/span&gt;
-</code></pre>
-                    <p>
-                        Here are two advanced examples of Katex. Each example is followed by the code it took to create them:
-                    </p> 
-                    <div class="katex">
-                        f(x) = \int_{-\infty}^\infty\hat f(\xi)\,e^{2 \pi i \xi x}\,d\xi
-                    </div>
-<pre class="lang-html">
-<code class="lang-html">&lt;div class="katex"&gt;
-    f(x) = \int_{-\infty}^\infty\hat f(\xi)\,e^{2 \pi i \xi x}\,d\xi
-&lt;/div&gt;
-</code></pre>    
-                    <div class="katex">
-                        \frac{1}{\Bigl(\sqrt{\phi \sqrt{5}}-\phi\Bigr) e^{\frac25 \pi}} = 1+\frac{e^{-2\pi}} {1+\frac{e^{-4\pi}} {1+\frac{e^{-6\pi}} {1+\frac{e^{-8\pi}} {1+\cdots} } } }
-                    </div>               
-<pre class="lang-html">
-<code class="lang-html">&lt;div class="katex"&gt;
-    \frac{1}{\Bigl(\sqrt{\phi \sqrt{5}}-\phi\Bigr) e^{\frac25 \pi}} = 1+\frac{e^{-2\pi}} {1+\frac{e^{-4\pi}} {1+\frac{e^{-6\pi}} {1+\frac{e^{-8\pi}} {1+\cdots} } } }
-&lt;/div&gt;
-</code></pre>
-                    <p>
-                        <a href="https://katex.org/" target="_blank">Katex</a> implements <a href="https://en.wikibooks.org/wiki/LaTeX/Mathematics" target="_blank">Latex</a> math with some language specific alterations. You should study <a href="https://en.wikibooks.org/wiki/LaTeX/Mathematics" target="_blank">Latex</a> and <a href="https://katex.org/" target="_blank">Katex</a> to learn how to properly write mathematical equations in Katex. Keep in mind that Katex is very similar to <a href="https://www.mathjax.org/" target="_blank">MathJax</a> but far more performant. Currently Katex macros are not supported by JamED.
-                    </p>
-                    <h3>Mermaid (Diagrams)</h3>
-                    <p>
-                        Adding a diagram to your page is rather simple, all you need is a div with the <code>diagram</code> class; for backwards compatibility you can use the class of <code>mermaid</code> as well. You will need to learn <a href="https://mermaid-js.github.io/mermaid/#/" target="_blank">Mermaid's syntax</a> in order to create diagrams though. There is a <a href="https://mermaid-js.github.io/mermaid-live-editor/#/" target="_blank">live editor</a> you can use to test your diagram code before publishing it. Here is an example of a simple flowchart and its corresponding code:
-                    </p>
-                    <div class="diagram">
-                        graph TD
-                            A[Christmas] -->|Get money| B(Go shopping)
-                            B --> C{Let me think}
-                            C -->|One| D[Laptop]
-                            C -->|Two| E[iPhone]
-                            C -->|Three| F[Car]
-                    </div>
-<pre class="lang-html">
-<code class="lang-html">&lt;div class="diagram"&gt;
-    graph TD
-        A[Christmas] -->|Get money| B(Go shopping)
-        B --> C{Let me think}
-        C -->|One| D[Laptop]
-        C -->|Two| E[iPhone]
-        C -->|Three| F[Car]
-&lt;/div&gt;
-</code></pre>
+    <section id="main-content" class="go-back">
+
     </section>
     {{T:SIDEBAR}}
     {{T:FOOTER}}
