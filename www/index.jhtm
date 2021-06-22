@@ -1,14 +1,17 @@
-${{title}}       = "Demo";
+${{title}}       = "JamsEDU";
 ${{author}}      = "Caboodle Tech";
-${{keywords}}    = "";
-${{description}} = "";
+${{keywords}}    = "Jamstack, Education, Static, Website, Fast Deployment, Security, Secure";
+${{description}} = "JamsEDU is a feature rich but simplistic to use Jamstack application designed for educational content. JamsEDU is the perfect way to quickly create secure static websites for STEM focused content.";
 ${{navigation}}  = 'main';
 
 {{T:HEAD}}
 <body>
     {{T:HEADER}}
-    <section id="main-content" class="go-back">
-
+    <section id="main-content">
+        <h1>Welcome to JamsEDU!</h1>
+        <p>
+            JamsEDU is a feature rich but simplistic to use <a href="https://jamstack.org/" rel="noreferrer noopener" target="_blank">Jamstack</a> application designed for educational content. JamsEDU is the perfect way to quickly create a secure static website for your STEM focused content, without the need to have development or programming experience. You simply provide the content and JamsEDU will handle the heavy lifting for you.
+        </p>
     </section>
     {{T:SIDEBAR}}
     {{T:FOOTER}}
