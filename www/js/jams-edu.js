@@ -686,14 +686,9 @@ var JAMSEDU = ( function() {
             tag       = document.createElement( 'SCRIPT' );
             tag.async = true;
             tag.type  = 'text/javascript';
-            tag.src   = relPath + 'js/pdf-viewer.js';
-
-            // Load ...
-            tag       = document.createElement( 'SCRIPT' );
-            tag.async = true;
-            tag.type  = 'text/javascript';
-            tag.src   = relPath + 'js/pdf-viewer.js';
+            tag.src   = relPath + 'js/pdf-viewer.min.js';
             document.head.appendChild( tag );
+
             loadPDF( 0 );
 
         }
@@ -755,7 +750,7 @@ var JAMSEDU = ( function() {
             document.head.appendChild( tag );
 
         } else {
-            setTimeout( loadHighlight.bind( null, count++ ), 100 );
+            setTimeout( loadHighlight.bind( null, count + 1 ), 100 );
         }
 
     };
@@ -778,7 +773,7 @@ var JAMSEDU = ( function() {
                 katex.render( elem.innerHTML, elem, { throwOnError: false } );
             } );
         } else {
-            setTimeout( loadKatex.bind( null, count++ ), 100 );
+            setTimeout( loadKatex.bind( null, count + 1 ), 100 );
         }
 
     };
@@ -803,7 +798,7 @@ var JAMSEDU = ( function() {
             document.head.appendChild( tag );
             
         } else {
-            setTimeout( loadMermaid.bind( null, count++ ), 100 );
+            setTimeout( loadMermaid.bind( null, count + 1 ), 100 );
         }
 
     };
@@ -815,6 +810,8 @@ var JAMSEDU = ( function() {
      */
      var loadPDF = function( count ) {
 
+        console.log( count );
+
         if ( count > 50 ) {
             return;
         }
@@ -822,20 +819,21 @@ var JAMSEDU = ( function() {
         if ( typeof PDFMiniViewers !== 'undefined' ) {
 
             // Load ...AVOIDS A RACE CONDITION
-            if ( typeof pdfjsViewer == 'undefined' ) {
-                var tag   = document.createElement( 'SCRIPT' );
-                tag.async = true;
-                tag.type  = 'text/javascript';
-                tag.src   = PATHS.relative + 'js/pdf-viewer.js';
-                document.head.appendChild( tag );
-                setTimeout( loadPDF.bind( null, count++ ), 100 );
+            if ( typeof pdfjsLib == 'undefined' ) {
+                // var tag   = document.createElement( 'SCRIPT' );
+                // tag.async = true;
+                // tag.type  = 'text/javascript';
+                // tag.src   = PATHS.relative + 'js/pdf-viewer.js';
+                // document.head.appendChild( tag );
+                
+                setTimeout( loadPDF.bind( null, count + 1 ), 100 );
             } else {
                 // Initialize PDFJS to format all PDFs on the page.
-                PDFMiniViewers.initialize();
+                PDFMiniViewers.initialize( PATHS.relative + 'js/pdf-worker.min.js', PATHS.relative + 'js/cmaps' );
             }
 
         } else {
-            setTimeout( loadPDF.bind( null, count++ ), 100 );
+            setTimeout( loadPDF.bind( null, count + 1 ), 100 );
         }
 
     };

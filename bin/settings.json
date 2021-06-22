@@ -8,7 +8,7 @@
         "jsd": "html"
     },
     "preprocessor": "less",
-    "releaseDir": "release",
+    "releaseDir": "docs",
     "safeFileExtensions": [
         "7z",
         "bcmap",

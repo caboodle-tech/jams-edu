@@ -19,6 +19,8 @@ ${{navigation}}  = "main";
         </p>
 <pre class="lang-html"><code>&lt;img src="assets/artistic-logo.jpg" alt="Caboodle Tech Artistic Logo" class="right" data-caption="Caboodle Tech Logo: Watercolor and Pen in a Decoupage faux Vitreography style"&gt;
 </code></pre>
+        <h2 id="demo-audio">PDF</h2>
+        <div data-pdf="assets/jamsedu-demo.pdf"></div>
         <h2 id="demo-audio">Audio</h2>
         <p>
             Adding audio to a page is as simple as linking to the audio file and adding the <code>data-audio</code> attribute to the link. Below is an example that is using additional audio features:
