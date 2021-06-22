@@ -1,0 +1,20 @@
+${{title}}       = "Overview of Features | JamsEDU";
+${{author}}      = "Caboodle Tech";
+${{keywords}}    = "Demo, JamsEDU, Tables, Headers, Horizontal Rule, Mark, Kbd, Del, Delete, Ins, Insert";
+${{description}} = "A demo of the basic features available in JamsEDU; Headers, Horizontal Rule, Mark, Kbd, Tables, Code, and so on.";
+${{navigation}}  = "main";
+
+{{T:HEAD}}
+<body>
+    {{T:HEADER}}
+    <section id="main-content" class="go-back">
+        <h1>
+            Overview of Features 
+        </h1>
+        <p>
+            Coming soon. Please go back and click on the links under the feature section instead.
+        </p>
+    </section>
+    {{T:FOOTER}}
+</body>
+</html>
