@@ -12,6 +12,7 @@
     "safeFileExtensions": [
         "7z",
         "bcmap",
+        "cname",
         "css",
         "doc",
         "docx",
