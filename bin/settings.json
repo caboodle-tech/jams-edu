@@ -12,6 +12,7 @@
     "safeFileExtensions": [
         "7z",
         "bcmap",
+        "cname",
         "css",
         "doc",
         "docx",
@@ -25,6 +26,7 @@
         "jpg",
         "js",
         "less",
+        "license",
         "md",
         "mp3",
         "mp4",
@@ -42,5 +44,6 @@
         "woff2",
         "xml",
         "zip"
-    ]
+    ],
+    "timestampFormat": "YYYY-MM-DD @ HH:mm:ss"
 }

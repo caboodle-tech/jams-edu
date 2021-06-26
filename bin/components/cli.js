@@ -1,4 +1,5 @@
 const cmdLine   = require('child_process');
+const dayjs     = require('./day');
 const fs        = require('fs');
 const initSqlJs = require( './sql-wasm' );
 const md5       = require( './md5' );
@@ -499,29 +500,31 @@ Compile completed in: ${this.stats.time}
     /**
      * Create a human readable UTC like timestamp: YYYY-MM-DD @ HH:MM:SS
      */
-    getTimestamp() {
+    getTimestamp( d ) {
 
-        let d = new Date();
+        d = d || new Date();
 
-        let dy = d.getDate();
-        if ( dy < 10 ){ dy = '0' + dy; }
+        return dayjs( d, this.settings.timestampFormat ).format( this.settings.timestampFormat );
 
-        let mm = d.getMonth() + 1;
-        if ( mm < 10 ){ mm = '0' + mm; }
+        // let dy = d.getDate();
+        // if ( dy < 10 ){ dy = '0' + dy; }
 
-        let hr = d.getHours();
-        if ( hr < 10 ){ hr = '0' + hr; }
+        // let mm = d.getMonth() + 1;
+        // if ( mm < 10 ){ mm = '0' + mm; }
 
-        let mn = d.getMinutes();
-        if ( mn < 10 ){ mn = '0' + mn; }
+        // let hr = d.getHours();
+        // if ( hr < 10 ){ hr = '0' + hr; }
 
-        let sc = d.getSeconds();
-        if ( sc < 10 ){ sc = '0' + sc; }
+        // let mn = d.getMinutes();
+        // if ( mn < 10 ){ mn = '0' + mn; }
 
-        let timestamp  = d.getFullYear() + '-' + mm + '-' + dy;
-        timestamp     += ' @ ' + hr + ':' + mn + ':' + sc;
+        // let sc = d.getSeconds();
+        // if ( sc < 10 ){ sc = '0' + sc; }
 
-        return timestamp;
+        // let timestamp  = d.getFullYear() + '-' + mm + '-' + dy;
+        // timestamp     += ' @ ' + hr + ':' + mn + ':' + sc;
+
+        // return timestamp;
     }
 
     /**
@@ -806,6 +809,13 @@ Compile completed in: ${this.stats.time}
                 //let ext = path.parse( location ).ext.replace( '.', '' );
                 let output = "";
                 let ext = path.parse( location ).ext.replace( '.', '' );
+                
+                // Account for non-extension files.
+                if ( ! ext || ext.length < 1 ) {
+                    ext = location.substring( location.lastIndexOf( path.sep ) + 1 );
+                    ext = ext.toLowerCase().replace( /[\.\-\_\ ]/g, '' );
+                }
+
                 if ( this.compilers.types.includes( ext ) ) {
                     // Determine what the output file type should be.
                     let name = path.parse( location ).name;
