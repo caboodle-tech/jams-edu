@@ -15,3 +15,5 @@ if ( cmd[0] ) {
  */
 let cli = new CLI();
 cli.runCmd( cmd, process.argv.slice(3).join( ' ' ) );
+
+cli.getTimestamp();

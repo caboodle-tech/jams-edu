@@ -23,13 +23,14 @@ module.exports = function( location, dest, data, passBack ) {
     file     = obj.file;
 
     // Add the compile time to the variables object.
-    vars[ 'TIMESTAMP' ] = this.getTimestamp();
+    var fileStats = fs.statSync( location );
+    // vars[ 'FILE_UPDATED' ] = this.getTimestamp();
+    vars[ 'FILE_UPDATED' ] = this.getTimestamp( new Date( fileStats.mtime ) )
 
     // Add any page variables to the global variables object; this places globals first.
     vars = Object.assign( this.globalVars, vars );
 
     // Build the correct relative path and add that to the variables object.
-    console.log(location);
     let count = location.replace( '.' + path.sep, '' ).split( path.sep ).length;
     count--;
     if ( count > 0 ) {
@@ -69,7 +70,7 @@ module.exports = function( location, dest, data, passBack ) {
         let regex = new RegExp( '{{' + varProp + '}}', 'gi' );
         file = file.replace( regex, vars[ varProp ] );
     }
-    console.log( vars );
+
     /**
      * If a custom compiler called our built in one they may need
      * the result back instead of us immediately saving it.
