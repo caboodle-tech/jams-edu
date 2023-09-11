@@ -1,0 +1,19 @@
+@mixin styles() {
+  table {
+    .icon {
+      float: right;
+      opacity: 0.25;
+      margin-left: 5px;
+
+      &.sort {
+        svg {
+          pointer-events: none;
+        }
+
+        &.selected {
+          opacity: 1;
+        }
+      }
+    }
+  }
+}

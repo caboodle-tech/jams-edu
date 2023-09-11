@@ -1,0 +1,22 @@
+{
+    "name": "@caboodle-tech/jams-edu",
+    "version": "0.0.0",
+    "dependencies": {
+        "@caboodle-tech/node-simple-server": "^2.0.1"
+    },
+    "devDependencies": {
+        "eslint": "^8.41.0",
+        "eslint-config-airbnb-base": "^15.0.0",
+        "eslint-plugin-import": "^2.27.5",
+        "sass": "^1.62.1"
+    },
+    "bin": {
+        "jamsedu": "bin/cli.js"
+    },
+    "main": "app/jams-edu.js",
+    "scripts": {
+        "build:edu": "node ./bin/cli.js build",
+        "watch:edu": "node ./bin/cli.js watch"
+    },
+    "type": "module"
+}

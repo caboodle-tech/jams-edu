@@ -1,0 +1,7 @@
+@use "behaviors/je-sortable.scss" as sortable;
+
+.text-left {
+  text-align: left;
+}
+
+@include sortable.styles();

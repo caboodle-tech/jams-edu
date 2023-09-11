@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="./js/custom-behaviors.min.js"></script>
+    <script src="./js/je-icons.js"></script>
+    <script src="./js/je.js"></script>
+    <script src="./js/behaviors/je-anchor.js"></script>
+    <script src="./js/behaviors/je-sortable.js"></script>
+    <link rel="stylesheet" href="./css/je-styles.css" />
+  </head>
+  <body>
+    <h1 has="je-anchor">This is an H1</h1>
+    <h2 has="je-anchor" id="test">This is an H2</h2>
+    <h3 has="je-anchor">This is an H3</h3>
+    <h4 has="je-anchor">This is an H4</h4>
+    <h5 has="je-anchor">This is an H5</h5>
+    <h6 has="je-anchor">This is an H6</h6>
+    <hr />
+    <table has="je-sortable je-striped">
+      <thead>
+        <tr>
+          <th colspan="2">Employee Information</th>
+          <th colspan="2">Salary</th>
+        </tr>
+        <tr>
+          <th>Name</th>
+          <th>Position</th>
+          <th>Basic Salary</th>
+          <th>Bonus</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td rowspan="2">John Doe</td>
+          <td>Manager</td>
+          <td>$5,000</td>
+          <td>$2,000</td>
+        </tr>
+        <tr>
+          <td>Team Lead</td>
+          <td>$4,000</td>
+          <td>$1,500</td>
+        </tr>
+        <tr>
+          <td>Jane Smith</td>
+          <td>Developer</td>
+          <td colspan="2">$3,000</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3">Total</td>
+          <td>$10,500</td>
+        </tr>
+      </tfoot>
+    </table>
+  </body>
+</html>
