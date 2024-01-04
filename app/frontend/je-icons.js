@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+
 class JamsEduIcons {
 
     /* Icons from https://iconmonstr.com/ */
@@ -50,9 +52,8 @@ class JamsEduIcons {
     add(key, svg) {
         if (Object.hasOwn(this.#icons, key)) {
             // Call the update method instead if you intend to overwrite existing icons.
-            console.error(
-                `Could not add icon with key '${key}' to JamIcons because it already exists.`
-            );
+            // eslint-disable-next-line no-console
+            console.error(`Could not add icon with key '${key}' to JamIcons because it already exists.`);
             return;
         }
         this.#icons[key] = svg;
@@ -93,5 +94,7 @@ class JamsEduIcons {
 
 }
 
-const JamsEduIcon = new JamsEduIcons();
-window.JamsEduIcon = JamsEduIcon;
+export default () => {
+    const JamsEduIcon = new JamsEduIcons();
+    window.JamsEduIcon = JamsEduIcon;
+};

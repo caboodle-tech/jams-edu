@@ -27,6 +27,7 @@
         "SwitchCase": 1
       }
     ],
+    "max-len": ["warn", 120],
     "no-param-reassign": "off",
     "no-plusplus": [
       "error",

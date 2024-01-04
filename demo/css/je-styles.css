@@ -1,1 +1,25 @@
-.text-left{text-align:left}table .icon{float:right;opacity:.25;margin-left:5px}table .icon.sort svg{pointer-events:none}table .icon.sort.selected{opacity:1}
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+table .sort-icon {
+  float: right;
+  opacity: 0.25;
+  margin-left: 5px;
+}
+table .sort-icon svg {
+  pointer-events: none;
+}
+table .sort-icon.selected {
+  opacity: 1;
+}
+
+/*# sourceMappingURL=je-styles.css.map */

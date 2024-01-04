@@ -1,6 +1,6 @@
 # JamsEDU
 
-JamsEDU (Jamstack for Education) is a feature rich but simplistic to use [Jamstack](https://jamstack.org/) application designed for educational content. Originally designed to help rapidly develop and deploy University courses, JamsEDU is the perfect way to quickly create secure static websites for STEM focused content. View the [JamsEDU (jamsedu.com)](https://jamsedu.com) website for a live demo.
+JamsEDU (Jamstack for Education) is a feature rich but simplistic to use [Jamstack](https://jamstack.org/) application designed for educational content. Originally designed to help rapidly develop and deploy University courses, JamsEDU is the perfect way to quickly create secure static websites for STEM focused content. View the [JamsEDU website](https://jamsedu.com) for a live demo.
 
 ## Features
 
@@ -19,6 +19,5 @@ Any user who wishes to run the JamsEDU compiler needs the following software ins
 
 | Software | Version                               |
 | -------- | ------------------------------------- |
-| Node.js  | >= 14.15.4                            |
-| LESS     | optional - installed globally via npm |
+| Node.js  | >= 18.16.0                            |
 | SASS     | optional - installed globally via npm |

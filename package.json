@@ -1,22 +1,28 @@
 {
     "name": "@caboodle-tech/jams-edu",
-    "version": "0.0.0",
+    "version": "1.0.0-rc",
     "dependencies": {
-        "@caboodle-tech/node-simple-server": "^2.0.1"
+        "@caboodle-tech/node-simple-server": "^3.0.1",
+        "sass": "^1.69.7"
     },
     "devDependencies": {
+        "@rollup/plugin-commonjs": "^25.0.7",
+        "@rollup/plugin-node-resolve": "^15.2.3",
+        "@rollup/plugin-terser": "^0.4.4",
         "eslint": "^8.41.0",
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-plugin-import": "^2.27.5",
-        "sass": "^1.62.1"
+        "rollup": "^4.3.0"
     },
     "bin": {
-        "jamsedu": "bin/cli.js"
+        "jamsedu": "bin/jamsedu.js"
     },
-    "main": "app/jams-edu.js",
+    "main": "./bin/jamsedu.js",
     "scripts": {
-        "build:edu": "node ./bin/cli.js build",
-        "watch:edu": "node ./bin/cli.js watch"
+        "build": "node ./bin/jamsedu.js --build app",
+        "watch": "node ./bin/jamsedu.js --watch app",
+        "build:edu": "node ./bin/jamsedu.js --build jamsedu",
+        "watch:edu": "node ./bin/jamsedu.js --watch jamsedu"
     },
     "type": "module"
 }

@@ -1,3 +1,12 @@
+// Import JamsEDU element behaviors.
+import JeAnchors from './behaviors/je-anchor.js';
+import JeSortable from './behaviors/je-sortable.js';
+import JeStripedTable from './behaviors/je-striped-table.js';
+
+// Import additional classes for JamsEDU.
+import ElementBehaviors from './element-behaviors.js';
+import JamsEduIcons from './je-icons.js';
+
 class JamsEduApp {
 
     /**
@@ -52,6 +61,19 @@ class JamsEduApp {
     }
 
     /**
+     * Test an unknown item or a possible object to see if it is an actual object.
+     *
+     * @param {*} item An item with a potentially unknown datatype.
+     * @returns {boolean} True if item was actually an object, false otherwise.
+     */
+    isObject(item) {
+        if (typeof item === 'object' && !Array.isArray(item) && item !== null) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * The fastest way to get the actual type of anything in JavaScript.
      *
      * {@link https://jsbench.me/ruks9jljcu/2 | See benchmarks}.
@@ -67,5 +89,15 @@ class JamsEduApp {
 
 }
 
-JamsEdu = new JamsEduApp();
+// Instantiate supporting classes first.
+ElementBehaviors();
+JamsEduIcons();
+
+// Instantiate the JamsEDU app.
+const JamsEdu = new JamsEduApp();
 window.JamsEdu = JamsEdu;
+
+// Load all element behaviors.
+JeAnchors();
+JeSortable();
+JeStripedTable();

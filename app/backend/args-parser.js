@@ -1,7 +1,11 @@
+import Process from 'process';
+
 class ArgParser {
 
     static parse(argv) {
+
         const parsedArgs = {
+            cwd: Process.cwd(),
             executing: argv[1],
             execPath: argv[0]
         };
