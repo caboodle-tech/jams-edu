@@ -1,4 +1,4 @@
-import * as sass from 'sass';
+import * as Sass from 'sass';
 import Fs from 'fs';
 import Path from 'path';
 import { fileURLToPath } from 'url';
@@ -17,7 +17,13 @@ class JamsEduScssSource {
     static outFile = Path.join(__dirname, 'dist/jamsedu.bundle.css');
 
     static async build() {
-        const result = sass.compile(this.srcFile, this.config);
+        const result = Sass.compile(this.srcFile, this.config);
+
+        // Create directories recursively if they don't exist.
+        if (!Fs.existsSync(Path.dirname(this.outFile))) {
+            Fs.mkdirSync(Path.dirname(this.outFile), { recursive: true });
+        }
+
         Fs.writeFileSync(this.outFile, result.css, { encoding: 'utf8' });
     }
 

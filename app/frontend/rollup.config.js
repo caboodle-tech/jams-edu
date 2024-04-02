@@ -1,3 +1,4 @@
+import Fs from 'fs';
 import Path from 'path';
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
@@ -26,6 +27,11 @@ class JamsEduJsSource {
     static async build() {
         // Create the JamsEDU Rollup bundle.
         const bundle = await Rollup(this.config);
+
+        // Create directories recursively if they don't exist.
+        if (!Fs.existsSync(Path.dirname(this.config.output.file))) {
+            Fs.mkdirSync(Path.dirname(this.config.output.file), { recursive: true });
+        }
 
         // Generate the bundle.
         await bundle.write(this.config.output);

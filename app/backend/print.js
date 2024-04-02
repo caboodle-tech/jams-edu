@@ -2,31 +2,63 @@
 
 class Print {
 
-    static formatMessage(message, colorCode) {
+    #enabled = true;
+
+    disable() {
+        this.#enabled = false;
+    }
+
+    enable() {
+        this.#enabled = true;
+    }
+
+    error(message, override = false) {
+        if (!this.#enabled && !override) {
+            return;
+        }
+        // Red color
+        console.error(this.#formatMessage(message, '\x1b[31m'));
+    }
+
+    #formatMessage(message, colorCode) {
         const resetCode = '\x1b[0m';
         return `${colorCode}${message}${resetCode}`;
     }
 
-    static log(message) {
+    log(message, override = false) {
+        if (!this.#enabled && !override) {
+            return;
+        }
         // White color
-        console.log(Print.formatMessage(message, '\x1b[37m'));
+        console.log(this.#formatMessage(message, '\x1b[37m'));
     }
 
-    static success(message) {
+    notice(message, override = false) {
+        if (!this.#enabled && !override) {
+            return;
+        }
+        // Blue color
+        console.log(this.#formatMessage(message, '\x1b[94m'));
+    }
+
+    success(message, override = false) {
+        if (!this.#enabled && !override) {
+            return;
+        }
         // Green color
-        console.log(Print.formatMessage(message, '\x1b[32m'));
+        console.log(this.#formatMessage(message, '\x1b[32m'));
     }
 
-    static warn(message) {
+    warn(message, override = false) {
+        if (!this.#enabled && !override) {
+            return;
+        }
         // Yellow color
-        console.warn(Print.formatMessage(message, '\x1b[33m'));
-    }
-
-    static error(message) {
-        // Red color
-        console.error(Print.formatMessage(message, '\x1b[31m'));
+        console.warn(this.#formatMessage(message, '\x1b[33m'));
     }
 
 }
 
-export default Print;
+const printer = new Print();
+
+export default printer;

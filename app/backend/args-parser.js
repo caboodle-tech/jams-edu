@@ -2,7 +2,7 @@ import Process from 'process';
 
 class ArgParser {
 
-    static parse(argv) {
+    static parse(argv = process.argv) {
 
         const parsedArgs = {
             cwd: Process.cwd(),

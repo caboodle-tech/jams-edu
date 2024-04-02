@@ -1,181 +1,374 @@
 import Fs from 'fs';
 import Path from 'path';
 import Process from 'process';
-import { fileURLToPath } from 'url';
-import JamsEduJsSource from '../frontend/rollup.config.js';
-import JamsEduScssSource from '../frontend/scss.config.js';
+import NodeSimpleServer from '@caboodle-tech/node-simple-server';
+import Builder from './builder.js';
 import Print from './print.js';
-
-// eslint-disable-next-line no-underscore-dangle
-const __dirname = Path.dirname(fileURLToPath(import.meta.url));
-const ROOT = Path.join(__dirname, '../');
+import Watcher from './watcher.js';
 
 class JamsEdu {
 
-    #appDir; // The root dir of the users project; where the jamsedu.config is at.
+    #builder;
 
-    #outDir; // The dir to output the built project to.
+    #dirs = {
+        css: '',
+        cwd: Process.cwd(),
+        jamsedu: '',
+        js: '',
+        output: '',
+        source: '',
+        templates: ''
+    };
 
-    #srcDir; // The dir to build; output sent to the #outDir location.
+    #processFileTypes = ['html'];
+
+    #processJs = [];
+
+    #processScss = [];
 
     #version = '1.0.0-rc';
 
-    constructor(options) {
-        this.#appDir = options.root || Process.cwd();
-        this.setBuildDir(options.build);
-        this.setSourceDir(options.source);
-    }
-
-    async #buildJamseduSourceFiles() {
-        await JamsEduJsSource.build();
-        await JamsEduScssSource.build();
-    }
-
-    getBuildDir() {
-        return this.#outDir;
-    }
-
-    getExt(path) {
-        const start = path.indexOf('.');
-        if (start === -1) {
-            return '';
+    constructor(settings) {
+        // We must have a valid source directory.
+        if (!settings.sourceDir || !Fs.existsSync(settings.sourceDir)) {
+            Print.error(`Source directory does not exist:\n${settings.sourceDir}`);
+            Process.exit();
         }
-        return path.substring(start + 1);
-    }
 
-    getSourceDir() {
-        return this.#srcDir;
-    }
+        // We must know where the JamsEdu application is installed.
+        if (!settings.jamseduDir || !Fs.existsSync(settings.jamseduDir)) {
+            Print.error(`Missing valid JamsEdu application root directory:\n${settings.jamseduDir}`);
+            Process.exit();
+        }
 
-    /**
-     * Helper method that  will recursively process a directory.
-     *
-     * @param {string} dir The directory to recursively search.
-     * @param {array} patterns An array of RegExp or RegExp like patterns to check for in the source
-     *                         files path.
-     * @param {*} callbacks An array of callback functions to call when a match is found. The index
-     *                      of the match will be used as the index of the callback function to call;
-     *                      if you provide only 1 callback it will be duplicated to match the
-     *                      pattern count.
-     * @param {*} noMatchCallback Callback for files not matched by any patterns.
-     */
-    processFilesFromDir(dir, patterns = [/.*/], callbacks = [() => {}], noMatchCallback = () => {}) {
-        // Verify all patterns are valid.
-        patterns.forEach((pattern, i) => {
-            if (this.whatIs(pattern) !== 'regexp') {
-                const checkedPattern = this.makeRegex(pattern);
-                if (!checkedPattern) {
-                    Print.error(`Expected RegExp object or RegExp like string but received: ${pattern}`);
-                    return;
+        // Loosely verify that we have the proper location of JamsEdu with a quick check.
+        if (!Fs.existsSync(Path.join(settings.jamseduDir, 'backend'))
+            || !Fs.existsSync(Path.join(settings.jamseduDir, 'frontend'))
+        ) {
+            Print.error(`Invalid JamsEdu application root directory:\n${settings.jamseduDir}`);
+            Process.exit();
+        }
+
+        // Record file type(s) to process if any.
+        if (settings.processFileTypes && this.whatIs(settings.processFileTypes) === 'array') {
+            // Remove any leading dots, we need the extension name only.
+            settings.processFileTypes.forEach((ext, index) => {
+                if (ext[0] === '.') {
+                    settings.processFileTypes[index] = ext.substring(1);
                 }
-                patterns[i] = checkedPattern;
-            }
-        });
-
-        // Verify correct amount of callbacks.
-        if (patterns.length !== callbacks.length) {
-            if (callbacks.length > 1) {
-                Print.error('The processFilesFromDir method expects an equal amount of patterns to callbacks.');
-                return;
-            }
-            const callback = callbacks[0];
-            patterns.forEach((_, i) => {
-                callbacks[i] = callback;
             });
+            this.#processFileTypes = settings.processFileTypes;
         }
 
-        this.#recurseDir(dir, patterns, callbacks, noMatchCallback);
-    }
-
-    run(args) {
-        console.log(args);
-        this.#buildJamseduSourceFiles();
-    }
-
-    /**
-     * Method that actually performs recursion on a directory and sends all files found to a user
-     * defined function for processing or to be used in some other process.
-     *
-     * @param {string} dir The directory to recursively search.
-     * @param {array} patterns An array of RegExp or RegExp like patterns to check for in the source
-     *                         files path.
-     * @param {*} callbacks An array of callback functions to call when a match is found. The index
-     *                      of the match will be used as the index of the callback function to call;
-     *                      if you provide only 1 callback it will be duplicated to match the
-     *                      pattern count.
-     * @param {*} noMatchCallback Callback for files not matched by any patterns.
-     * @returns
-     */
-    #recurseDir(dir, patterns, callbacks, noMatchCallback) {
-        const items = Fs.readdirSync(dir, { withFileTypes: true });
-        items.forEach((item) => {
-            const src = Path.join(dir, item.name);
-            if (item.isDirectory()) {
-                this.#recurseDir(src, patterns, callbacks, noMatchCallback);
-                return;
-            }
-            const ext = this.getExt(item.name);
-            let matchFound = false;
-            for (let i = 0; i < patterns.length; i++) {
-                if (patterns[i].test(src)) {
-                    callbacks[i](src, ext);
-                    matchFound = true;
-                    break;
+        // Record JS files that should be bundled if any.
+        if (settings.processJs && this.whatIs(settings.processJs) === 'array') {
+            // Remove any leading dots, we need the extension name only.
+            settings.processJs.forEach((ext, index) => {
+                if (ext[0] === '.') {
+                    settings.processJs[index] = ext.substring(1);
                 }
+            });
+            this.#processJs = settings.processJs;
+        }
+
+        // Record SCSS files that should be built and bundled if any.
+        if (settings.processScss && this.whatIs(settings.processScss) === 'array') {
+            // Remove any leading dots, we need the extension name only.
+            settings.processScss.forEach((ext, index) => {
+                if (ext[0] === '.') {
+                    settings.processScss[index] = ext.substring(1);
+                }
+            });
+            this.#processScss = settings.processScss;
+        }
+
+        // Set core settings first.
+        this.#dirs.jamsedu = settings.jamseduDir;
+        this.setSourceDir(settings.sourceDir);
+
+        // Set additional settings that will default to using parts of the previous settings if missing.
+        this.setOutputDir(settings.outputDir);
+        this.setCssDir(settings.outputCss);
+        this.setJsDir(settings.outputJs);
+        this.setTemplatesDir(settings.templateDir);
+
+        // Insatiate the builder last; this.#dirs must be populated by the previous steps first.
+        this.#builder = new Builder(
+            this.#dirs,
+            {
+                processFileTypes: this.#processFileTypes,
+                processJs: this.#processJs,
+                processScss: this.#processScss
             }
-            if (matchFound) { return; }
-            noMatchCallback(src, ext);
+        );
+    }
+
+    /**
+     * Helper function to locate the nearest JamsEdu config file.
+     *
+     * @param {string} startDir The directory to start searching from.
+     * @returns The absolute path to the JamsEdu config file or null.
+     */
+    static findConfigFile(startDir) {
+        let currentDir = startDir;
+        // Search for the config file.
+        while (currentDir !== null && currentDir !== Path.parse(currentDir).root) {
+            const configFile = Path.join(currentDir, 'jamsedu.config');
+            if (Fs.existsSync(configFile)) {
+                return configFile;
+            }
+            // Climb to parent dir.
+            currentDir = Path.dirname(currentDir);
+        }
+        // Config file not found.
+        return null;
+    }
+
+    /**
+     * Get the configured CSS directory.
+     *
+     * @returns The absolute path to the users configured CSS directory.
+     */
+    getCssDir() {
+        return this.#dirs.css;
+    }
+
+    /**
+     * Get the configured output (build) directory.
+     *
+     * @returns The absolute path to the users configured output (build) directory.
+     */
+    getOutputDir() {
+        return this.#dirs.output;
+    }
+
+    /**
+     * Get the configured JamsEdu source directory.
+     *
+     * @returns The absolute path to the JamsEdu's source directory.
+     */
+    getJamseduSourceDir() {
+        return this.#dirs.jamsedu;
+    }
+
+    /**
+     * Get the configured JS directory.
+     *
+     * @returns The absolute path to the users configured JS directory.
+     */
+    getJsDir() {
+        return this.#dirs.js;
+    }
+
+    /**
+     * Get the configured CSS directory.
+     *
+     * @returns The absolute path to the users configured css directory.
+     */
+    getSourceDir() {
+        return this.#dirs.source;
+    }
+
+    /**
+     * Get the configured templates directory.
+     *
+     * @returns The absolute path to the users configured templates directory.
+     */
+    getTemplatesDir() {
+        return this.#dirs.templates;
+    }
+
+    #initializeProject() {
+        const config = {
+            outputCss: './dist/css',
+            outputDir: './dist',
+            outputJs: './dist/js',
+            process: ['html'],
+            sourceDir: './src',
+            templateDir: './src/templates'
+        };
+
+        const indexFile = Path.join(this.#dirs.cwd, config.sourceDir, 'index.html');
+        const configFile = Path.join(this.#dirs.cwd, 'jamsedu.config');
+        if (Fs.existsSync(configFile)) {
+            Print.notice('JamsEdu config file already exists, skipped creating a new one.');
+        } else {
+            this.#builder.outputFile(configFile, JSON.stringify(config, null, 2));
+        }
+
+        delete config.process;
+        delete config.outputDir;
+        delete config.sourceDir;
+        config.sourceCss = './src/scss';
+        config.sourceJs = './src/js';
+
+        Object.keys(config).forEach((key) => {
+            const dir = config[key];
+            if (!Fs.existsSync(dir)) {
+                Fs.mkdirSync(dir, { recursive: true });
+            }
         });
-    }
 
-    /**
-     * Converts a regular expression (regex) string into an actual RegExp object.
-     *
-     * @param {string} pattern A string of text or a regex expressed as a string; don't forget to
-     *                         escape characters that should be interpreted literally.
-     * @return {RegExp|null} A RegExp object if the string could be converted, null otherwise.
-     */
-    makeRegex(pattern) {
-        try {
-            if (/\[|\]|\(|\)|\{|\}|\*|\$|\^/.test(pattern)) {
-                return new RegExp(pattern);
-            }
-            if (pattern[0] === '/' && pattern[pattern.length - 1] === '/') {
-                // eslint-disable-next-line no-param-reassign
-                pattern = pattern.substring(1, pattern.length - 2);
-            }
-            return new RegExp(pattern);
-        } catch (e) {
-            return null;
+        if (!Fs.existsSync(indexFile)) {
+            this.#builder.outputFile(indexFile, '');
         }
+
+        this.#builder.build();
     }
 
     /**
-     * Set JEs build (output) directory.
+     * Run the JamsEdu command the user requested.
      *
-     * @param {string} dir The absolute path for JEs build folder; default to process.cwd()
-     * @returns void
+     * @param {array} args The process arguments that JamsEdu was called with.
      */
-    setBuildDir(dir = null) {
-        if (!dir) {
-            this.#outDir = Path.join(process.cwd(), 'dist');
+    async run(args) {
+        // Show help page: jamsedu -h || jamsedu --help || jamsedu help
+        if (args.h || args.help) {
+            Print.warn('A help page is coming later!');
             return;
         }
-        this.#outDir = dir;
+
+        // Show the version number: jamsedu -v || jamsedu --version || jamsedu version
+        if (args.v || args.version) {
+            Print.notice(`JamsEdu v${this.#version}`);
+            return;
+        }
+
+        // Initialize a new JamsEdu project.
+        if (args.init || args.initialize) {
+            this.#initializeProject();
+            return;
+        }
+
+        // Build the users site: jamsedu build || jamsedu --build
+        if (args.build && !args.edu) {
+            this.#builder.build();
+            return;
+        }
+
+        // Watch and build the users site: jamsedu watch || jamsedu --watch
+        if (args.watch && !args.edu) {
+            this.#watchAndBuild();
+            return;
+        }
+
+        // Build JamsEdu and the users/demo site: jamsedu build --edu || jamsedu --build --edu
+        if (args['build:edu'] || (args.build && args.edu)) {
+            await this.#builder.buildJamsEduJs();
+            await this.#builder.buildJamsEduScss();
+            this.#builder.build();
+            return;
+        }
+
+        // Watch JamsEdu and build the users/demo site: jamsedu watch --edu || jamsedu --watch --edu
+        if (args['watch:edu'] || (args.watch && args.edu)) {
+            this.#watchAndBuild(true);
+            return;
+        }
+
+        // Warn the user no valid command was detected.
+        Print.warn('Please enter a valid command or run `jamsedu --help` for instructions on using JamsEdu.');
     }
 
     /**
-     * Set the source (input) directory for the users JE site.
+     * Set JamsEdu's css output directory.
      *
-     * @param {string} dir The absolute path for JEs build folder; default to process.cwd()
-     * @returns void
+     * @param {string} dir The absolute path to the output css folder; defaults to this.getSourceDir()/css
      */
-    setSourceDir(dir = null) {
+    setCssDir(dir = null) {
         if (!dir) {
-            this.#srcDir = Path.join(process.cwd(), 'app');
-            return;
+            dir = Path.join(this.getSourceDir(), 'css');
         }
-        this.#srcDir = dir;
+        this.#dirs.css = Path.join(dir, '');
+    }
+
+    /**
+     * Set JamsEdu's output (build) directory.
+     *
+     * @param {string} dir The absolute path for JamsEdu's build folder; defaults to this.getSourceDir()/dist
+     */
+    setOutputDir(dir) {
+        if (!dir) {
+            dir = Path.join(this.getSourceDir(), 'dist');
+        }
+        this.#dirs.output = Path.join(dir, '');
+    }
+
+    /**
+     * Set JamsEdu's js output directory.
+     *
+     * @param {string} dir The absolute path to the output js folder; defaults to this.getSourceDir()/js
+     */
+    setJsDir(dir) {
+        if (!dir) {
+            dir = Path.join(this.getSourceDir(), 'js');
+        }
+        this.#dirs.js = Path.join(dir, '');
+    }
+
+    /**
+     * Set the source (input) directory for the users JamsEdu site.
+     *
+     * @param {string} dir The absolute path for JamsEdu's build folder; defaults to process.cwd()/www
+     * @returns Boolean indicating if the new source directory was accepted.
+     */
+    setSourceDir(dir) {
+        if (!dir || !Fs.existsSync(dir)) {
+            Print.warn(`Refused to set source directory to nonexistent directory:\n${dir}`);
+            return false;
+        }
+        this.#dirs.source = Path.join(dir, '');
+        return true;
+    }
+
+    /**
+     * Set the templates directory for the users JE site.
+     *
+     * @param {string} dir The absolute path for JamsEdu's template folder; defaults to this.getSourceDir()/templates
+
+     */
+    setTemplatesDir(dir) {
+        if (!dir) {
+            dir = Path.join(this.getSourceDir(), 'templates');
+        }
+        this.#dirs.templates = Path.join(dir, '');
+    }
+
+    /**
+     * Start the Node Simple Server (NSS) for local development and auto reload the site when files change.
+     *
+     * @param {boolean} jamseduSourceAsWell Should JamsEdu source files be watched for changes too; default false.
+     */
+    #watchAndBuild(jamseduSourceAsWell = false) {
+        // Setup NSS options.
+        const serverOptions = {
+            root: this.#dirs.output
+        };
+
+        // Get a new instance of NSS.
+        const server = new NodeSimpleServer(serverOptions);
+
+        // Start the server.
+        server.start();
+
+        // Configure what files in the project are watched for changes.
+        const whatToWatch = [this.#dirs.source];
+        if (jamseduSourceAsWell) {
+            whatToWatch.push(Path.join(this.#dirs.jamsedu, 'frontend'));
+        }
+
+        // Get an instance of Watcher which actually handles responding to project changes.
+        const watcher = new Watcher(this.#dirs, this.#builder);
+
+        // Perform an initial build so the local development site works.
+        Print.notice('Performing initial build.');
+        Print.disable();
+        this.#builder.build();
+        Print.enable();
+
+        // Start watching for project changes.
+        Print.notice('Starting development server:\n');
+        server.watch(whatToWatch, watcher.getWatcherOptions());
     }
 
     /**

@@ -1,0 +1,55 @@
+<slot name="page-title">
+    Demo Title
+</slot>
+<template>main</template>
+<slot name="page-content">
+    <slot>page-title</slot>
+    <p>
+        This content should be placed inside the <code>main</code> section of the page.
+    </p>
+    <h1 anchor>This is an H1</h1>
+    <h2 anchor id="test">This is an H2</h2>
+    <h3 anchor>This is an H3</h3>
+    <h4 anchor>This is an H4</h4>
+    <h5 anchor>This is an H5</h5>
+    <h6 anchor>This is an H6</h6>
+    <hr />
+    <table sortable striped>
+      <thead>
+        <tr>
+          <th colspan="2">Employee Information</th>
+          <th colspan="2">Salary</th>
+        </tr>
+        <tr>
+          <th>Name</th>
+          <th>Position</th>
+          <th>Basic Salary</th>
+          <th>Bonus</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td rowspan="2">John Doe</td>
+          <td>Manager</td>
+          <td>$5,000</td>
+          <td>$2,000</td>
+        </tr>
+        <tr>
+          <td>Team Lead</td>
+          <td>$4,000</td>
+          <td>$1,500</td>
+        </tr>
+        <tr>
+          <td>Jane Smith</td>
+          <td>Developer</td>
+          <td colspan="2">$3,000</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3">Total</td>
+          <td>$10,500</td>
+        </tr>
+      </tfoot>
+    </table>
+</slot>
