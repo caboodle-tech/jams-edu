@@ -1,0 +1,18 @@
+<slot name="page-title">
+    Modified Default Title
+</slot>
+<slot name="page-scripts">
+    <script src="js/template.js"></script>
+</slot>
+<slot name="page-styles">
+    <link rel="stylesheet" href="css/template.css">
+</slot>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <slot>page-title</slot>
+    </title>
+    <slot merge>page-styles</slot>
+    <slot merge>page-scripts</slot>
+</head>
