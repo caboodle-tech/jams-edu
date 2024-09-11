@@ -1,21 +1,21 @@
 import * as Sass from 'sass';
 import Fs from 'fs';
 import Path from 'path';
-
-const uncompressedRegex = /--?uncompressed/i;
+import { ManuallyRemoveJamsEduHeaderComment } from './jamsedu-comments.js';
 
 const compileSass = (src, dest, options) => {
     try {
-        let outputStyle = 'expanded';
-        if (!options.some((option) => uncompressedRegex.test(option))) {
-            outputStyle = 'compressed';
+        let outputStyle = 'compressed';
+        if (options.uncompressed) {
+            outputStyle = 'expanded';
         }
 
         const result = Sass.compile(src, { style: outputStyle });
 
-        writeFileAndCreateDirs(dest, result.css);
+        writeFileAndCreateDirs(dest, ManuallyRemoveJamsEduHeaderComment(result.css));
         return true;
     } catch (err) {
+        console.log('Err', err);
         return false;
     }
 };

@@ -1,0 +1,71 @@
+@mixin styles {
+    table {
+        border-collapse: collapse;
+        width: 100%;
+
+        th {
+            white-space: nowrap;
+        }
+
+        th, td {
+            min-width: 125px;
+            padding: 5px;
+            text-align: left;
+            vertical-align: top;
+            white-space: nowrap;
+        }
+
+        tbody {
+            tr {
+                &:nth-child(odd) {
+                    background-color: var(--table-row-color)
+                }
+                &:last-of-type {
+                    border-bottom: 1px solid var(--table-border-color);
+                }
+            }
+        }
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        line-height: 3rem;
+        font-weight: normal;
+        margin: var(--default-margin) 0 calc(var(--default-margin) * 3) 0;
+        border-bottom: 2px solid var(--table-border-color);
+    }
+
+    h2, h3, h4, h5, h6 {
+        font-size: 2rem;
+        line-height: 2.5rem;
+        font-weight: normal;
+        margin: var(--default-margin) 0 calc(var(--default-margin) * 2) 0;
+        border-bottom: 2px solid var(--table-border-color);
+    }
+
+    mark, .highlight {
+        background-color: var(--text-highlight-color);
+    }
+
+    hr {
+        margin: calc(var(--default-margin) * 3) 0;
+        border: 1px dashed var(--table-border-color);
+    }
+
+    kbd {
+        font-family: 'Roboto Mono', monospace;
+        font-size: 1rem;
+        line-height: 1.25rem;
+        padding: 2px 5px;
+        margin: 0 2px;
+        border-radius: 4px;
+        color: var(--code-text-color);
+        background-color: var(--code-bg-color);
+        border: 1px solid var(--table-border-color);
+        box-shadow: var(--kbd-shadow);
+    }
+
+    q {
+        font-style: italic;
+    }
+}

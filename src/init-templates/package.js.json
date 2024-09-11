@@ -1,0 +1,15 @@
+{
+    "dependencies": {},
+    "devDependencies": {
+        "@html-eslint/eslint-plugin": "^0.26.0",
+        "@html-eslint/parser": "^0.26.0",
+        "eslint": "^9.8.0",
+        "eslint-plugin-jsonc": "^2.16.0",
+        "jsonc-eslint-parser": "^2.4.0"
+    },
+    "scripts": {
+        "build": "jamsedu --build --verbose",
+        "watch": "jamsedu --watch --verbose"
+    },
+    "type": "module"
+}

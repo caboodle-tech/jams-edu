@@ -1,0 +1,84 @@
+<var name="page-title">
+    Main Page
+</var>
+
+<var name="page-content">
+    Main page content.
+    <template use="blocks/section">
+        <zone name="content">
+            <h1>Heading 1</h1>
+            <h2>Heading 2</h2>
+            <h3>Heading 3</h3>
+            <h4>Heading 4</h4>
+            <h5>Heading 5</h5>
+            <h6>Heading 6</h6>
+
+            <p>This is a <mark>highlighted</mark> text.</p>
+
+            <p>Press <kbd>Ctrl</kbd> + <kbd>C</kbd> to copy.</p>
+
+            <table>
+                <tr>
+                    <td>Row 1, Column 1</td>
+                    <td>Row 1, Column 2</td>
+                </tr>
+                <tr>
+                    <td>Row 2, Column 1</td>
+                    <td>Row 2, Column 2</td>
+                </tr>
+            </table>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Header 1</th>
+                        <th>Header 2</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Row 1, Column 1</td>
+                        <td>Row 1, Column 2</td>
+                    </tr>
+                    <tr>
+                        <td>Row 2, Column 1</td>
+                        <td>Row 2, Column 2</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>This is an example of <code>inline code</code>.</p>
+            
+            <pre>
+                <code>
+                    function helloWorld() {
+                        console.log("Hello, World!");
+                    }
+                </code>
+            </pre>
+
+            <ul>
+                <li>List item 1</li>
+                <li>List item 2</li>
+                <li>List item 3</li>
+            </ul>
+
+            <ol>
+                <li>Ordered item 1</li>
+                <li>Ordered item 2</li>
+                <li>Ordered item 3</li>
+            </ol>
+
+            <figure>
+                <img alt="Image" src="https://placehold.co/600x400">
+            </figure>
+
+            <figure>
+                <img alt="Image" src="https://placehold.co/600x400">
+                <figcaption>Caption for the image</figcaption>
+            </figure>
+        </zone>
+    </template>
+</var>
+
+<template>main</template>

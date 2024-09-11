@@ -7,6 +7,10 @@ class Print {
 
     #enabled = true;
 
+    clear() {
+        console.clear();
+    }
+
     disable() {
         this.#enabled = false;
     }

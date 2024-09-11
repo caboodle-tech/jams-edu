@@ -6,15 +6,27 @@
     jamsedu [options] [arguments]
 
 # Description
-    This will come later.
+    A feature-rich yet user-friendly static site generator designed specifically
+    for open-source content. Originally developed to facilitate rapid creation
+    and deployment of university courses, JamsEdu offers an ideal solution for
+    non-technical users to swiftly build static websites.
 
 # Options
     build, -build, --build
         Perform a one time build of the sites source files.
 
+    h, -h, --h, help, -help, --help
+        Display JamsEdu's manual page; what your currently reading.
+
     init, -init, --init
-        Initializes a new JamsEDU project; follow terminal prompts to complete
+        Initializes a new JamsEdu project; follow terminal prompts to complete
         the setup process.
+
+    man, -man, --man
+        Alias for the `h` (`help`) option.
+
+    verbose, -verbose, --verbose
+        Enable verbose mode which prints additional information to the console.
     
     watch, -watch, --watch
         Starts a local server to view live changes to the sites files and also

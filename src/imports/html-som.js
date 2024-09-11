@@ -254,7 +254,7 @@ class HtmlSom {
      * @returns {string} The HTML string for the current SOM.
      */
     getHtml() {
-        if (this.#struct.som.size === 0 || !this.#struct.tail) {
+        if (this.#struct.som?.size === 0 || !this.#struct.tail) {
             return '';
         }
 
@@ -312,13 +312,34 @@ class HtmlSom {
         if (children.length > 0) {
             // Get the start and end indices of the first and last children respectively.
             const start = children[0].startIndex || -1;
-            const end = children[children.length - 1].endIndex || -1;
+            const end = this.#getLastChildIndex(children);
             if (start > -1 && end > -1) {
                 return this.getLines(start, end);
             }
         }
         return '';
     };
+
+    /**
+     * Determine the last child index in an array of children nodes. Since we allow nonstandard
+     * nesting of elements we can not grab the first last child we encounter, we must check the
+     * last child's children attribute as well until we truly reach the end node.
+     *
+     * @param {array} children An array of HtmlParser2 node elements.
+     * @returns {int} A positive number indicating where the last child end index is or -1 if none was found.
+     */
+    #getLastChildIndex(children) {
+        if (children.length === 1) {
+            return children[0].endIndex || -1;
+        }
+
+        const lastChild = children[children.length - 1];
+        if (lastChild.children) {
+            return this.#getLastChildIndex(lastChild.children);
+        }
+
+        return lastChild.endIndex || -1;
+    }
 
     /**
      * Get the source code (HTML) of a node.

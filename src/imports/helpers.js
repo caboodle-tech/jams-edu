@@ -7,18 +7,28 @@ export class ArgParser {
 
     /**
      * Parses the command-line arguments and returns an object with the parsed arguments.
-     * @param {string[]} argv - The command-line arguments to parse. Defaults to `process.argv`.
-     * @returns {Object} - An object containing the parsed arguments.
+     *
+     * @param {string[]|string} argv The command-line arguments array to parse or a string of commands.
+     *                               If left empty `process.argv` will be used.
+     * @returns {Object} An object containing the parsed arguments.
      */
     static parse(argv = process.argv) {
         const parsedArgs = {
-            cwd: process.cwd(), // Set the current working directory
-            executing: argv[1], // Set the executing file path
-            execPath: argv[0] // Set the executable path
+            cwd: process.cwd() // Set the current working directory
         };
 
-        // Remove executing file path and executable path from the arguments
-        argv.splice(0, 2);
+        if (WhatIs(argv) === 'array') {
+            // eslint-disable-next-line prefer-destructuring
+            parsedArgs.executing = argv[1]; // Set the executing file path
+            // eslint-disable-next-line prefer-destructuring
+            parsedArgs.execPath = argv[0];  // Set the executable path
+
+            // Remove executing file path and executable path from the arguments
+            argv.slice(0, 2);
+        } else {
+            // eslint-disable-next-line no-param-reassign
+            argv = argv.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) || [];
+        }
 
         for (let i = 0; i < argv.length; i++) {
             let arg = argv[i];
@@ -46,7 +56,12 @@ export class ArgParser {
                 // Set the key to the argument itself
                 key = arg;
             }
-            parsedArgs[key] = value;
+
+            if (WhatIs(value) === 'string') {
+                parsedArgs[key] = value.replace(/['"]/g, '');
+            } else {
+                parsedArgs[key] = value;
+            }
         }
 
         return parsedArgs;
@@ -65,7 +80,21 @@ export const Ext = (file) => {
     if (dotIndex === -1) {
         return '';
     }
-    return file.slice(dotIndex + 1);
+    return file.slice(dotIndex + 1).toLowerCase();
+};
+
+/**
+ * Get the full file extension from a file path.
+ *
+ * @param {string} file The file path.
+ * @returns {string} The file extension or an empty string if there is no extension.
+ */
+export const ExtendedExt = (file) => {
+    const dotIndex = file.indexOf('.');
+    if (dotIndex === -1) {
+        return '';
+    }
+    return file.slice(dotIndex + 1).toLowerCase();
 };
 
 /**

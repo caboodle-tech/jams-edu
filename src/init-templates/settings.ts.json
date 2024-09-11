@@ -1,0 +1,15 @@
+{
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "eslint.validate": [
+        "html",
+        "json",
+        "javascript",
+        "typescript"
+    ],
+    "files.associations": {
+        "*.json": "jsonc"
+    },
+    "files.eol": "\n"
+}

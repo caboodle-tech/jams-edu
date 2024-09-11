@@ -16,6 +16,16 @@ class MarkdownToTerminal {
     }
 
     /**
+     * Parses inline code blocks in a line of Markdown text and returns the colorized text.
+     *
+     * @param {string} line The line of Markdown text to parse.
+     * @returns {string} The terminal formatted line.
+     */
+    parseInlineCode(line) {
+        return line.replace(/`([^`]+)`/g, '\x1b[33m$1\x1b[0m');
+    }
+
+    /**
      * Parses a single line of Markdown text and returns the terminal formatted line.
      *
      * @param {string} line The line of Markdown text to parse.
@@ -24,6 +34,7 @@ class MarkdownToTerminal {
     parseLine(line) {
         let newLine = this.parseBold(line);
         newLine = this.parseHeaders(newLine);
+        newLine = this.parseInlineCode(newLine);
         newLine = this.parseLinks(newLine);
         return newLine;
     }
@@ -56,7 +67,7 @@ class MarkdownToTerminal {
      * @returns {string} The terminal formatted line.
      */
     parseLinks(line) {
-        return line.replace(/\[([^\]]+)]\(([^)]+)\)/g, '\x1b[4m$1\x1b[0m (\x1b[34m$2\x1b[0m)');
+        return line.replace(/\[([^\]]+)]\(([^)]+)\)/g, '\x1b[4m$1\x1b[0m (\x1b[36m$2\x1b[0m)');
     }
 
 }

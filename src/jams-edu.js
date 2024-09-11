@@ -4,26 +4,23 @@ import NodeSimpleServer from '@caboodle-tech/node-simple-server';
 import Path from 'path';
 import Print from './imports/print.js';
 import Templates from './imports/templates.js';
-import { Ext, WhatIs } from './imports/helpers.js';
+import { ArgParser, Ext, ExtendedExt, WhatIs } from './imports/helpers.js';
+import { ManuallyRemoveJamsEduHeaderComment } from './imports/compilers/jamsedu-comments.js';
 
 class JamsEdu {
 
-    setCompilers;
-
     #compilers = {};
 
-    #CONST = {
-        compiledJsPath: 1,
-        compiledSassPath: 0,
-        compiledTsPath: 1,
-        jsAndTsCompileFormat: 0
-    };
+    // #CONST = {
+    //     compiledJsPath: 1,
+    //     compiledSassPath: 0,
+    //     compiledTsPath: 1,
+    //     jsAndTsCompileFormat: 0
+    // };
 
     #destDir;
 
-    #doNotCopy = ['js', 'md', 'sass', 'scss', 'ts'];
-
-    #filesToCompile = ['js', 'sass', 'scss', 'ts'];
+    #doNotCopy = ['js', 'json', 'md', 'sass', 'scss', 'ts'];
 
     #root;
 
@@ -32,16 +29,15 @@ class JamsEdu {
     #srcDir;
 
     #regex = {
-        jamseduHeaderString: /@jamsedu.*/,
-        keepButDoNotCompile: /keep|copy|save/,
-        quotedPathStrings: /\s(?=(?:[^'"]|'[^']*'|"[^"]*")*$)/g,
-        relativePaths: /\.\.|\.[\\/]{1}/g,
-        windowsPath: /\\/g
+        jamseduHeaderString: /@jamsedu.*/
+        // quotedPathStrings: /\s(?=(?:[^'"]|'[^']*'|"[^"]*")*$)/g,
+        // relativePaths: /\.\.|\.[\\/]{1}/g,
+        // windowsPath: /\\/g
     };
 
     #templates;
 
-    #templateDir;
+    #layoutDir;
 
     #verbose = false;
 
@@ -69,13 +65,24 @@ class JamsEdu {
         }
         this.#srcDir = config.srcDir;
 
-        if (!config.templateDir || WhatIs(config.templateDir) !== 'string') {
+        let hooks = {};
+        if (!config.hooks || WhatIs(config.hooks) !== 'object') {
+            ({ hooks } = config);
+        }
+
+        if (!config.layoutDir || WhatIs(config.layoutDir) !== 'string') {
             throw new Error('JamsEdu config object is missing the `dest` directory!');
         }
-        this.#templateDir = config.templateDir;
+        this.#layoutDir = config.layoutDir;
 
         if (config.doNotCopy && WhatIs(config.doNotCopy) === 'array') {
-            this.#doNotCopy = config.doNotCopy;
+            this.#doNotCopy = config.doNotCopy.map((ext) => {
+                // Remove any leading periods from the file extensions.
+                if (ext.startsWith('.')) {
+                    return ext.toLowerCase().substring(1);
+                }
+                return ext.toLowerCase();
+            });
         }
 
         if (config.verbose && WhatIs(config.verbose) === 'boolean') {
@@ -83,13 +90,13 @@ class JamsEdu {
         }
 
         this.#setupCompilers(config.compilers);
-        this.#templates = new Templates(this.#templateDir, this.#verbose);
+        this.#templates = new Templates(this.#layoutDir, hooks, this.#verbose);
     }
 
     /**
      * Builds the `config.srcDir` (this.#srcDir) and outputs the result to `config.destDir` (this.#destDir).
      *
-     * Keep in mind the build process relies heavily on a valid `config.templateDir` (this.#templateDir) that
+     * Keep in mind the build process relies heavily on a valid `config.layoutDir` (this.#layoutDir) that
      * includes valid template files.
      */
     async build() {
@@ -115,12 +122,25 @@ class JamsEdu {
      * @param {string} dest The absolute path to the destination file.
      */
     #copyFileToDest(file, dest) {
-        const destPath = Path.dirname(dest);
-        if (!Fs.existsSync(destPath)) {
-            Fs.mkdirSync(destPath, { recursive: true });
+        // Ensure the destination directory exists.
+        const destDir = Fs.lstatSync(file).isDirectory() ? dest : Path.dirname(dest);
+        if (!Fs.existsSync(destDir)) {
+            Fs.mkdirSync(destDir, { recursive: true });
+            if (this.#verbose) {
+                Print.info(`Created directory: ${destDir}`);
+            }
         }
-        Fs.copyFileSync(file, dest);
 
+        // If source is a directory short circuit the function; we're done.
+        if (Fs.lstatSync(file).isDirectory()) {
+            if (this.#verbose) {
+                Print.info(`Created: ${file} --> ${dest}`);
+            }
+            return;
+        }
+
+        // If source is a file, proceed with file copying.
+        Fs.copyFileSync(file, dest);
         if (this.#verbose) {
             Print.info(`Copied: ${file} --> ${dest}`);
         }
@@ -133,63 +153,26 @@ class JamsEdu {
      * @returns {boolean} True if the file was successfully compiled or otherwise handled; false will
      *                    keep this file in the processing chain a little longer.
      */
-    async #compileFile(file) {
-        // TODO: Document this "feature".
-        const header = this.#readFileHeader(file);
-        const ext = Ext(file);
-        const matchedLine = header.match(this.#regex.jamseduHeaderString);
-        if (!matchedLine || matchedLine[0].length < 9) {
-            // This file is not tagged to be compiled, skip it.
-            return false;
-        }
-
-        // Pull the compiler options out of the file header.
-        const options = matchedLine[0].split(this.#regex.quotedPathStrings).splice(1);
-        options.forEach((option, index) => {
-            options[index] = option.replace(/['"]/g, '');
-        });
-
-        /**
-         * If this file is flagged to be kept (probably needed by another file being compiled) but
-         * not compiled, handle that now and pretend it was compiled.
-         */
-        if (this.#regex.keepButDoNotCompile.test(options[0])) {
-            this.#copyFileToDest(file, this.getDestPath(file));
+    async #compileFile(ext, file, options) {
+        if (!('dest' in options)) {
+            Print.error(`Error: No destination path specified for ${file}`);
+            // This file should have been compiled so pretend it was.
             return true;
         }
 
-        let verboseDest = '';
-        let dest;
+        const dest = this.getDestPath(options.dest);
 
-        // Process the file based on its language (file extension).
-        switch (ext) {
-            case 'js':
-                dest = Path.join(this.#destDir, options[this.#CONST.compiledJsPath]);
-                await this.#compilers.javascript(file, dest, options[this.#CONST.jsAndTsCompileFormat], options);
-                verboseDest = dest;
-                break;
-            case 'sass':
-            case 'scss':
-                dest = Path.join(this.#destDir, options[0]);
-                await this.#compilers.sass(file, dest, options);
-                verboseDest = dest;
-                break;
-            case 'ts':
-                dest = Path.join(this.#destDir, options[this.#CONST.compiledTsPath]);
-                await this.#compilers.typescript(file, dest, options[this.#CONST.jsAndTsCompileFormat], options);
-                verboseDest = dest;
-                break;
-            default:
-                if (this.#verbose) {
-                    Print.warn(`Build Skipped: No compiler for \`.${ext}\` files.`);
-                }
-                return false;
+        if (ext in this.#compilers) {
+            await this.#compilers[ext](file, dest, options);
+
+            if (this.#verbose) {
+                Print.info(`Built: ${file} --> ${dest}`);
+            }
+        } else {
+            Print.warn(`Build Skipped: No compiler for \`.${ext}\` files.`);
         }
 
-        if (this.#verbose) {
-            Print.info(`Built: ${file} --> ${verboseDest}`);
-        }
-
+        // Either the file was compiled or it should have been, so pretend it was to stop further processing.
         return true;
     }
 
@@ -219,11 +202,41 @@ class JamsEdu {
      * @returns Used only as a short circuit.
      */
     async #processFile(file) {
+        const dest = this.getDestPath(file);
         const ext = Ext(file);
+        const extendedExt = ExtendedExt(file);
+        const header = this.#readFileHeader(file);
+
+        let options = {};
+        const matchedLine = header.match(this.#regex.jamseduHeaderString);
+        if (matchedLine && matchedLine[0].length > 9) {
+            // Pull the compiler options out of the file header.
+            options = ArgParser.parse(header.replace('@jamsedu', ''));
+        }
+
+        /**
+         * If this file is flagged to be kept (probably needed by another file being compiled) but
+         * not compiled, handle that now and short circuit.
+         */
+        if (options.keep) {
+            const copyToDest = options.dest || dest;
+
+            try {
+                let content = Fs.readFileSync(file, 'utf8');
+                content = ManuallyRemoveJamsEduHeaderComment(content);
+                this.#writeContentToDest(content, copyToDest);
+            } catch (error) {
+                Print.error(`Error keeping file: ${file}`);
+                if (this.#verbose) {
+                    Print.error(error);
+                }
+            }
+            return;
+        }
 
         // Attempt to compile this file if its extension is in the list of file types to compile.
-        if (this.#filesToCompile.includes(ext)) {
-            if (await this.#compileFile(file)) {
+        if ((ext in this.#compilers) && matchedLine && matchedLine[0].length > 9) {
+            if (await this.#compileFile(ext, file, options)) {
                 return;
             }
             /**
@@ -233,12 +246,10 @@ class JamsEdu {
              */
         }
 
-        if (this.#doNotCopy.includes(ext)) {
+        if (this.#doNotCopy.includes(extendedExt)) {
             // Do not allow this file to be copied to the destination build.
             return;
         }
-
-        const dest = this.getDestPath(file);
 
         // If this is an HTML file, process it with the templates.
         if (ext === 'html') {
@@ -247,7 +258,7 @@ class JamsEdu {
         }
 
         // Copy file to destination.
-        this.#copyFileToDest(file. dest);
+        this.#copyFileToDest(file, dest);
     }
 
     /**
@@ -258,7 +269,7 @@ class JamsEdu {
      */
     #readDirectory(directory) {
         const files = [];
-        if (directory.startsWith(this.#templateDir)) {
+        if (directory.startsWith(this.#layoutDir)) {
             return files;
         }
         const entries = Fs.readdirSync(directory, { withFileTypes: true });
@@ -327,7 +338,7 @@ class JamsEdu {
         // Build a bare minimum server options object.
         const serverOptions = {
             dirListing: true,
-            root: this.#destDir
+            root: this.#destDir // The root directory of the web server.
         };
 
         // Get a new instance of NSS.
@@ -351,45 +362,41 @@ class JamsEdu {
             }
         };
 
-        /**
-         * sourceDirRegex = A regex to match a portion of the source directory path in linux style.
-         * templateDirFragment = The OS specific relative path to the template directory.
-         * templateDirRegex = A regex to match a portion of the template directory path in linux style.
-         *
-         * NSS will return a linux style path always! When watching for backend changes we will first
-         * check the linux style path and then convert it to the OS specific absolute path for processing.
-         *
-         * NOTE: Our call to Path.join() below acts as Path.normalize() on the modified file paths.
-         */
-        const sourceDirRegex = new RegExp(`\.{0,2}/${this.#templateDir.split(/[\\/]/).slice(-1).join('/')}/?`);
-        const templateDirFragment = Path.normalize(this.#templateDir.replace(this.#root, '').substring(1));
-        const templateDirRegex = new RegExp(`\.{0,2}/${this.#templateDir.split(/[\\/]/).slice(-2).join('/')}/?`);
+        const layoutDirFragment = Path.normalize(this.#layoutDir.replace(this.#root, '').substring(1));
+        const modifiedSrcDir = this.#srcDir.split(Path.sep).slice(0, -1).join(Path.sep);
 
         // Handles watching the source files for changes and rebuilding as needed.
         const backendChanges = (event, path, stats) => {
-            /**
-             * To accommodate users placing their source directory and build directory in any combination of
-             * locations, we need to determine the absolute path accounting for any level of directory nesting.
-             */
-            const sourceAbsPath = Path.join(this.#srcDir, path.replace(sourceDirRegex, ''));
-            const templateAbsPath = Path.join(this.#templateDir, path.replace(templateDirRegex, ''));
+            let sourceAbsPath = Path.join(modifiedSrcDir, path);
+            if (path.startsWith('..')) {
+                sourceAbsPath = Path.resolve(this.#srcDir, path);
+            }
 
-            // Template files need to be handled differently, we have to rebuild the templates first!
-            if (templateAbsPath.includes(templateDirFragment)) {
-                /**
-                 * Template rebuilding is throttled for performance reasons. JamsEdu follows the principle
-                 * of eventually consistent. This means that the templates will be rebuilt but not immediately
-                 * displayed in the browser. The user will have to refresh the page to see the changes or
-                 * they will have to edit a file that triggers a rebuild.
-                 */
-                this.#templates.reloadTemplates();
+            if (event === 'addDir') {
+                // The directory will be added once any files are added to it.
                 return;
             }
 
-            this.#processFile(sourceAbsPath);
+            // Template files need to be handled differently, we have to rebuild the templates first!
+            if (sourceAbsPath.includes(layoutDirFragment)) {
+                /**
+                 * Template rebuilding is throttled for performance reasons. We will wait twice the
+                 * time to allow the templates to be rebuilt before we start the build process.
+                 */
+                this.#templates.reloadTemplates();
+                setTimeout(() => {
+                    this.build();
+                }, Math.ceil(this.#templates.getThrottleLimit() * 2));
+                return;
+            }
+
+            // We can skip checking for `add` events since the file will be processed on the next change.
+            if (event === 'change') {
+                this.#processFile(sourceAbsPath);
+            }
         };
 
-        // A bare minimum watcher options object.
+        // Watcher options for the frontend (compiled files).
         const watchFrontend = {
             events: {
                 all: frontendChanges
@@ -398,6 +405,7 @@ class JamsEdu {
             interval: 500
         };
 
+        // Watcher options for the backend (source files).
         const watchBackend = {
             events: {
                 all: backendChanges
@@ -413,6 +421,7 @@ class JamsEdu {
         Server.watch(this.#srcDir, watchBackend);
         Server.watch(this.#destDir, watchFrontend);
 
+        // Hang on to the server instance for later use.
         this.#server = Server;
     }
 

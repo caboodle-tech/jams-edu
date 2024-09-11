@@ -8,7 +8,7 @@ import Print from './print.js';
 import Sass from './compilers/sass.js';
 import Typescript from './compilers/typescript.js';
 
-const SRC_INDEX = 0;
+// Define a global variable to store whether the program is in verbose mode.
 let isProgramInVerboseMode = false;
 
 /**
@@ -18,7 +18,7 @@ let isProgramInVerboseMode = false;
 const ensureCompilersAreAsync = (compiler, ...args) => Promise.resolve(compiler(...args))
     .then(() => true)
     .catch((error) => {
-        Print.error(`Error compiling file: ${args[SRC_INDEX]}`);
+        Print.error(`Error compiling file: ${args[0]}`); // 0 = Source file path
         if (isProgramInVerboseMode) {
             Print.error(error);
         }
@@ -36,10 +36,10 @@ const compileTypescript = async(...args) => ensureCompilersAreAsync(Typescript, 
  */
 export default {
     defaultCompilers: () => ({
-        javascript: compileJavascript,
+        js: compileJavascript,
         sass: compileSass,
         scss: compileSass,
-        typescript: compileTypescript
+        ts: compileTypescript
     }),
     setVerboseMode: (verbose = false) => { isProgramInVerboseMode = verbose; },
     wrapUserCompiler: (usersCompiler) => async(...args) => ensureCompilersAreAsync(usersCompiler, ...args)
