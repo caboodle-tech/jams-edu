@@ -104,8 +104,18 @@ const JamsEduVideo = (html, som) => {
         const originalHtml = som.getNodeHtml(node);
         const innerHTML = som.getNodeInnerHtml(node).trim();
 
+        // Alignment for citation text.
+        let alignment = '';
+
         // Ensure the class attribute is set and starts with the `video` class.
         if (node.value.attrsMap.has('class')) {
+            if (node.value.attrsMap.get('class').includes('citation-left')) {
+                alignment = 'left';
+                node.value.attrsMap.set('class', node.value.attrsMap.get('class').replace('citation-left', ''));
+            } else if (node.value.attrsMap.get('class').includes('citation-right')) {
+                alignment = 'right';
+                node.value.attrsMap.set('class', node.value.attrsMap.get('class').replace('citation-right', ''));
+            }
             node.value.attrsMap.set('class', `video ${node.value.attrsMap.get('class')}`);
         } else {
             node.value.attrsMap.set('class', 'video');
@@ -119,18 +129,26 @@ const JamsEduVideo = (html, som) => {
             attributes += `${key}="${value}" `;
         });
 
+        // Prepare the figcaption parts.
         let figcaption = '';
+        let figcaptionClass = '';
+
+        if (alignment) {
+            figcaptionClass = ` class="${alignment}"`;
+        }
+
+        // Generate the figcaption.
         const citeNode = som.find('cite', node);
         if (citeNode.key && innerHTML.length > 0) {
             const citeHtml = som.getNodeHtml(citeNode);
             const citeText = som.getNodeInnerHtml(citeNode);
             const link = `<a href="${url}" target="_blank" rel="noreferrer">${citeText}</a>`;
-            figcaption = `<figcaption>${innerHTML.replace(citeHtml, link)}</figcaption>`;
+            figcaption = `<figcaption${figcaptionClass}>${innerHTML.replace(citeHtml, link)}</figcaption>`;
         } else if (citeNode.key) {
             const citeText = som.getNodeInnerHtml(citeNode);
-            figcaption = `<figcaption><a href="${url}" target="_blank" rel="noreferrer">${citeText}</a></figcaption>`;
+            figcaption = `<figcaption${figcaptionClass}><a href="${url}" target="_blank" rel="noreferrer">${citeText}</a></figcaption>`;
         } else if (innerHTML.length > 0) {
-            figcaption = `<figcaption>${innerHTML}</figcaption>`;
+            figcaption = `<figcaption${figcaptionClass}>${innerHTML}</figcaption>`;
         }
 
         html = html.replace(originalHtml, `<figure ${attributes.trim()}>${videoHtml}${figcaption}</figure>`);

@@ -11,13 +11,6 @@ class JamsEdu {
 
     #compilers = {};
 
-    // #CONST = {
-    //     compiledJsPath: 1,
-    //     compiledSassPath: 0,
-    //     compiledTsPath: 1,
-    //     jsAndTsCompileFormat: 0
-    // };
-
     #destDir;
 
     #doNotCopy = ['js', 'json', 'md', 'sass', 'scss', 'ts'];
@@ -30,9 +23,6 @@ class JamsEdu {
 
     #regex = {
         jamseduHeaderString: /@jamsedu.*/
-        // quotedPathStrings: /\s(?=(?:[^'"]|'[^']*'|"[^"]*")*$)/g,
-        // relativePaths: /\.\.|\.[\\/]{1}/g,
-        // windowsPath: /\\/g
     };
 
     #templates;
@@ -219,7 +209,10 @@ class JamsEdu {
          * not compiled, handle that now and short circuit.
          */
         if (options.keep) {
-            const copyToDest = options.dest || dest;
+            let copyToDest = dest;
+            if (options.dest) {
+                copyToDest = this.getDestPath(options.dest);
+            }
 
             try {
                 let content = Fs.readFileSync(file, 'utf8');
