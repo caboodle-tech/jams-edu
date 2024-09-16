@@ -2,7 +2,7 @@
     "name": "@caboodle-tech/jamsedu",
     "version": "3.1.0",
     "bin": {
-        "jamsedu": "./bin/cli.js"
+        "jamsedu": "bin/cli.js"
     },
     "dependencies": {
         "@caboodle-tech/node-simple-server": "^4.2.4",
@@ -27,7 +27,15 @@
     },
     "type": "module",
     "description": "JamsEdu is a feature rich but simplistic to use Jamstack application designed for open source content. Originally designed to help rapidly develop and deploy university courses, JamsEdu is the perfect way to quickly create static websites for STEM focused content.",
-    "keywords": ["static", "site", "generator", "stem", "jamstack", "beginner", "basic"],
+    "keywords": [
+        "static",
+        "site",
+        "generator",
+        "stem",
+        "jamstack",
+        "beginner",
+        "basic"
+    ],
     "author": "Christopher Keers <source[at]caboodle.tech>",
     "contributors": [
         "Caboodle Tech Inc (https://github.com/caboodle-tech)"
