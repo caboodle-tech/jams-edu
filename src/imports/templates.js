@@ -253,9 +253,10 @@ class Templates {
      * found in the files source code.
      *
      * @param {string} file The absolute path to the file that should be processed.
+     * @param {object} stats Information about this file that JamsEdu exposes for use in custom hooks.
      * @returns {string} The content of the built file.
      */
-    process(file) {
+    process(file, stats = {}) {
         let html = Fs.readFileSync(file, { encoding: 'utf8' }).toString();
         let som = new HtmlSom(html);
 
@@ -380,6 +381,12 @@ class Templates {
             html = html.replace(outerHtml, replacement.trim());
         });
 
+        // Create a new SOM that represents the HTML after JamsEdu's primary processing.
+        som = new HtmlSom(html);
+
+        // Attach stats to the som so users can use the information in their hooks if the desire to.
+        som.stats = stats;
+
         // Clear the temporary variables.
         this.#temporaryVariables.clear();
 
@@ -390,6 +397,8 @@ class Templates {
             // NOTE: We could check in the future that the string len is within a certain range.
             if (modifiedHtml && WhatIs(modifiedHtml) === 'string') {
                 html = modifiedHtml;
+                som = new HtmlSom(html);
+                som.stats = stats;
             }
         });
 

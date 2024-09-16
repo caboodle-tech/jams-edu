@@ -56,7 +56,7 @@ class JamsEdu {
         this.#srcDir = config.srcDir;
 
         let hooks = {};
-        if (!config.hooks || WhatIs(config.hooks) !== 'object') {
+        if (config.hooks && WhatIs(config.hooks) === 'object') {
             ({ hooks } = config);
         }
 
@@ -177,6 +177,19 @@ class JamsEdu {
     }
 
     /**
+     * Returns the relative path from `this.#destDir` to the given destination path.
+     *
+     * @param {string} dest - The destination path from which to calculate the relative path.
+     * @returns {string} The relative path using '../' for each directory level.
+     */
+    getRelativePath(dest) {
+        const relativeDest = dest.replace(this.#destDir, '').replace(/\\/g, '/').replace(/^\/+/, '');
+        const pathParts = relativeDest.split('/').filter(Boolean);
+        if (pathParts.length === 0) return '';
+        return '../'.repeat(pathParts.length - 1);
+    }
+
+    /**
      * Runs the guided initialization process for a new JamsEdu project to be created at the users
      * current file location.
      */
@@ -196,6 +209,14 @@ class JamsEdu {
         const ext = Ext(file);
         const extendedExt = ExtendedExt(file);
         const header = this.#readFileHeader(file);
+
+        const stats = {
+            dest,
+            ext,
+            extendedExt,
+            relativeLevels: this.getRelativePath(dest),
+            src: file
+        };
 
         let options = {};
         const matchedLine = header.match(this.#regex.jamseduHeaderString);
@@ -246,7 +267,7 @@ class JamsEdu {
 
         // If this is an HTML file, process it with the templates.
         if (ext === 'html') {
-            this.#writeContentToDest(this.#templates.process(file), dest);
+            this.#writeContentToDest(this.#templates.process(file, stats), dest);
             return;
         }
 

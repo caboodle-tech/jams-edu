@@ -116,7 +116,8 @@ const JamsEduVideo = (html, som) => {
                 alignment = 'right';
                 node.value.attrsMap.set('class', node.value.attrsMap.get('class').replace('citation-right', ''));
             }
-            node.value.attrsMap.set('class', `video ${node.value.attrsMap.get('class')}`);
+            const classAttr = node.value.attrsMap.get('class').trim().replace(/\s+/g, ' ');
+            node.value.attrsMap.set('class', `video ${classAttr}`);
         } else {
             node.value.attrsMap.set('class', 'video');
         }
