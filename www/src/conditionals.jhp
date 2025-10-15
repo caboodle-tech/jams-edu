@@ -1,0 +1,53 @@
+<script>
+    let title = 'Conditional Statements';
+    let keywords = 'jhp, javascript, html, template, conditionals';
+    let description = 'A test page demonstrating the use of conditional statements in JHP.';
+    $include('./templates/header.html');
+</script>
+
+<h1>Conditional Statements</h1>
+
+<p>
+    This page demonstrates the use of conditional statements: <code>$if</code>, <code>$elseif</code>, <code>$else</code>, and <code>$end</code>. It will display a message below based on the remainder of today's date when divided by 3. The output will differ depending on when this template was originally compiled.
+</p>
+
+<blockquote>
+<script>
+    let today = new Date();
+    let day = today.getDate();
+    $echo(today);
+    $if(day % 3 === 0);
+</script>
+
+<p>
+    Today is divisible by 3.
+</p>
+
+<script>
+    $elseif(day % 3 === 1);
+</script>
+
+<p>
+    Today leaves a remainder of 1 when divided by 3.
+</p>
+
+<script>
+    $else();
+</script>
+
+<p>
+    Today leaves a remainder of 2 when divided by 3.
+</p>
+
+<script>
+    $end();
+</script>
+</blockquote>
+
+<p>
+    View the original source code of this page to see how the content is captured and rendered using these functions.
+</p>
+
+<script>
+    $include('./templates/footer.html');
+</script>

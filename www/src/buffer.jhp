@@ -1,0 +1,33 @@
+<script>
+    /**
+    * In this example, the `$obOpen` and `$obClose` functions are used to capture the content of
+    * the page. The `$echo` function is then used to display the captured content at the desired
+    * location. While this approach may be overkill for a simple page, it serves as a good example
+    * of how to utilize these functions effectively.
+     */
+    $obOpen();
+</script>
+
+<h1>Output Buffering</h1>
+
+<p>
+    This page demonstrates the use of <code>$obOpen</code>, <code>$obClose</code>, and <code>$echo</code> functions for content capturing and rendering. The <code>$obOpen</code> function initiates content capture at the start of the page, while <code>$obClose</code> stops the capture at the end. The <code>$echo</code> function then outputs the captured content, allowing for flexible content management and rendering.
+</p>
+
+<p>
+    View the original source code of this page to see how the content is captured and rendered using these functions.
+</p>
+
+<script>
+    /**
+     * The page is actually being rendered here. The `$obClose` function is called to capture the
+     * content of the page and then the content is displayed between the header and footer.
+     */
+    $content = $obClose();
+    let title = 'Output Buffering';
+    let keywords = 'jhp, javascript, html, template, output buffering';
+    let description = 'A test page demonstrating the use of output buffering functions in JHP.';
+    $include('./templates/header.html');
+    $echo(`\n${$content}\n`);
+    $include('./templates/footer.html');
+</script>

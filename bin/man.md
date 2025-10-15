@@ -1,5 +1,5 @@
 # Name
-    jamsedu - A Jam Stack app for Educational websites:
+    jamsedu - A Jam Stack app for educational websites:
               [More info here](https://github.com/caboodle-tech/jams-edu)
 
 # Synopsis
@@ -9,7 +9,7 @@
     A feature-rich yet user-friendly static site generator designed specifically
     for open-source content. Originally developed to facilitate rapid creation
     and deployment of university courses, JamsEdu offers an ideal solution for
-    non-technical users to swiftly build static websites.
+    non-technical users to swiftly build dynamic static websites.
 
 # Options
     build, -build, --build

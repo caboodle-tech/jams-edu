@@ -1,4 +1,6 @@
+import Path from 'path';
 import process from 'process';
+import { fileURLToPath as FileURLToPath } from 'url';
 
 /**
  * A utility class for parsing command line arguments.
@@ -70,31 +72,13 @@ export class ArgParser {
 };
 
 /**
- * Get the file extension from a file path.
- *
- * @param {string} file The file path.
- * @returns {string} The file extension or an empty string if there is no extension.
+ * Returns the absolute application paths to any file that imports this script.
  */
-export const Ext = (file) => {
-    const dotIndex = file.lastIndexOf('.');
-    if (dotIndex === -1) {
-        return '';
-    }
-    return file.slice(dotIndex + 1).toLowerCase();
-};
-
-/**
- * Get the full file extension from a file path.
- *
- * @param {string} file The file path.
- * @returns {string} The file extension or an empty string if there is no extension.
- */
-export const ExtendedExt = (file) => {
-    const dotIndex = file.indexOf('.');
-    if (dotIndex === -1) {
-        return '';
-    }
-    return file.slice(dotIndex + 1).toLowerCase();
+export const getRootPaths = (importMetaUrl) => {
+    const FILENAME = FileURLToPath(importMetaUrl);
+    const DIRNAME = Path.dirname(FILENAME);
+    const APPDIR = Path.dirname(FileURLToPath(import.meta.url));
+    return { APPDIR, DIRNAME, FILENAME };
 };
 
 /**

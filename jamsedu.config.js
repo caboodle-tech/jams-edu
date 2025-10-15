@@ -1,5 +1,5 @@
 export default {
-    destDir: 'website/public',
-    srcDir: 'website/src',
-    layoutDir: 'website/src/layouts'
+    destDir: 'www/public',
+    srcDir: 'www/src',
+    templateDir: 'www/src/templates'
 };

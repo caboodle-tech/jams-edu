@@ -1,0 +1,26 @@
+<script>
+    let title = 'Home';
+    let keywords = 'jhp, javascript, html, template';
+    let description = 'The home page of this simple JHP test example project.';
+    $include('./templates/header.html');
+</script>
+
+<h1>Welcome!</h1>
+
+<p>
+    This is a standard JHP file that has been compiled to HTML. It uses basic features of JHP, such as <code>$include</code> to incorporate the header and footer. Additionally, <code>$echo</code> is utilized to display the JHP version number in the footer.
+</p>
+
+<p>
+    View the original source code of this page to see how the content is captured and rendered using these functions.
+</p>
+
+<p>
+    Video should be below?
+</p>
+
+<video src="https://youtu.be/NpEaa2P7qZI"></video>
+
+<script>
+    $include('./templates/footer.html');
+</script>

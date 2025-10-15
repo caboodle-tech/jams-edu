@@ -23,7 +23,7 @@ JamsEdu prioritizes simplicity while providing a robust set of features. It's pe
 To maintain its simplicity and focus, JamsEdu intentionally excludes some advanced static site generator features:
 
 - :x: Automated internationalization (I18n)
-- :x: Automatic or dynamic pagination
+- :x: Automatic (dynamic) pagination; although with JHP you can do this yourself
 - :x: Built for you custom tags or components
 - :x: Collections or tags
 - :x: Front Matter
@@ -49,7 +49,7 @@ For anything more complex, or if you need a comprehensive content management sys
 
 #### Installation
 
-You should have node `v20+` installed on your machine along with a node package manager, usually `npm` or `pnpm`. The preferred method of using JamsEdu is to install it globally on your machine:
+You should have node `v22+` installed on your machine along with a node package manager, usually `npm` or `pnpm`. The preferred method of using JamsEdu is to install it globally on your machine:
 
 ```bash
 # Install with PNPM
@@ -59,7 +59,7 @@ pnpm install -g @caboodle-tech/jamsedu
 npm install -g @caboodle-tech/jamsedu
 ```
 
-You should now be able to use the JamsEdu command line tool. To review the [cli manual](./bin/man.md) and see all the options available to you, run:
+After restarting your terminal, you should now be able to use the JamsEdu command line tool. To review the [cli manual](./bin/man.md) and see all the options available to you, run:
 
 ```bash
 jamsedu --help
