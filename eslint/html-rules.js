@@ -22,7 +22,5 @@ export default {
     '@html-eslint/require-doctype': 'error',
     '@html-eslint/require-li-container': 'warn',
     '@html-eslint/require-meta-viewport': 'error',
-    '@html-eslint/sort-attrs': 'warn',
-    '@jamsedu/require-title': 'error',
-    '@jamsedu/templates-and-variables': 'error'
+    '@html-eslint/sort-attrs': 'warn'
 };

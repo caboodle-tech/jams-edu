@@ -145,7 +145,6 @@ export default class JamsEdu {
     pathContains(needle, haystack) {
         const n = needle.replace(/\\/g, '/').toLowerCase();
         const h = haystack.replace(/\\/g, '/').toLowerCase();
-        console.log(this.#usersRoot + n, h);
         return h.includes(n);
     }
 
@@ -162,6 +161,11 @@ export default class JamsEdu {
     }
 
     #processFile(src) {
+        // Skip files inside the template directory.
+        if (this.pathContains(this.#templateDir, src)) {
+            return;
+        }
+
         let dest = src.replace(this.#srcDir, this.#destDir);
 
         if (src.endsWith('.jhp')) {

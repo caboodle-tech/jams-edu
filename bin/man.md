@@ -1,6 +1,6 @@
 # Name
-    jamsedu - A Jam Stack app for educational websites:
-              [More info here](https://github.com/caboodle-tech/jams-edu)
+    jamsedu - A feature rich static site generator designed for open source
+              content[More info here](https://github.com/caboodle-tech/jams-edu)
 
 # Synopsis
     jamsedu [options] [arguments]

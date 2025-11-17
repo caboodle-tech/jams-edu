@@ -8,11 +8,10 @@
         "jsonc-eslint-parser": "^2.4.1"
     },
     "scripts": {
-        "debug:build": "jamsedu --build --verbose",
-        "debug:watch": "jamsedu --watch --verbose",
-        "lint": "eslint . --ext .js,.json,.jsonc,.html",
         "build": "jamsedu --build",
-        "watch": "jamsedu --watch"
+        "build:debug": "jamsedu --build --verbose",
+        "watch": "jamsedu --watch",
+        "watch:debug": "jamsedu --watch --verbose"
     },
     "type": "module"
 }

@@ -1,4 +1,5 @@
 export default {
     destDir: 'www',
-    srcDir: 'app'
+    srcDir: 'src',
+    templateDir: 'src/templates'
 };

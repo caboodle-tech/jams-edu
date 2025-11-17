@@ -1,6 +1,7 @@
-import JamsEduVideo from './jamsedu-video.js';
+import JamsEduVideo from './videos.js';
+import JamsTables from './tables.js';
 
 export default {
     pre: [],
-    post: [JamsEduVideo]
+    post: [JamsEduVideo, JamsTables]
 };

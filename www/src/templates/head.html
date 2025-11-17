@@ -3,25 +3,26 @@
      * Default values for meta tags if not provided
      */
     if (!title) {
-        const title = 'Default Title';
+        const title = 'JamsEdu';
     }
     if (!keywords) {
-        const keywords = 'default, keywords, here';
+        const keywords = 'JamsEdu, Jamstack, Static Site Generator, SSG, Educational Content, Informational, Compliance, HighlightJS, KaTeX, Mermaid';
     }
     if (!description) {
-        const description = 'This is the default description.';
+        const description = 'JamsEdu is a lightweight Jamstack tool for building dynamic static sites. Originally made for educational content, it can power much more, with HighlightJS, KaTeX, and Mermaid support built-in.';
     }
 </script>
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./css/main.css">
-    <title><script>$echo(title);</script></title>
-    <script>
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+        <link href="./css/main.css" rel="stylesheet">
+        <title><script>$echo(title);</script></title>
+        <script>
         $echo(`<meta name="keywords" content="${keywords}">`);
         $echo(`<meta name="description" content="${description}">`);
     </script>
-</head>
-<body>
+        <script type="module" src="./js/main.js"></script>
+    </head>
+    <body>
