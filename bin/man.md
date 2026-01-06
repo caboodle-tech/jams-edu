@@ -38,6 +38,11 @@
         ESLint configuration, and documentation. Creates backups automatically
         and allows selective component updates with conflict resolution.
 
+    force, -force, --force
+        When used with --update, allows updating files that have been marked as
+        customized by the user. This will overwrite user modifications with the
+        template versions. Use with caution.
+
     restore-backup, -restore-backup, --restore-backup TIMESTAMP
         Restore your project from a backup created during an update operation.
         Provide the timestamp of the backup you wish to restore (format:
@@ -48,6 +53,9 @@
         freeing ports blocked by orphaned or unresponsive server processes.
         You can provide one or more port numbers. The command will prompt you
         to confirm before killing each process.
+
+    where, -where, --where
+        Print the absolute path where JamsEdu is installed and running from.
 
 # Arguments
     -config FILE, --config=FILE

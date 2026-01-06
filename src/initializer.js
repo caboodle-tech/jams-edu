@@ -330,7 +330,10 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
                             Fs.mkdirSync(parentDir, { recursive: true });
                         }
 
-                        Fs.copyFileSync(srcPath, destPath);
+                        // Read template file, strip version tags, then write to destination
+                        const templateContent = Fs.readFileSync(srcPath, 'utf-8');
+                        const cleanedContent = this.stripVersionTags(templateContent);
+                        Fs.writeFileSync(destPath, cleanedContent, 'utf-8');
                     }
                 }
             } catch (err) {
@@ -441,6 +444,22 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
 
         scanDir(templateDir);
         return files;
+    }
+
+    static stripVersionTags(content) {
+        // Remove JavaScript comment format: // @jamsedu-version: 1.0.0
+        content = content.replace(/\/\/\s*@jamsedu-version:\s*[\d.]+\s*\n?/g, '');
+        // Remove JavaScript comment format: // @jamsedu-component: name
+        content = content.replace(/\/\/\s*@jamsedu-component:\s*\S+\s*\n?/g, '');
+        // Remove CSS comment format: /* @jamsedu-version: 1.0.0 */
+        content = content.replace(/\/\*\s*@jamsedu-version:\s*[\d.]+\s*\*\//g, '');
+        // Remove CSS comment format: /* @jamsedu-component: name */
+        content = content.replace(/\/\*\s*@jamsedu-component:\s*\S+\s*\*\//g, '');
+        // Remove HTML comment format (for markdown): <!-- @jamsedu-version: 1.0.0 -->
+        content = content.replace(/<!--\s*@jamsedu-version:\s*[\d.]+\s*-->\s*\n?/g, '');
+        // Remove HTML comment format: <!-- @jamsedu-component: name -->
+        content = content.replace(/<!--\s*@jamsedu-component:\s*\S+\s*-->\s*\n?/g, '');
+        return content;
     }
 
     static parseVersionFromFile(content) {

@@ -27,7 +27,7 @@ class Updater {
         }
     }
 
-    static async update(cwd, jamseduWd, userConfig) {
+    static async update(cwd, jamseduWd, userConfig, force = false) {
         this.clearScreen();
         Print.notice(this.#header);
 
@@ -40,7 +40,7 @@ class Updater {
             srcDir = srcDir.replace(/\\/g, '/');
         }
 
-        // Read manifest
+        // Read manifest (declare once at top of function)
         const manifestPath = Path.join(cwd, '.jamsedu', 'manifest.json');
         if (!Fs.existsSync(manifestPath)) {
             Print.error('Manifest file not found. This project may not have been initialized with JamsEdu.');
@@ -74,10 +74,18 @@ class Updater {
         }
 
         const templateFiles = this.scanTemplateFiles(templateDir, srcDir);
+        
+        // Clean up and correct manifest (remove stale entries, add missing entries, fix component names)
+        // This runs before scanning user files so we have a clean manifest to work with
+        this.correctManifest(manifest, templateFiles, cwd, srcDir);
+        
+        // Save corrected manifest immediately
+        Fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+        
         const userFiles = this.scanUserFiles(cwd, srcDir, manifest);
 
         // Compare files
-        const updates = this.compareFiles(templateFiles, userFiles, manifest, cwd);
+        const updates = this.compareFiles(templateFiles, userFiles, manifest, cwd, force);
 
         // Check if package was updated
         if (manifest.jamseduPackageVersion !== currentPackageVersion) {
@@ -94,7 +102,6 @@ class Updater {
                 Print.info(`JamsEdu package version: ${currentPackageVersion}`);
             }
             // Save manifest if we updated userCustomized flags
-            const manifestPath = Path.join(cwd, '.jamsedu', 'manifest.json');
             Fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
             return;
         }
@@ -103,14 +110,50 @@ class Updater {
         const allUpdates = [...updates.available, ...updates.new];
         const selected = new Set();
 
-        // Ask for backup first (only if there are regular updates)
-        if (hasRegularUpdates) {
-            Print.out('\n⚠️  IMPORTANT: Back up your project before updating!');
-            const createBackup = this.getResponse('Create automatic backup? (y/n) [y]', 'y');
-            let backupPath = null;
-            if (['y', 'ye', 'yes'].includes(createBackup.trim().toLowerCase())) {
-                backupPath = this.createBackup(cwd, updates);
-                Print.success(`Backup created at: ${backupPath}`);
+        // Force mode: auto-select all and warn user
+        if (force) {
+            Print.out('\n⚠️  WARNING: Force mode enabled!');
+            Print.out('This will overwrite ALL files, including your customizations.');
+            Print.out('All files with hash differences will be updated, regardless of version.');
+            Print.out('');
+            Print.out('A backup will be automatically created before updating.');
+            Print.out('You can restore or copy back any custom changes you want to keep from the backup.');
+            Print.out('');
+            const confirm = this.getResponse('Are you sure you want to continue? (yes/no) [no]', 'no');
+            if (confirm.toLowerCase() !== 'yes') {
+                Print.info('Force update cancelled.');
+                return;
+            }
+            
+            // Auto-select all updates
+            for (let i = 0; i < allUpdates.length; i++) {
+                selected.add(i);
+            }
+            
+            // Also include customized files with updates
+            if (updates.customizedWithUpdates) {
+                for (const customized of updates.customizedWithUpdates) {
+                    allUpdates.push(customized);
+                    selected.add(allUpdates.length - 1);
+                }
+            }
+            
+            // Create backup automatically
+            Print.out('\n⚠️  Creating automatic backup...');
+            const backupPath = this.createBackup(cwd, updates);
+            Print.success(`Backup created at: ${backupPath}`);
+            Print.info('You can restore files from this backup using: jamsedu --restore-backup <timestamp>');
+            Print.info('Or manually copy files from the backup directory to restore your custom changes.');
+        } else {
+            // Ask for backup first (only if there are actual updates to apply)
+            if (hasRegularUpdates && allUpdates.length > 0) {
+                Print.out('\n⚠️  IMPORTANT: Back up your project before updating!');
+                const createBackup = this.getResponse('Create automatic backup? (y/n) [y]', 'y');
+                let backupPath = null;
+                if (['y', 'ye', 'yes'].includes(createBackup.trim().toLowerCase())) {
+                    backupPath = this.createBackup(cwd, updates);
+                    Print.success(`Backup created at: ${backupPath}`);
+                }
             }
         }
 
@@ -144,9 +187,9 @@ class Updater {
             }
         }
 
-        // Handle customized files with updates (especially docs)
+        // Handle customized files with updates (especially docs) - skip in force mode
         let customizedSelected = [];
-        if (hasCustomizedUpdates) {
+        if (hasCustomizedUpdates && !force) {
             Print.out('\n\x1b[33m⚠️  Customized Files with Updates Available:\x1b[0m\n');
             Print.out('These files have been customized but newer versions are available.\n');
             
@@ -179,8 +222,8 @@ class Updater {
             }
         }
 
-        // Only show selection prompt if there are regular updates
-        if (hasRegularUpdates) {
+        // Only show selection prompt if there are regular updates and not in force mode
+        if (hasRegularUpdates && !force) {
             Print.out('\n\x1b[36mEnter numbers separated by commas (e.g., "1,2,3" or "1-3,4,7-9"), "all" for everything:\x1b[0m');
             const input = this.getResponse('> ', '');
             
@@ -226,7 +269,6 @@ class Updater {
         }
         
         // Save manifest (in case userCustomized flags were updated)
-        const manifestPath = Path.join(cwd, '.jamsedu', 'manifest.json');
         Fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
     }
 
@@ -289,6 +331,28 @@ class Updater {
             Path.join(cwd, '.vscode'),
             Path.join(cwd, srcDir, 'css') // For main.css
         ];
+        
+        // Also check root-level files that might be tracked (like eslint.config.js)
+        const rootFiles = ['eslint.config.js'];
+        for (const rootFile of rootFiles) {
+            const fullPath = Path.join(cwd, rootFile);
+            if (Fs.existsSync(fullPath)) {
+                const content = Fs.readFileSync(fullPath, 'utf-8');
+                const hash = Crypto.createHash('sha256').update(content).digest('hex');
+                const version = this.parseVersionFromFile(content);
+                const component = this.parseComponentFromFile(content);
+                const componentName = component || Path.basename(rootFile, Path.extname(rootFile));
+                const manifestEntry = manifest.components[componentName];
+                
+                files.push({
+                    file: rootFile,
+                    hash: hash,
+                    version: version,
+                    component: componentName,
+                    manifestEntry: manifestEntry
+                });
+            }
+        }
 
         for (const dir of jamseduDirs) {
             if (Fs.existsSync(dir)) {
@@ -322,7 +386,7 @@ class Updater {
         return files;
     }
 
-    static compareFiles(templateFiles, userFiles, manifest, cwd) {
+    static compareFiles(templateFiles, userFiles, manifest, cwd, force = false) {
         const available = [];
         const newFiles = [];
         const customizedWithUpdates = []; // For docs and other Tier 2 files
@@ -343,15 +407,71 @@ class Updater {
 
             if (!userFile) {
                 // New file - not in user's project yet
-                newFiles.push({
-                    file: normalizedTemplatePath,
-                    component: templateFile.component,
-                    version: templateFile.version,
-                    templateFile: templateFile
-                });
+                // But check if it actually exists in manifest (might just not be scanned)
+                const manifestEntry = manifest.components[templateFile.component];
+                
+                // If file exists in manifest, it's not really "new" - treat as existing
+                if (manifestEntry && Fs.existsSync(Path.join(cwd, manifestEntry.file))) {
+                    // File exists but wasn't scanned - read it directly
+                    const fullPath = Path.join(cwd, manifestEntry.file);
+                    const content = Fs.readFileSync(fullPath, 'utf-8');
+                    const hash = Crypto.createHash('sha256').update(content).digest('hex');
+                    const version = this.parseVersionFromFile(content) || manifestEntry.version || templateFile.version || '1.0.0';
+                    
+                    // Use manifest entry as userFile equivalent
+                    const userVer = manifestEntry.version || version || '1.0.0';
+                    const templateVer = templateFile.version || '1.0.0';
+                    const templateHash = Crypto.createHash('sha256').update(templateFile.content).digest('hex');
+                    const userCustomized = manifestEntry.userCustomized || false;
+                    const isTier1File = isTier1(normalizedTemplatePath);
+                    const isDocFile = normalizedTemplatePath.startsWith('docs/');
+                    
+                    // With force: show if hash differs (bypass version check)
+                    // Without force: only show if versions are different
+                    if (force || userVer !== templateVer) {
+                        if (isTier1File) {
+                            available.push({
+                                file: normalizedTemplatePath,
+                                component: templateFile.component,
+                                userVersion: userVer,
+                                templateVersion: templateVer,
+                                modified: userCustomized,
+                                templateFile: templateFile,
+                                userFile: { file: manifestEntry.file, hash: hash, version: version },
+                                templateHash: templateHash
+                            });
+                        } else {
+                            // Tier 2: With force, bypass userCustomized check
+                            if (userCustomized && !force) {
+                                // Skip customized non-docs (unless force)
+                            } else {
+                                available.push({
+                                    file: normalizedTemplatePath,
+                                    component: templateFile.component,
+                                    userVersion: userVer,
+                                    templateVersion: templateVer,
+                                    modified: userCustomized,
+                                    templateFile: templateFile,
+                                    userFile: { file: manifestEntry.file, hash: hash, version: version },
+                                    templateHash: templateHash
+                                });
+                            }
+                        }
+                    }
+                } else {
+                    // Truly new file - not in user's project yet
+                    newFiles.push({
+                        file: normalizedTemplatePath,
+                        component: templateFile.component,
+                        version: templateFile.version,
+                        templateFile: templateFile
+                    });
+                }
             } else {
                 // Existing file - check if update needed
-                const manifestEntry = userFile.manifestEntry;
+                // Look up manifest entry by template component name (the manifest key)
+                // This is more reliable than using userFile.manifestEntry which depends on component name matching
+                const manifestEntry = manifest.components[templateFile.component];
                 const manifestVersion = manifestEntry?.version;
                 const manifestHash = manifestEntry?.hash;
                 const userCustomized = manifestEntry?.userCustomized || false;
@@ -378,45 +498,16 @@ class Updater {
                 if (isTier1File) {
                     // Tier 1: Always check for updates
                     if (userFile.hash !== templateHash) {
-                        available.push({
-                            file: normalizedTemplatePath,
-                            component: templateFile.component,
-                            userVersion: manifestVersion || userFile.version || '1.0.0',
-                            templateVersion: templateFile.version,
-                            modified: isCurrentlyCustomized,
-                            templateFile: templateFile,
-                            userFile: userFile,
-                            templateHash: templateHash
-                        });
-                    }
-                } else {
-                    // Tier 2: Check userCustomized flag
-                    if (userCustomized && isCurrentlyCustomized) {
-                        // File is customized, but check if template has updates
-                        if (userFile.hash !== templateHash) {
-                            // VITAL for docs: Show update even if customized
-                            if (isDocFile) {
-                                customizedWithUpdates.push({
-                                    file: normalizedTemplatePath,
-                                    component: templateFile.component,
-                                    userVersion: manifestVersion || userFile.version || '1.0.0',
-                                    templateVersion: templateFile.version,
-                                    modified: true,
-                                    templateFile: templateFile,
-                                    userFile: userFile,
-                                    templateHash: templateHash
-                                });
-                            }
-                            // For non-docs, skip silently (user customized it)
-                        }
-                    } else {
-                        // Not customized (or was reset), check for updates normally
-                        if (userFile.hash !== templateHash) {
+                        const userVer = manifestVersion || userFile.version || templateFile.version || '1.0.0';
+                        const templateVer = templateFile.version || manifestVersion || '1.0.0';
+                        // With force: show if hash differs (bypass version check)
+                        // Without force: only show if versions are different
+                        if (force || userVer !== templateVer) {
                             available.push({
                                 file: normalizedTemplatePath,
                                 component: templateFile.component,
-                                userVersion: manifestVersion || userFile.version || '1.0.0',
-                                templateVersion: templateFile.version,
+                                userVersion: userVer,
+                                templateVersion: templateVer,
                                 modified: isCurrentlyCustomized,
                                 templateFile: templateFile,
                                 userFile: userFile,
@@ -424,11 +515,197 @@ class Updater {
                             });
                         }
                     }
+                } else {
+                    // Tier 2: Check userCustomized flag
+                    // If userCustomized is true in manifest, skip for non-docs (manifest is source of truth)
+                    // UNLESS force flag is set
+                    if (userFile.hash !== templateHash) {
+                        const userVer = manifestVersion || userFile.version || templateFile.version || '1.0.0';
+                        const templateVer = templateFile.version || manifestVersion || '1.0.0';
+                        
+                        if (userCustomized && !force) {
+                            // File is customized, but check if template has updates
+                            // VITAL for docs: Show update even if customized
+                            if (isDocFile) {
+                                // Only show update if versions are different (unless force)
+                                if (force || userVer !== templateVer) {
+                                    customizedWithUpdates.push({
+                                        file: normalizedTemplatePath,
+                                        component: templateFile.component,
+                                        userVersion: userVer,
+                                        templateVersion: templateVer,
+                                        modified: true,
+                                        templateFile: templateFile,
+                                        userFile: userFile,
+                                        templateHash: templateHash
+                                    });
+                                }
+                            }
+                            // For non-docs, skip silently (user customized it, unless force)
+                        } else {
+                            // Not customized (or force is set), check for updates normally
+                            // With force: show if hash differs (bypass version check)
+                            // Without force: only show if versions are different
+                            if (force || userVer !== templateVer) {
+                                available.push({
+                                    file: normalizedTemplatePath,
+                                    component: templateFile.component,
+                                    userVersion: userVer,
+                                    templateVersion: templateVer,
+                                    modified: isCurrentlyCustomized,
+                                    templateFile: templateFile,
+                                    userFile: userFile,
+                                    templateHash: templateHash
+                                });
+                            }
+                        }
+                    }
                 }
             }
         }
 
         return { available, new: newFiles, customizedWithUpdates };
+    }
+
+    static correctManifest(manifest, templateFiles, cwd, srcDir) {
+        // Build a map of component name -> template file for quick lookup
+        const templateMap = new Map();
+        for (const templateFile of templateFiles) {
+            if (templateFile.component) {
+                templateMap.set(templateFile.component, templateFile);
+            }
+        }
+
+        // Track which components we've seen (to identify stale entries)
+        const seenComponents = new Set();
+
+        // First pass: validate existing entries and mark as seen
+        for (const [componentName, entry] of Object.entries(manifest.components)) {
+            if (!entry || typeof entry !== 'object') {
+                // Invalid entry, will be removed
+                continue;
+            }
+
+            const filePath = entry.file;
+            if (!filePath) {
+                // Entry has no file path, remove it
+                delete manifest.components[componentName];
+                continue;
+            }
+
+            const fullPath = Path.join(cwd, filePath);
+            const templateFile = templateMap.get(componentName);
+
+            // Check if file exists
+            if (!Fs.existsSync(fullPath)) {
+                // File doesn't exist - but if there's a template file for it, keep the entry
+                // so it can be restored during update. Only remove if it's truly stale.
+                if (!templateFile) {
+                    // No template file exists, this is a stale entry - remove it
+                    delete manifest.components[componentName];
+                    continue;
+                }
+                // Template file exists, keep the entry but update it with template info
+                // so it can be restored
+                manifest.components[componentName] = {
+                    ...entry,
+                    version: templateFile.version || entry.version || '1.0.0',
+                    // Keep existing hash if present, will be updated when file is restored
+                    hash: entry.hash || '',
+                    modified: false,
+                    userCustomized: false
+                };
+                seenComponents.add(componentName);
+                continue;
+            }
+
+            // Check if component name matches template file's component name
+            // (in case component name in file changed)
+            if (templateFile) {
+                // Verify the component name matches what's in the actual file
+                try {
+                    const content = Fs.readFileSync(fullPath, 'utf-8');
+                    const actualComponent = this.parseComponentFromFile(content);
+                    const fileVersion = this.parseVersionFromFile(content);
+                    const fileHash = Crypto.createHash('sha256').update(content).digest('hex');
+                    const templateHash = Crypto.createHash('sha256').update(templateFile.content).digest('hex');
+                    
+                    if (actualComponent && actualComponent !== componentName) {
+                        // Component name changed - update the manifest entry key
+                        manifest.components[actualComponent] = {
+                            ...entry,
+                            version: fileVersion || entry.version || templateFile.version || '1.0.0',
+                            hash: fileHash
+                        };
+                        delete manifest.components[componentName];
+                        seenComponents.add(actualComponent);
+                        continue;
+                    }
+                    
+                    // Update version if missing or unknown, and check if user customized
+                    if (fileVersion && (!entry.version || entry.version === 'unknown')) {
+                        entry.version = fileVersion;
+                    } else if (!entry.version || entry.version === 'unknown') {
+                        entry.version = templateFile.version || '1.0.0';
+                    }
+                    if (fileHash !== templateHash) {
+                        entry.userCustomized = true;
+                    }
+                    entry.hash = fileHash;
+                } catch (err) {
+                    // File read error, skip validation
+                }
+            }
+
+            seenComponents.add(componentName);
+        }
+
+        // Second pass: add missing entries for template files that exist but aren't in manifest
+        for (const templateFile of templateFiles) {
+            if (!templateFile.component) continue;
+
+            // Skip if we already have this component
+            if (seenComponents.has(templateFile.component)) continue;
+
+            const userFilePath = templateFile.userPath;
+            const fullUserPath = Path.join(cwd, userFilePath);
+
+            // Add entry whether file exists or not - if it doesn't exist, it will be restored during update
+            try {
+                let hash = '';
+                let version = templateFile.version || '1.0.0';
+                
+                if (Fs.existsSync(fullUserPath)) {
+                    // File exists, read it to get current hash and version
+                    const content = Fs.readFileSync(fullUserPath, 'utf-8');
+                    hash = Crypto.createHash('sha256').update(content).digest('hex');
+                    version = this.parseVersionFromFile(content) || templateFile.version || '1.0.0';
+                    
+                    // Check if user customized (hash differs from template)
+                    const templateHash = Crypto.createHash('sha256').update(templateFile.content).digest('hex');
+                    const isCustomized = hash !== templateHash;
+                    
+                    manifest.components[templateFile.component] = {
+                        file: userFilePath.replace(/\\/g, '/'),
+                        version: version,
+                        hash: hash,
+                        modified: false,
+                        userCustomized: isCustomized
+                    };
+                } else {
+                    // If file doesn't exist, hash will be empty and it will be treated as needing update
+                    manifest.components[templateFile.component] = {
+                        file: userFilePath.replace(/\\/g, '/'),
+                        version: templateFile.version || '1.0.0',
+                        hash: hash,
+                        modified: false,
+                        userCustomized: false
+                    };
+                }
+            } catch (err) {
+                // File read error, skip adding
+            }
+        }
     }
 
     static parseSelection(selection, updates) {
@@ -491,8 +768,10 @@ class Updater {
                 Fs.mkdirSync(destDir, { recursive: true });
             }
 
-            // Copy file
-            Fs.copyFileSync(templatePath, destPath);
+            // Read template file, strip version tags, then write to destination
+            const templateContent = Fs.readFileSync(templatePath, 'utf-8');
+            const cleanedContent = this.stripVersionTags(templateContent);
+            Fs.writeFileSync(destPath, cleanedContent, 'utf-8');
             Print.success(`Updated ${update.file}`);
 
             // Update manifest with new file content
@@ -583,6 +862,22 @@ class Updater {
 
         restoreDir(backupPath);
         Print.success('Backup restored successfully!');
+    }
+
+    static stripVersionTags(content) {
+        // Remove JavaScript comment format: // @jamsedu-version: 1.0.0
+        content = content.replace(/\/\/\s*@jamsedu-version:\s*[\d.]+\s*\n?/g, '');
+        // Remove JavaScript comment format: // @jamsedu-component: name
+        content = content.replace(/\/\/\s*@jamsedu-component:\s*\S+\s*\n?/g, '');
+        // Remove CSS comment format: /* @jamsedu-version: 1.0.0 */
+        content = content.replace(/\/\*\s*@jamsedu-version:\s*[\d.]+\s*\*\//g, '');
+        // Remove CSS comment format: /* @jamsedu-component: name */
+        content = content.replace(/\/\*\s*@jamsedu-component:\s*\S+\s*\*\//g, '');
+        // Remove HTML comment format (for markdown): <!-- @jamsedu-version: 1.0.0 -->
+        content = content.replace(/<!--\s*@jamsedu-version:\s*[\d.]+\s*-->\s*\n?/g, '');
+        // Remove HTML comment format: <!-- @jamsedu-component: name -->
+        content = content.replace(/<!--\s*@jamsedu-component:\s*\S+\s*-->\s*\n?/g, '');
+        return content;
     }
 
     static parseVersionFromFile(content) {

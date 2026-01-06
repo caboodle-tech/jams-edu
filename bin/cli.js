@@ -39,13 +39,19 @@ if (args.help || args.h || args.man) {
     exit();
 }
 
+// Handle --where command (doesn't need config)
+if (args.where) {
+    Print.out(Path.resolve(JAMSEDU_ROOT));
+    exit();
+}
+
 // Handle restore command (clears ports) - doesn't need config
 // Can be called as: jamsedu --restore 5000 5001 OR jamsedu 5000 5001 (if no other args)
 const numericArgs = process.argv.slice(2).filter(arg => !arg.startsWith('--') && !isNaN(Number(arg)) && Number(arg) > 0);
 const hasRestoreFlag = args.restore;
 const hasOnlyNumericArgs = numericArgs.length > 0 && process.argv.slice(2).every(arg => arg.startsWith('--') || (!isNaN(Number(arg)) && Number(arg) > 0));
 
-if (hasRestoreFlag || (hasOnlyNumericArgs && !args.init && !args.update && !args.watch && !args.build && !args.config && !args['restore-backup'] && !args.restoreBackup)) {
+if (hasRestoreFlag || (hasOnlyNumericArgs && !args.init && !args.update && !args.watch && !args.build && !args.config && !args['restore-backup'] && !args.restoreBackup && !args.where)) {
     // Import restore dynamically
     const PortKiller = (await import('../src/restore.js')).default;
     
@@ -142,7 +148,7 @@ config.post = [...(JamsEduHooks.post || []), ...(config.post || [])];
 if (args.update) {
     // Import updater dynamically to avoid circular dependencies
     const Updater = (await import('../src/updater.js')).default;
-    await Updater.update(USERS_ROOT, JAMSEDU_ROOT, config);
+    await Updater.update(USERS_ROOT, JAMSEDU_ROOT, config, args.force || false);
     exit();
 }
 
