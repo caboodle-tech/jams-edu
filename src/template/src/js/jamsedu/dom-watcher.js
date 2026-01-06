@@ -1,72 +1,29 @@
+// @jamsedu-version: 1.0.0
+// @jamsedu-component: dom-watcher
 /**
  * @class DOMWatcher
- * Observes the DOM for elements matching CSS selectors
+ * Observes the DOM for elements matching CSS selectors.
  *
  * Monitors the DOM tree for elements that match specified selectors, triggering
  * callbacks when matching elements are added. Handles both immediate detection
  * of existing elements and observation of future additions.
- *
- * @example
- * // Create a watcher instance
- * const watcher = new DOMWatcher();
- *
- * // Watch for elements (triggers once per element)
- * watcher.watch('.my-element', (element) => {
- *     console.log('Found element:', element);
- * });
- *
- * // Watch continuously (callback fires for every match)
- * watcher.watch('.my-element', (element) => {
- *     console.log('Found element:', element);
- * }, false);
- *
- * // Watch with timeout (auto-unwatch after 5 seconds)
- * watcher.watch('.my-element', (element) => {
- *     console.log('Found element:', element);
- * }, 5000);
- *
- * // Manual unwatching
- * const { unwatch } = watcher.watch('.my-element', callback);
- * unwatch(); // Stop watching
- *
- * // Clean up when done
- * watcher.disconnect();
  */
 class DOMWatcher {
 
+    #observer;
+    #processedElementsBySelector = new Map();
+    #selectorTimers = new Map();
+    #watchersBySelector = new Map();
+
     constructor() {
-        this.watchersBySelector = new Map();
-        this.observedElements = new WeakSet(); // Track elements we've already processed
-        this.observer = new MutationObserver(this.handleMutations.bind(this));
-        this.observer.observe(document.documentElement, {
+        this.#observer = new MutationObserver(this.#handleMutations.bind(this));
+        this.#observer.observe(document.documentElement, {
             childList: true,
             subtree: true
         });
     }
 
-    checkNode(node) {
-        if (!node.matches) return;
-
-        this.watchersBySelector.forEach((callbacks, selector) => {
-            // Check if the node itself matches
-            if (node.matches(selector)) {
-                callbacks.forEach((callback) => callback(node));
-            } else {
-                // If parent doesn't match, check for first matching child
-                const matchingChild = node.querySelector(selector);
-                if (matchingChild) {
-                    callbacks.forEach((callback) => callback(matchingChild));
-                }
-            }
-        });
-    }
-
-    disconnect() {
-        this.observer.disconnect();
-        this.watchersBySelector.clear();
-    }
-
-    handleMutations(mutations) {
+    #handleMutations(mutations) {
         // Process all added nodes in a single batch
         const addedNodes = new Set();
         mutations.forEach((mutation) => {
@@ -76,62 +33,133 @@ class DOMWatcher {
         });
 
         // Check each node against selectors
-        addedNodes.forEach(this.checkNode.bind(this));
+        addedNodes.forEach(this.#checkNode.bind(this));
     }
 
-    unwatch(selector, id) {
-        const callbacks = this.watchersBySelector.get(selector);
-        if (callbacks) {
-            callbacks.delete(id);
-            if (callbacks.size === 0) {
-                this.watchersBySelector.delete(selector);
-            }
-        }
-    }
-
-    watch(selector, callback, once = true) {
+    watch(selector, callback, mode = true) {
         const watchId = Symbol();
-        if (!this.watchersBySelector.has(selector)) {
-            this.watchersBySelector.set(selector, new Map());
+
+        // Validate and normalize the mode parameter
+        let once = true;
+        let continuous = false;
+        let timeout = null;
+
+        if (mode === false) {
+            // Continuous watching - fires for every mutation
+            once = false;
+            continuous = true;
+        } else if (typeof mode === 'number') {
+            // Timed watching with minimum 100ms
+            if (mode < 100) {
+                console.warn(`DOMWatcher: Timeout must be at least 100ms. Adjusting ${mode}ms to 100ms.`);
+                mode = 100;
+            }
+            once = true;
+            timeout = mode;
+        } else if (mode === true) {
+            // Single watch (default)
+            once = true;
         }
 
-        const callbacks = this.watchersBySelector.get(selector);
+        if (!this.#watchersBySelector.has(selector)) {
+            this.#watchersBySelector.set(selector, new Map());
+            this.#processedElementsBySelector.set(selector, new Set());
+        }
+
+        const watchers = this.#watchersBySelector.get(selector);
+        const processedElements = this.#processedElementsBySelector.get(selector);
 
         const wrappedCallback = (element) => {
-            // Skip if we've already processed this element
-            if (this.observedElements.has(element)) {
-                return;
+            // For continuous mode, always fire
+            if (!continuous) {
+                // For once mode, skip if already processed
+                if (processedElements.has(element)) {
+                    return;
+                }
+                // Mark as processed
+                processedElements.add(element);
             }
-
-            // Mark as processed
-            this.observedElements.add(element);
 
             // Call the callback
             callback(element);
 
-            if (once) {
-                this.unwatch(selector, watchId);
+            // Only auto-unwatch if once is true AND no timeout is set
+            if (once && timeout === null) {
+                this.#unwatch(selector, watchId);
             }
         };
 
-        // Register the callback
-        callbacks.set(watchId, wrappedCallback);
+        watchers.set(watchId, wrappedCallback);
 
-        // Invoke for existing matches:
-        if (once) {
-            // If only once, call the first existing match (if any)
-            const existingElement = document.querySelector(selector);
-            if (existingElement) {
-                wrappedCallback(existingElement);
-            }
-        } else {
-            // If continuous, call all current matches
-            document.querySelectorAll(selector).forEach((el) => wrappedCallback(el));
+        // Set up timeout if specified and not already set for this selector
+        if (timeout !== null && !this.#selectorTimers.has(selector)) {
+            const timerId = setTimeout(() => {
+                this.#unwatchSelector(selector);
+                this.#selectorTimers.delete(selector);
+            }, timeout);
+
+            this.#selectorTimers.set(selector, timerId);
         }
 
-        return { id: watchId, unwatch: () => this.unwatch(selector, watchId) };
+        // Check existing elements - use querySelectorAll to get all matches
+        const existingElements = document.querySelectorAll(selector);
+        existingElements.forEach((element) => {
+            wrappedCallback(element);
+        });
+
+        return {
+            unwatch: () => { return this.#unwatch(selector, watchId); }
+        };
+    }
+
+    #unwatch(selector, id) {
+        const watchers = this.#watchersBySelector.get(selector);
+        if (watchers) {
+            watchers.delete(id);
+
+            if (watchers.size === 0) {
+                this.#unwatchSelector(selector);
+            }
+        }
+    }
+
+    #unwatchSelector(selector) {
+        // Clear timer if exists
+        if (this.#selectorTimers.has(selector)) {
+            clearTimeout(this.#selectorTimers.get(selector));
+            this.#selectorTimers.delete(selector);
+        }
+
+        // Remove all watchers and processed elements for this selector
+        this.#watchersBySelector.delete(selector);
+        this.#processedElementsBySelector.delete(selector);
+    }
+
+    #checkNode(node) {
+        if (!node.matches) return;
+
+        this.#watchersBySelector.forEach((watchers, selector) => {
+            // Only check if the node itself matches - don't search descendants
+            if (node.matches(selector)) {
+                watchers.forEach((callback) => { return callback(node); });
+            }
+        });
+    }
+
+    disconnect() {
+        // Clear all active timers
+        this.#selectorTimers.forEach((timerId) => {
+            clearTimeout(timerId);
+        });
+        this.#selectorTimers.clear();
+
+        this.#observer.disconnect();
+        this.#watchersBySelector.clear();
+        this.#processedElementsBySelector.clear();
     }
 
 }
 
-export default DOMWatcher;
+window.DomWatcher = new DOMWatcher();
+
+export default window.DomWatcher;

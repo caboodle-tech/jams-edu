@@ -1,0 +1,25 @@
+<script>
+    /**
+     * Default values for meta tags if not provided
+     */
+    if (!title) {
+        const title = 'JamsEdu';
+    }
+    if (!description) {
+        const description = 'Welcome to JamsEdu - A simple static site generator';
+    }
+</script>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+        <link href="./css/main.css" rel="stylesheet">
+        <title><script>$echo(title);</script></title>
+        <script>
+        $echo(`<meta name="description" content="${description}">`);
+    </script>
+        <script type="module" src="./js/main.js"></script>
+    </head>
+    <body>
+

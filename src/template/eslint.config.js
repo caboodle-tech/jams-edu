@@ -1,3 +1,5 @@
+// @jamsedu-version: 1.0.0
+// @jamsedu-component: eslint-config
 import HtmlParser from '@html-eslint/parser';
 import HtmlPlugin from '@html-eslint/eslint-plugin';
 import HtmlRules from './eslint/html-rules.js';

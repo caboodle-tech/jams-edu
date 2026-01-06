@@ -80,6 +80,23 @@ config.pre = [...(JamsEduHooks.pre || []), ...(config.pre || [])];
 // eslint-disable-next-line no-extra-parens
 config.post = [...(JamsEduHooks.post || []), ...(config.post || [])];
 
+// Handle update command (requires config file to know srcDir)
+if (args.update) {
+    // Import updater dynamically to avoid circular dependencies
+    const Updater = (await import('../src/updater.js')).default;
+    await Updater.update(USERS_ROOT, JAMSEDU_ROOT, config);
+    exit();
+}
+
+// Handle restore-backup command (requires config file)
+if (args['restore-backup'] || args.restoreBackup) {
+    // Import updater dynamically
+    const Updater = (await import('../src/updater.js')).default;
+    const timestamp = args['restore-backup'] || args.restoreBackup;
+    Updater.restoreBackup(USERS_ROOT, timestamp);
+    exit();
+}
+
 // Creating a new instance of JamsEdu.
 const jamsedu = new JamsEdu(config, USERS_ROOT);
 

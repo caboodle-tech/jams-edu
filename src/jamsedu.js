@@ -4,7 +4,7 @@ import NodeSimpleServer from '@caboodle-tech/node-simple-server';
 import Path from 'path';
 import Print from './imports/print.js';
 import { exit } from 'process';
-import { WhatIs } from './imports/helpers.js'; 3;
+import { WhatIs } from './imports/helpers.js';
 
 export default class JamsEdu {
 

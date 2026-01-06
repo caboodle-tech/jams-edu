@@ -1,3 +1,5 @@
+// @jamsedu-version: 1.0.0
+// @jamsedu-component: eslint-json-rules
 /**
  * Caboodle Tech's opinionated rules for linting JSON with ESLint. Feel free to adapt or modify
  * these rules to suit your needs.

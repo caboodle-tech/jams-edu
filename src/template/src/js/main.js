@@ -1,8 +1,19 @@
-import DomWatcher from './jamsedu/dom-watcher.js';
-import TinyDocument from './jamsedu/tiny-doc.js';
-import TinyWysiwyg from './jamsedu/tiny-wysiwyg.js';
+/**
+ * Import the JamsEdu library to initialize components and make classes available.
+ * This will automatically initialize TinyDocument and TinyWysiwyg editors.
+ */
+import { DomWatcher, TinyDocument, TinyWysiwyg } from './jamsedu/index.js';
 
-TinyDocument.autoInitialize();
-
-window.DomWatcher = DomWatcher;
-window.TinyWysiwyg = TinyWysiwyg;
+/**
+ * Add your custom code below.
+ * 
+ * You can use the exported classes:
+ * - DomWatcher: Watch for DOM elements matching selectors
+ * - TinyDocument: Create and manage document editors
+ * - TinyWysiwyg: Create rich text editors
+ * 
+ * Example:
+ *   DomWatcher.watch('.my-element', (element) => {
+ *       console.log('Found element:', element);
+ *   });
+ */

@@ -32,6 +32,17 @@
         Starts a local server to view live changes to the sites files and also
         starts a watcher that auto builds the site source files when changed.
 
+    update, -update, --update
+        Interactive update utility for JamsEdu template files and components.
+        Guides you through updating TinyDocument, TinyWysiwyg, CSS components,
+        ESLint configuration, and documentation. Creates backups automatically
+        and allows selective component updates with conflict resolution.
+
+    restore-backup, -restore-backup, --restore-backup TIMESTAMP
+        Restore your project from a backup created during an update operation.
+        Provide the timestamp of the backup you wish to restore (format:
+        YYYY-MM-DD-HH-MM-SS).
+
 # Arguments
     -config FILE, --config=FILE
         The relative path from the projects root to the config file to use, file
