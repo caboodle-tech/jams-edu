@@ -142,6 +142,13 @@ export default class JamsEdu {
         }
     }
 
+    #determineRelativePath(src) {
+        const depth = Path.relative(this.#srcDir, Path.dirname(src))
+            .split(Path.sep)
+            .reduce((count, part) => count + (part ? 1 : 0), 0);
+        return depth === 0 ? '' : '../'.repeat(depth);
+    }
+
     pathContains(needle, haystack) {
         const n = needle.replace(/\\/g, '/').toLowerCase();
         const h = haystack.replace(/\\/g, '/').toLowerCase();
@@ -170,8 +177,9 @@ export default class JamsEdu {
 
         if (src.endsWith('.jhp')) {
             const cwd = Path.dirname(src);
+            const relPath = this.#determineRelativePath(src);
             const content = Fs.readFileSync(src, 'utf8');
-            const processed = this.#JHP.process(content, { cwd });
+            const processed = this.#JHP.process(content, { cwd, relPath });
             dest = dest.replace(this.#regex.jhp, '.html');
             this.#writeFile(dest, processed);
         } else {
