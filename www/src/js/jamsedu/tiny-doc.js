@@ -1,3 +1,5 @@
+// @jamsedu-version: 1.0.0
+// @jamsedu-component: tiny-doc
 import TinyWysiwyg from './tiny-wysiwyg.js';
 
 class TinyDocument {
@@ -113,7 +115,7 @@ class TinyDocument {
             previewContainer.classList.add('multiple');
             this.#hookMultipleFileUpload(elem, wrapper, previewContainer);
             return;
-        };
+        }
         this.#hookSingleFileUpload(elem, wrapper, previewContainer);
     }
 
@@ -201,7 +203,7 @@ class TinyDocument {
         };
 
         fileInput.addEventListener('change', (evt) => {
-            const files = Array.from(evt.target.files).filter((file) => file.type.startsWith('image/'));
+            const files = Array.from(evt.target.files).filter((file) => { return file.type.startsWith('image/'); });
             selectedFiles = [...selectedFiles, ...files];
             displayImages();
             fileInput.value = '';
@@ -345,7 +347,7 @@ class TinyDocument {
         }
 
         const clone = this.#document.cloneNode(true);
-        await this.#replaceFileInputsWithImages(clone);  // Just add 'await'
+        await this.#replaceFileInputsWithImages(clone);
 
         const processedHTML = this.#processClone(clone);
         const fullHTML = this.#buildFullHTML(processedHTML);
@@ -413,7 +415,7 @@ class TinyDocument {
     #fileToBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
+            reader.onload = () => { return resolve(reader.result); };
             reader.onerror = reject;
             reader.readAsDataURL(file);
         });
@@ -635,12 +637,14 @@ class TinyDocument {
             if (ta.classList.contains('rich')) {
                 // For rich text editors, extract the HTML content
                 const editor = ta.nextElementSibling;
-                const editorContent = editor.querySelector('.tw-content');
-                if (editorContent) {
-                    const htmlContent = editorContent.innerHTML.trim();
-                    if (htmlContent && editorContent.textContent !== ta.placeholder) {
-                        div.innerHTML = htmlContent;
-                        div.className = 'rich-content';
+                if (editor) {
+                    const editorContent = editor.querySelector('.tw-content');
+                    if (editorContent) {
+                        const htmlContent = editorContent.innerHTML.trim();
+                        if (htmlContent && editorContent.textContent !== ta.placeholder) {
+                            div.innerHTML = htmlContent;
+                            div.className = 'rich-content';
+                        }
                     }
                 }
             } else {

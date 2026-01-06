@@ -243,10 +243,14 @@ const getVideoHtml = (url) => {
  * @param {object} scope - The scope object containing the dom, cwd, and relPath
  */
 const jamsEduVideo = (scope) => {
-    // Find all video tags with src attribute
     const videoNodes = scope.dom.querySelectorAll('video[src]');
 
     for (const videoNode of videoNodes) {
+        const parent = videoNode.parent;
+        if (parent && parent.type === 'tag-open' && parent.name === 'figure') {
+            continue;
+        }
+
         const url = videoNode.getAttribute('src');
         const videoHtml = getVideoHtml(url);
 
@@ -302,15 +306,10 @@ const jamsEduVideo = (scope) => {
             figcaption = `<figcaption${figcaptionClass}>${innerHTML}</figcaption>`;
         }
 
-        // Create replacement HTML as a text node
         const replacementHtml = `<figure ${attributes.trim()}>${videoHtml}${figcaption}</figure>`;
 
-        // Create new text node
-        const textNode = scope.dom.createNode('text');
-        textNode.content = replacementHtml;
-
-        // Replace the original video node
-        videoNode.replaceWith(textNode);
+        videoNode.insertAdjacentHTML('beforebegin', replacementHtml);
+        videoNode.remove();
     }
 };
 

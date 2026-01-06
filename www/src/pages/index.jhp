@@ -1,0 +1,15 @@
+<script>
+    const title = 'Nested Page';
+    const description = 'This is a test page for nested pages.';
+    
+    $include('./templates/header.html');
+</script>
+
+<p>
+    Hello, World!
+</p>
+
+<script>
+    $include('./templates/footer.html');
+</script>
+

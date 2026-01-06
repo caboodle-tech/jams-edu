@@ -1,0 +1,308 @@
+/* @jamsedu-version: 1.1.0 */
+/* @jamsedu-component: main-css */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+@import './jamsedu/jamsedu.css';
+
+/* ============================================
+   CSS CUSTOM PROPERTIES (VARIABLES)
+   ============================================ */
+:root {
+    /* Color variables */
+    --primary: #3498db;
+    --secondary: #2c3e50;
+    --accent: #e74c3c;
+    --light: #ecf0f1;
+    --dark: #34495e;
+    
+    /* Effect variables */
+    --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --primary-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --transition: all 0.3s ease;
+    
+    /* Typography - Font sizes */
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-md: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.3125rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 2.625rem;
+    --font-size-4xl: 4rem;
+    
+    /* Typography - Line heights */
+    --line-height-xs: 1.3;
+    --line-height-sm: 1.4;
+    --line-height-md: 1.5;
+    --line-height-lg: 1.6;
+    --line-height-xl: 1.7;
+    --line-height-2xl: 1.8;
+    --line-height-3xl: 1.9;
+    --line-height-4xl: 2.0;
+    
+    /* Code styling */
+    --inline-code-bg-clr: #f5f5f5;
+    --inline-code-border-clr: #e0e0e0;
+    --inline-code-font-family: 'Roboto Mono', monospace;
+    
+    /* Spacing */
+    --table-td-padding: 2px var(--font-size-md) 2px var(--font-size-xs);
+}
+
+/* ============================================
+   RESET & BASE STYLES
+   ============================================ */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-md);
+    color: var(--dark);
+    background-color: var(--light);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+body {
+    h1 {
+        font-size: var(--font-size-4xl);
+        line-height: var(--line-height-4xl);
+        color: var(--secondary);
+        margin-top: 0;
+        border-bottom: 2px solid var(--light);
+        padding-bottom: 0.5rem;
+    }
+
+    h2 {
+        font-size: var(--font-size-3xl);
+        line-height: var(--line-height-3xl);
+    }
+
+    h3 {
+        font-size: var(--font-size-2xl);
+        line-height: var(--line-height-2xl);
+    }
+
+    h4 {
+        font-size: var(--font-size-xl);
+        line-height: var(--line-height-xl);
+    }
+
+    h5 {
+        font-size: var(--font-size-lg);
+        line-height: var(--line-height-lg);
+    }
+
+    h6 {
+        font-size: var(--font-size-md);
+        line-height: var(--line-height-md);
+    }
+
+    p {
+        margin-bottom: 1.5rem;
+
+        & code {
+            background-color: var(--light);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            color: var(--accent);
+            font-family: 'Fira Code', monospace;
+        }
+    }
+
+    kbd {
+        background-color: var(--inline-code-bg-clr);
+        border-radius: 4px;
+        border: 1px solid var(--inline-code-border-clr);
+        box-shadow: var(--primary-box-shadow);
+        font-family: var(--inline-code-font-family);
+        font-size: var(--font-size-md);
+        font-weight: bold;
+        margin: 0 2px;
+        padding: 2px 5px;
+    }
+
+    blockquote {
+        border-left: 4px solid var(--primary);
+        background-color: rgba(52, 152, 219, 0.1);
+        margin: 1.5rem 0;
+        padding: 1rem 1.5rem;
+        border-radius: 0 8px 8px 0;
+        position: relative;
+
+        & p {
+            font-size: 1.1rem;
+            font-weight: 500;
+            font-style: italic;
+            margin: 0;
+            color: var(--secondary);
+        }
+    }
+}
+
+/* ============================================
+   LINKS
+   ============================================ */
+a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: var(--transition);
+
+    &:hover {
+        color: var(--secondary);
+    }
+}
+
+/* ============================================
+   LAYOUT CONTAINERS
+   ============================================ */
+header,
+main,
+footer {
+    padding: 2rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+header {
+    background-color: var(--secondary);
+    color: white;
+    box-shadow: var(--shadow);
+
+    & nav {
+        margin-top: 1rem;
+
+        & ul {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            gap: 1rem;
+
+            & li {
+                & a {
+                    color: var(--light);
+                    text-decoration: none;
+                    padding: 0.5rem 1rem;
+                    border-radius: 4px;
+                    transition: var(--transition);
+
+                    &:hover {
+                        background-color: var(--primary);
+                        color: white;
+                    }
+
+                    &:active {
+                        transform: translateY(2px);
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* ============================================
+   MAIN CONTENT
+   ============================================ */
+main {
+    flex: 1;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    margin: 2rem auto;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+footer {
+    background-color: var(--secondary);
+    color: var(--light);
+    text-align: center;
+    padding: 1rem;
+    margin-top: auto;
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+body {
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        overflow: auto;
+
+        thead {
+            th {
+                font-weight: bold;
+                padding: var(--table-td-padding);
+                text-align: left;
+            }
+        }
+
+        tbody {
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+
+            tr {
+                &:nth-child(odd) {
+                    background-color: #efeff2;
+                }
+            }
+        }
+
+        td {
+            min-width: 125px;
+            padding: var(--table-td-padding);
+            vertical-align: top;
+            white-space: nowrap;
+        }
+    }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 768px) {
+    header nav ul {
+        flex-direction: column;
+
+        & li {
+            margin-bottom: 0.5rem;
+
+            & a {
+                display: block;
+                text-align: center;
+            }
+        }
+    }
+
+    main,
+    header {
+        padding: 1rem;
+    }
+}

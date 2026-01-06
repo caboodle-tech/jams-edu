@@ -5,7 +5,7 @@
         "jamsedu": "bin/cli.js"
     },
     "dependencies": {
-        "@caboodle-tech/jhp": "^3.3.0",
+        "@caboodle-tech/jhp": "^3.4.0",
         "@caboodle-tech/node-simple-server": "^4.2.7",
         "prompt-sync": "^4.2.0"
     },

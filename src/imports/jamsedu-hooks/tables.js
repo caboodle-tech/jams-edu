@@ -1,13 +1,16 @@
 const jamsTables = (scope) => {
-    // console.log(scope.dom.visualize());
-    // Find all table tags
     const tableNodes = scope.dom.findAllByTag('table');
 
     for (const tableNode of tableNodes) {
-        const wrapperOpen = scope.dom.createNode('tag-open', 'div', { class: 'table-container' });
-        // const wrapperClose = scope.dom.createNode('tag-close', 'div');
+        const parent = tableNode.parent;
+        if (!parent) continue;
 
-        tableNode.replaceWith(wrapperOpen);
+        if (parent.type === 'tag-open' && parent.name === 'div' && parent.getAttribute('class') === 'table-container') {
+            continue;
+        }
+
+        const [wrapperOpen] = tableNode.createNode('div', { class: 'table-container' });
+        tableNode.insertBefore(wrapperOpen);
         wrapperOpen.appendChild(tableNode);
     }
 };

@@ -1,6 +1,10 @@
 <script>
+    const title = 'Hello, World!';
+    const description = 'Welcome to your new JamsEdu project';
+    
     $include('./templates/header.html');
 </script>
+
 
 <h1>Heading 1</h1>
 <h2>Heading 2</h2>
@@ -154,3 +158,4 @@ greet('World');
 <script>
     $include('./templates/footer.html');
 </script>
+

@@ -18,6 +18,8 @@ export default class JamsEdu {
 
     #NSS = null;
 
+    #PORT = 5000;
+
     #regex = {
         jhp: /\.jhp$/
     };
@@ -78,7 +80,6 @@ export default class JamsEdu {
             return;
         }
 
-        // Start by cleaning the destination directory.
         try {
             this.#clearDirectory(this.#destDir);
         } catch (err) {
@@ -89,7 +90,6 @@ export default class JamsEdu {
             exit(1);
         }
 
-        // Process the source directory.
         this.#processDir(this.#srcDir);
     }
 
@@ -206,7 +206,12 @@ export default class JamsEdu {
         });
 
         // Start the server.
-        this.#NSS.start();
+        this.#NSS.start(this.#PORT, (result) => {
+            if (!result) {
+                Print.error('Possible upstream issue with Node Simple Server! Try again later.');
+                exit(1);
+            }
+        }, false);
 
         // Watch the source directory for changes.
         this.#NSS.watch(this.#srcDir, {

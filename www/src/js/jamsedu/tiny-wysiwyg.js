@@ -1,3 +1,5 @@
+// @jamsedu-version: 1.0.0
+// @jamsedu-component: tiny-wysiwyg
 class TinyWysiwyg {
 
     #blocks = ['PRE', 'BLOCKQUOTE'];
@@ -45,6 +47,15 @@ class TinyWysiwyg {
         this.init();
     }
 
+    static autoInitialize() {
+        document.addEventListener('DOMContentLoaded', () => {
+            const textareas = document.querySelectorAll('textarea.rich');
+            textareas.forEach((textarea) => {
+                new TinyWysiwyg(textarea);
+            });
+        });
+    }
+
     // Unified cleanup method for both pasted content and regular formatting
     cleanHTML(element) {
         // Remove unwanted attributes
@@ -69,7 +80,7 @@ class TinyWysiwyg {
 
         // Remove empty spans
         const emptySpans = element.querySelectorAll('span:empty');
-        emptySpans.forEach((span) => span.remove());
+        emptySpans.forEach((span) => { return span.remove(); });
     }
 
     // Debounced cleanup - only runs after user stops interacting
@@ -161,7 +172,7 @@ class TinyWysiwyg {
             this.hideLinkModal();
         });
 
-        cancelBtn.addEventListener('click', () => this.hideLinkModal());
+        cancelBtn.addEventListener('click', () => { return this.hideLinkModal(); });
 
         unlinkBtn.addEventListener('click', () => {
             this.removeLink(this.linkModal.existingLinkElement);
@@ -279,8 +290,7 @@ class TinyWysiwyg {
         if (blocks.length === 0) return;
 
         // Check if all blocks are already the target format
-        const allSameFormat = blocks.every((block) =>
-            block.tagName && block.tagName.toLowerCase() === tag.toLowerCase()
+        const allSameFormat = blocks.every((block) => { return block.tagName && block.tagName.toLowerCase() === tag.toLowerCase(); }
         );
 
         const modifiedBlocks = [];
@@ -722,7 +732,7 @@ class TinyWysiwyg {
         // Find all child elements with this tag
         if (node.querySelectorAll) {
             const elements = node.querySelectorAll(tagName);
-            elements.forEach((el) => this.unwrapElement(el));
+            elements.forEach((el) => { return this.unwrapElement(el); });
         }
     }
 
@@ -1665,5 +1675,7 @@ class TinyWysiwyg {
     }
 
 }
+
+window.TinyWysiwyg = TinyWysiwyg;
 
 export default TinyWysiwyg;

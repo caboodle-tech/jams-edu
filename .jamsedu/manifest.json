@@ -1,70 +1,112 @@
 {
   "jamseduPackageVersion": "4.9.0",
   "templateVersion": "4.9.0",
-  "installed": "2026-01-06T08:26:04.902Z",
+  "installed": "2026-01-06T08:42:46.417Z",
   "lastUpdated": null,
   "srcDir": "www/src",
   "components": {
-    "html-rules": {
-      "file": "eslint/html-rules.js",
-      "version": "4.9.0",
-      "hash": "8dc28de5edaed8376f393608b3fb094736e25460bc6cbd47520ae7c2b36526c6",
-      "modified": false,
-      "userCustomized": false
-    },
-    "js-rules": {
-      "file": "eslint/js-rules.js",
-      "version": "4.9.0",
-      "hash": "95052cdd0a180d5ca5f5df4864c187a525141c07b92deb4c686bcd353333d2d7",
-      "modified": false,
-      "userCustomized": false
-    },
-    "json-rules": {
-      "file": "eslint/json-rules.js",
-      "version": "4.9.0",
-      "hash": "4eddf3dac925df9bcda0e670bc4ccdd0f7ae1c756439c2b785f53ca3ea816777",
-      "modified": false,
-      "userCustomized": false
-    },
-    "eslint.config": {
-      "file": "eslint.config.js",
-      "version": "4.9.0",
-      "hash": "a28ee21a514f00f5dd82a0d6c0258d168e17e8796d7c08026465866be4570d12",
-      "modified": false,
-      "userCustomized": true
-    },
-    "settings": {
-      "file": ".vscode/settings.json",
-      "version": "4.9.0",
-      "hash": "378f8204f801b2fef08bebe09fb4377e765cfed4cbc3942fbd8172605f95d614",
-      "modified": false,
-      "userCustomized": true
-    },
     "docs-CSS-CUSTOMIZATION": {
       "file": "docs/CSS-CUSTOMIZATION.md",
-      "version": "4.9.0",
+      "version": "4.2.0",
       "hash": "8248809bc5a913b75e5b292ff5d17f98a188e8af5b9e44fe3a62c0063ac0db7b",
       "modified": false,
       "userCustomized": false
     },
     "docs-JAVASCRIPT-API": {
       "file": "docs/JAVASCRIPT-API.md",
-      "version": "4.9.0",
+      "version": "4.2.0",
       "hash": "3305f90f9d7d7e416a01d81d65041e353fc9a8bbc84e927d28ac7c72f26ea54f",
       "modified": false,
       "userCustomized": false
     },
     "docs-JAVASCRIPT-SETUP": {
       "file": "docs/JAVASCRIPT-SETUP.md",
-      "version": "4.9.0",
+      "version": "4.2.0",
       "hash": "160e2fea0ce3de029bb8f484f53c99326a1be69a197dccea8a0ecead4412f54f",
       "modified": false,
       "userCustomized": false
     },
     "docs-JHP-TEMPLATES": {
       "file": "docs/JHP-TEMPLATES.md",
-      "version": "4.9.0",
+      "version": "4.2.0",
       "hash": "55fd5ea0f71aafd2eb4d56ed0b93bcdd77a71d8c29b07933e86b6183d509d81f",
+      "modified": false,
+      "userCustomized": false
+    },
+    "eslint-html-rules": {
+      "file": "eslint/html-rules.js",
+      "version": "1.0.0",
+      "hash": "8dc28de5edaed8376f393608b3fb094736e25460bc6cbd47520ae7c2b36526c6",
+      "modified": false,
+      "userCustomized": true
+    },
+    "eslint-js-rules": {
+      "file": "eslint/js-rules.js",
+      "version": "1.0.0",
+      "hash": "95052cdd0a180d5ca5f5df4864c187a525141c07b92deb4c686bcd353333d2d7",
+      "modified": false,
+      "userCustomized": true
+    },
+    "eslint-json-rules": {
+      "file": "eslint/json-rules.js",
+      "version": "1.0.0",
+      "hash": "4eddf3dac925df9bcda0e670bc4ccdd0f7ae1c756439c2b785f53ca3ea816777",
+      "modified": false,
+      "userCustomized": true
+    },
+    "eslint-config": {
+      "file": "eslint.config.js",
+      "version": "1.0.0",
+      "hash": "a28ee21a514f00f5dd82a0d6c0258d168e17e8796d7c08026465866be4570d12",
+      "modified": false,
+      "userCustomized": true
+    },
+    "jamsedu-css": {
+      "file": "www/src/css/jamsedu/jamsedu.css",
+      "version": "1.0.0",
+      "hash": "d212a40915bde5b8022894ac364ea393a21ecb987d1f3507e9fc9f54cf6830fa",
+      "modified": false,
+      "userCustomized": false
+    },
+    "tiny-document": {
+      "file": "www/src/css/jamsedu/tiny-document.css",
+      "version": "1.0.0",
+      "hash": "e73a91dc652b56e6962a80d40494bc6f9d175fb4bb0154dfa16d74819d0b9e0a",
+      "modified": false,
+      "userCustomized": false
+    },
+    "tiny-wysiwyg": {
+      "file": "www/src/js/jamsedu/tiny-wysiwyg.js",
+      "version": "1.0.0",
+      "hash": "3a0e9647520ceed6ea6bcb523ac59ce65e009f51f6babbc6ebd307f96cdd0456",
+      "modified": false,
+      "userCustomized": false
+    },
+    "main-css": {
+      "file": "www/src/css/main.css",
+      "version": "1.1.0",
+      "hash": "2c27f71e0b281d22c2a51fef9ce145ba9d123a297d806e9e2d729d2e0f8b2320",
+      "modified": false,
+      "userCustomized": false
+    },
+    "dom-watcher": {
+      "file": "www/src/js/jamsedu/dom-watcher.js",
+      "version": "1.0.0",
+      "hash": "3ade629d539caf5d0103d79fd5d7e3e0430e226aafe1143090dfb2a88187bdb3",
+      "modified": false,
+      "userCustomized": false
+    },
+    "jamsedu-index": {
+      "file": "www/src/js/jamsedu/index.js",
+      "version": "1.0.0",
+      "hash": "14f32336603d7b6780e1c2617dd7649212df0a924f1116c0cadd3351883907d2",
+      "modified": false,
+      "userCustomized": false
+    },
+    "tiny-doc": {
+      "file": "www/src/js/jamsedu/tiny-doc.js",
+      "version": "1.0.0",
+      "hash": "d0d340491d17d0c987c151d9de3547d51590714bc3bca08a876c50a4e6be8adb",
       "modified": false,
       "userCustomized": false
     }

@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@caboodle-tech/jhp':
-        specifier: ^3.3.0
-        version: 3.3.0
+        specifier: ^3.4.0
+        version: 3.4.0
       '@caboodle-tech/node-simple-server':
         specifier: ^4.2.7
         version: 4.2.7
@@ -36,15 +36,15 @@ importers:
 
 packages:
 
-  '@caboodle-tech/jhp@3.3.0':
-    resolution: {integrity: sha512-5r0cg6cb4HkOTAg0+1FKUbi9uni43DmO/Bvlqwi2uzBNUgDvjfgnAqSQDRD2OQ8k4IEFvCY5aNPmf83cscFeuw==}
+  '@caboodle-tech/jhp@3.4.0':
+    resolution: {integrity: sha512-KONR5AHi9hDKAsNuF8UkAD9BeM0oQV8cM6IUeQ/RSgM7OnT2q3Elf07bxMZ9Ze3Fok8maLKaf1aKAU8ODAamsg==}
 
   '@caboodle-tech/node-simple-server@4.2.7':
     resolution: {integrity: sha512-R6Tk0YCb6uZdFDiNYqsQUQwnVIi81QWLQoMls47MFLaWVpotu06k0LXW7YMoTFxnyrmaXRImecV4KmooIn+Ang==}
     engines: {node: '>=14.0.0'}
 
-  '@caboodle-tech/simple-html-parser@2.4.0':
-    resolution: {integrity: sha512-g7gcoKbsGi/n3epn48roRlUEzj1FQXzKA6efO7/9knk5+nH4XpTXZ7T6PM3pxISClZxvjAD0NT8dqtX1FAxMvg==}
+  '@caboodle-tech/simple-html-parser@2.5.0':
+    resolution: {integrity: sha512-3Po7s0BnteT1j+4W/Wu1pNQKLUKGyXaqcKtOlzbZQ2Rabvac4kJUqyT4r+2Dp2o40nPRGDRb7wLiEAX6cLUmNA==}
     engines: {node: '>=22.0.0'}
 
   '@eslint-community/eslint-utils@4.9.1':
@@ -489,9 +489,9 @@ packages:
 
 snapshots:
 
-  '@caboodle-tech/jhp@3.3.0':
+  '@caboodle-tech/jhp@3.4.0':
     dependencies:
-      '@caboodle-tech/simple-html-parser': 2.4.0
+      '@caboodle-tech/simple-html-parser': 2.5.0
       acorn-loose: 8.5.2
 
   '@caboodle-tech/node-simple-server@4.2.7':
@@ -502,7 +502,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@caboodle-tech/simple-html-parser@2.4.0': {}
+  '@caboodle-tech/simple-html-parser@2.5.0': {}
 
   '@eslint-community/eslint-utils@4.9.1(eslint@9.39.2)':
     dependencies:
