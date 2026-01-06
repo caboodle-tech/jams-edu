@@ -242,7 +242,7 @@ const getVideoHtml = (url) => {
  *
  * @param {object} scope - The scope object containing the dom, cwd, and relPath
  */
-const JamsEduVideo = (scope) => {
+const jamsEduVideo = (scope) => {
     // Find all video tags with src attribute
     const videoNodes = scope.dom.querySelectorAll('video[src]');
 
@@ -314,4 +314,4 @@ const JamsEduVideo = (scope) => {
     }
 };
 
-export default JamsEduVideo;
+export default jamsEduVideo;

@@ -1,4 +1,4 @@
-const JamsTables = (scope) => {
+const jamsTables = (scope) => {
     // console.log(scope.dom.visualize());
     // Find all table tags
     const tableNodes = scope.dom.findAllByTag('table');
@@ -12,4 +12,4 @@ const JamsTables = (scope) => {
     }
 };
 
-export default JamsTables;
+export default jamsTables;

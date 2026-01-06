@@ -1,3 +1,5 @@
+<!-- @jamsedu-version: 4.2.0 -->
+<!-- @jamsedu-component: docs-JAVASCRIPT-SETUP -->
 # JavaScript Setup Guide
 
 ## ⚠️ CRITICAL: Module Type Required

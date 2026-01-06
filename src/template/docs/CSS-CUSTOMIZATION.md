@@ -1,3 +1,5 @@
+<!-- @jamsedu-version: 4.2.0 -->
+<!-- @jamsedu-component: docs-CSS-CUSTOMIZATION -->
 # CSS Customization Guide
 
 JamsEdu provides a powerful CSS custom property system that allows you to customize the appearance of TinyDocument and TinyWysiwyg components without modifying the core CSS files.

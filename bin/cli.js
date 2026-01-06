@@ -24,12 +24,70 @@ if (args.init) {
     exit();
 }
 
+// Handle --version command (doesn't need config)
+if (args.version || args.v) {
+    const packageJson = JSON.parse(Fs.readFileSync(Path.join(JAMSEDU_ROOT, 'package.json'), 'utf-8'));
+    Print.out(packageJson.version);
+    exit();
+}
+
+// Handle --help command (doesn't need config)
+if (args.help || args.h || args.man) {
+    const manualFile = Path.join(JAMSEDU_ROOT, 'bin', 'man.md');
+    const manual = Fs.readFileSync(manualFile, { encoding: 'utf8' });
+    Print.out(MarkdownToTerminal.parse(manual));
+    exit();
+}
+
+// Handle restore command (clears ports) - doesn't need config
+// Can be called as: jamsedu --restore 5000 5001 OR jamsedu 5000 5001 (if no other args)
+const numericArgs = process.argv.slice(2).filter(arg => !arg.startsWith('--') && !isNaN(Number(arg)) && Number(arg) > 0);
+const hasRestoreFlag = args.restore;
+const hasOnlyNumericArgs = numericArgs.length > 0 && process.argv.slice(2).every(arg => arg.startsWith('--') || (!isNaN(Number(arg)) && Number(arg) > 0));
+
+if (hasRestoreFlag || (hasOnlyNumericArgs && !args.init && !args.update && !args.watch && !args.build && !args.config && !args['restore-backup'] && !args.restoreBackup)) {
+    // Import restore dynamically
+    const PortKiller = (await import('../src/restore.js')).default;
+    
+    // Extract ports from args - either after --restore flag or as standalone numbers
+    let ports = [];
+    if (hasRestoreFlag) {
+        // If --restore flag is used, get ports after it
+        const restoreIndex = process.argv.indexOf('--restore');
+        ports = process.argv.slice(restoreIndex + 1).filter(arg => !arg.startsWith('--') && !isNaN(Number(arg)) && Number(arg) > 0).map(Number);
+    } else {
+        // If no --restore flag, get all numeric args (for jamsedu 5000 5001 syntax)
+        ports = numericArgs.map(Number);
+    }
+    
+    if (ports.length === 0) {
+        Print.error('Usage: jamsedu --restore <port1> <port2> ...');
+        Print.info('Example: jamsedu --restore 5000 5001');
+        Print.info('Or: jamsedu 5000 5001');
+        exit(1);
+    }
+    
+    await PortKiller.restore(ports);
+    exit();
+}
+
 // See if the user provided a config file path via command line arguments.
 let configFile = args.config;
 
 // Setting default config file path if not provided.
+// Config is now in .jamsedu/config.js (fallback to old location for migration)
 if (!configFile) {
-    configFile = Path.join(USERS_ROOT, 'jamsedu.config.js');
+    const newConfigPath = Path.join(USERS_ROOT, '.jamsedu', 'config.js');
+    const oldConfigPath = Path.join(USERS_ROOT, 'jamsedu.config.js');
+    
+    // Try new location first, then fall back to old location
+    if (Fs.existsSync(newConfigPath)) {
+        configFile = newConfigPath;
+    } else if (Fs.existsSync(oldConfigPath)) {
+        configFile = oldConfigPath;
+    } else {
+        configFile = newConfigPath; // Use new path for error message
+    }
 }
 
 // Checking if the config file path is valid.

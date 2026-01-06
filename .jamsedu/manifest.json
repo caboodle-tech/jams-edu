@@ -1,0 +1,72 @@
+{
+  "jamseduPackageVersion": "4.9.0",
+  "templateVersion": "4.9.0",
+  "installed": "2026-01-06T08:26:04.902Z",
+  "lastUpdated": null,
+  "srcDir": "www/src",
+  "components": {
+    "html-rules": {
+      "file": "eslint/html-rules.js",
+      "version": "4.9.0",
+      "hash": "8dc28de5edaed8376f393608b3fb094736e25460bc6cbd47520ae7c2b36526c6",
+      "modified": false,
+      "userCustomized": false
+    },
+    "js-rules": {
+      "file": "eslint/js-rules.js",
+      "version": "4.9.0",
+      "hash": "95052cdd0a180d5ca5f5df4864c187a525141c07b92deb4c686bcd353333d2d7",
+      "modified": false,
+      "userCustomized": false
+    },
+    "json-rules": {
+      "file": "eslint/json-rules.js",
+      "version": "4.9.0",
+      "hash": "4eddf3dac925df9bcda0e670bc4ccdd0f7ae1c756439c2b785f53ca3ea816777",
+      "modified": false,
+      "userCustomized": false
+    },
+    "eslint.config": {
+      "file": "eslint.config.js",
+      "version": "4.9.0",
+      "hash": "a28ee21a514f00f5dd82a0d6c0258d168e17e8796d7c08026465866be4570d12",
+      "modified": false,
+      "userCustomized": true
+    },
+    "settings": {
+      "file": ".vscode/settings.json",
+      "version": "4.9.0",
+      "hash": "378f8204f801b2fef08bebe09fb4377e765cfed4cbc3942fbd8172605f95d614",
+      "modified": false,
+      "userCustomized": true
+    },
+    "docs-CSS-CUSTOMIZATION": {
+      "file": "docs/CSS-CUSTOMIZATION.md",
+      "version": "4.9.0",
+      "hash": "8248809bc5a913b75e5b292ff5d17f98a188e8af5b9e44fe3a62c0063ac0db7b",
+      "modified": false,
+      "userCustomized": false
+    },
+    "docs-JAVASCRIPT-API": {
+      "file": "docs/JAVASCRIPT-API.md",
+      "version": "4.9.0",
+      "hash": "3305f90f9d7d7e416a01d81d65041e353fc9a8bbc84e927d28ac7c72f26ea54f",
+      "modified": false,
+      "userCustomized": false
+    },
+    "docs-JAVASCRIPT-SETUP": {
+      "file": "docs/JAVASCRIPT-SETUP.md",
+      "version": "4.9.0",
+      "hash": "160e2fea0ce3de029bb8f484f53c99326a1be69a197dccea8a0ecead4412f54f",
+      "modified": false,
+      "userCustomized": false
+    },
+    "docs-JHP-TEMPLATES": {
+      "file": "docs/JHP-TEMPLATES.md",
+      "version": "4.9.0",
+      "hash": "55fd5ea0f71aafd2eb4d56ed0b93bcdd77a71d8c29b07933e86b6183d509d81f",
+      "modified": false,
+      "userCustomized": false
+    }
+  }
+}

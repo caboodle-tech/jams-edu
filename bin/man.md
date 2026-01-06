@@ -43,8 +43,18 @@
         Provide the timestamp of the backup you wish to restore (format:
         YYYY-MM-DD-HH-MM-SS).
 
+    restore, -restore, --restore [PORT1] [PORT2] ...
+        Clear ports by terminating processes that are using them. Useful for
+        freeing ports blocked by orphaned or unresponsive server processes.
+        You can provide one or more port numbers. The command will prompt you
+        to confirm before killing each process.
+
 # Arguments
     -config FILE, --config=FILE
         The relative path from the projects root to the config file to use, file
-        extension included. By default `jamsedu.config.js` is searched for and
+        extension included. By default `.jamsedu/config.js` is searched for and
         automatically used when this argument is missing.
+
+    PORT1 [PORT2] ...
+        Port numbers to clear when using the restore command. Can be used with
+        `--restore` flag or as standalone arguments (e.g., `jamsedu 5000 5001`).

@@ -101,20 +101,22 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         }
 
         // Copy template files recursively (ESLint is included, no question needed)
-        this.copyTemplateFiles(jamseduTemplateDir, cwd, conflictResolution);
+        const skippedFiles = this.copyTemplateFiles(jamseduTemplateDir, cwd, conflictResolution, srcDir);
+
+        // Ensure .gitignore includes destDir
+        this.ensureGitignore(cwd, destDir);
 
         // Write out the configuration file AFTER copying (so it doesn't conflict)
-        const configFilePath = Path.join(cwd, 'jamsedu.config.js');
-        const configDir = Path.dirname(configFilePath);
-
-        // Create the config directory if it doesn't exist
-        if (!Fs.existsSync(configDir)) {
-            Fs.mkdirSync(configDir, { recursive: true });
+        // Store config in .jamsedu/config.js
+        const jamseduDir = Path.join(cwd, '.jamsedu');
+        if (!Fs.existsSync(jamseduDir)) {
+            Fs.mkdirSync(jamseduDir, { recursive: true });
         }
+        const configFilePath = Path.join(jamseduDir, 'config.js');
         Fs.writeFileSync(configFilePath, config);
 
-        // Create manifest for update system
-        this.createManifest(cwd, srcDir, jamseduWd, packageVersion);
+        // Create manifest for update system (pass skipped files to mark as customized)
+        this.createManifest(cwd, srcDir, jamseduWd, packageVersion, skippedFiles);
 
         // Create template directory if it doesn't exist
         const userTemplateDirPath = Path.join(cwd, userTemplateDir);
@@ -180,8 +182,8 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
                 if (entry.name === 'node_modules' && entry.isDirectory()) {
                     continue;
                 }
-                // Skip jamsedu.config.js - we generate this, not copy it
-                if (entry.name === 'jamsedu.config.js') {
+                // Skip .jamsedu directory - we generate config there, not in root
+                if (entry.name === '.jamsedu' && entry.isDirectory()) {
                     continue;
                 }
                 existingFiles.push(entry.name);
@@ -235,19 +237,39 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         return 'overwrite';
     }
 
-    static copyTemplateFiles(templateDir, destDir, conflictMode) {
+    static copyTemplateFiles(templateDir, cwd, conflictMode, userSrcDir) {
         Print.info('Copying template files...');
+        const skippedFiles = [];
 
-        const copyRecursive = (src, dest) => {
+        // Normalize userSrcDir to relative path with forward slashes
+        const normalizedSrcDir = userSrcDir.replace(/\\/g, '/');
+
+        const copyRecursive = (src, templateBasePath = '') => {
             const entries = Fs.readdirSync(src, { withFileTypes: true });
 
             for (const entry of entries) {
                 const srcPath = Path.join(src, entry.name);
-                const destPath = Path.join(dest, entry.name);
+                const relativePath = Path.relative(templateDir, srcPath).replace(/\\/g, '/');
 
-                // Skip jamsedu.config.js - we generate this separately
-                if (entry.name === 'jamsedu.config.js') {
+                // Skip config.js files - we generate config in .jamsedu/config.js separately
+                if (entry.name === 'config.js' || entry.name === 'jamsedu.config.js') {
                     continue;
+                }
+
+                // Map template paths to user paths
+                // Files under src/ in template should map to user's srcDir
+                let destPath;
+                if (relativePath.startsWith('src/')) {
+                    // Map src/... to userSrcDir/...
+                    const pathAfterSrc = relativePath.replace(/^src\//, '');
+                    // Split normalizedSrcDir by / and join properly for cross-platform support
+                    const srcDirParts = normalizedSrcDir.split('/').filter(p => p);
+                    destPath = Path.join(cwd, ...srcDirParts, ...pathAfterSrc.split('/'));
+                } else {
+                    // Root-level files (eslint/, docs/, etc.) go to project root
+                    // Split relativePath by / for proper cross-platform joining
+                    const pathParts = relativePath.split('/').filter(p => p);
+                    destPath = Path.join(cwd, ...pathParts);
                 }
 
                 if (entry.isDirectory()) {
@@ -255,11 +277,13 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
                     if (!Fs.existsSync(destPath)) {
                         Fs.mkdirSync(destPath, { recursive: true });
                     }
-                    copyRecursive(srcPath, destPath);
+                    copyRecursive(srcPath, templateBasePath);
                 } else if (entry.isFile()) {
                     // Handle file conflicts
                     if (Fs.existsSync(destPath)) {
                         if (conflictMode === 'skip') {
+                            // Track skipped files for manifest
+                            skippedFiles.push(relativePath);
                             continue; // Skip existing files
                         }
                         // Overwrite mode - file will be replaced
@@ -276,78 +300,56 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
             }
         };
 
-        copyRecursive(templateDir, destDir);
+        copyRecursive(templateDir);
         Print.success('Template files copied successfully!');
+        return skippedFiles;
     }
 
-    static createManifest(cwd, srcDir, jamseduWd, packageVersion) {
+    static createManifest(cwd, srcDir, jamseduWd, packageVersion, skippedFiles = []) {
         const manifestDir = Path.join(cwd, '.jamsedu');
         if (!Fs.existsSync(manifestDir)) {
             Fs.mkdirSync(manifestDir, { recursive: true });
         }
+
+        // Normalize srcDir to relative path with forward slashes
+        const normalizedSrcDir = srcDir.replace(/\\/g, '/');
 
         const manifest = {
             jamseduPackageVersion: packageVersion,
             templateVersion: packageVersion,
             installed: new Date().toISOString(),
             lastUpdated: null,
-            srcDir: srcDir,
+            srcDir: normalizedSrcDir,
             components: {}
         };
 
-        // JamsEdu file patterns to track
-        const jamseduFiles = [
-            // JavaScript files
-            Path.join(srcDir, 'js', 'jamsedu', 'tiny-doc.js'),
-            Path.join(srcDir, 'js', 'jamsedu', 'tiny-wysiwyg.js'),
-            Path.join(srcDir, 'js', 'jamsedu', 'dom-watcher.js'),
-            Path.join(srcDir, 'js', 'jamsedu', 'index.js'),
-            // CSS files
-            Path.join(srcDir, 'css', 'jamsedu', 'jamsedu.css'),
-            Path.join(srcDir, 'css', 'jamsedu', 'tiny-document.css'),
-            Path.join(srcDir, 'css', 'jamsedu', 'tiny-wysiwyg.css'),
-            // ESLint files
-            'eslint/html-rules.js',
-            'eslint/js-rules.js',
-            'eslint/json-rules.js',
-            'eslint.config.js',
-            // VS Code settings
-            '.vscode/settings.json'
-        ];
+        // Create a set of skipped file paths for quick lookup (normalize to match template paths)
+        const skippedSet = new Set(skippedFiles.map(f => f.replace(/\\/g, '/')));
 
-        // Scan and track each file
-        for (const filePath of jamseduFiles) {
-            const fullPath = Path.join(cwd, filePath);
-            if (Fs.existsSync(fullPath)) {
-                const content = Fs.readFileSync(fullPath, 'utf-8');
+        // Scan template directory to find all files with version tags (like updater does)
+        const templateDir = Path.join(jamseduWd, 'src', 'template');
+        const templateFiles = this.scanTemplateFilesForManifest(templateDir, normalizedSrcDir);
+
+        // For each template file, check if it exists in user's project and track it
+        for (const templateFile of templateFiles) {
+            const userFilePath = templateFile.userPath;
+            const fullUserPath = Path.join(cwd, userFilePath);
+
+            if (Fs.existsSync(fullUserPath)) {
+                const content = Fs.readFileSync(fullUserPath, 'utf-8');
                 const hash = Crypto.createHash('sha256').update(content).digest('hex');
-                const version = this.parseVersionFromFile(content);
-                const component = this.parseComponentFromFile(content);
+                const version = this.parseVersionFromFile(content) || templateFile.version;
+                const component = this.parseComponentFromFile(content) || templateFile.component;
 
-                manifest.components[component || Path.basename(filePath, Path.extname(filePath))] = {
-                    file: filePath,
-                    version: version || packageVersion,
-                    hash: hash,
-                    modified: false
-                };
-            }
-        }
-
-        // Track docs directory files if they exist
-        const docsDir = Path.join(cwd, 'docs');
-        if (Fs.existsSync(docsDir)) {
-            const docsFiles = this.scanDirectory(docsDir, cwd);
-            for (const docFile of docsFiles) {
-                const fullPath = Path.join(cwd, docFile);
-                const content = Fs.readFileSync(fullPath, 'utf-8');
-                const hash = Crypto.createHash('sha256').update(content).digest('hex');
-                const component = `docs-${Path.basename(docFile, Path.extname(docFile))}`;
+                // Check if this file was skipped (using template-relative path)
+                const wasSkipped = skippedSet.has(templateFile.templatePath);
 
                 manifest.components[component] = {
-                    file: docFile,
-                    version: packageVersion,
+                    file: userFilePath.replace(/\\/g, '/'), // Normalize path
+                    version: version || packageVersion,
                     hash: hash,
-                    modified: false
+                    modified: false,
+                    userCustomized: wasSkipped // Mark as customized if it was skipped
                 };
             }
         }
@@ -355,6 +357,52 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         // Write manifest
         const manifestPath = Path.join(manifestDir, 'manifest.json');
         Fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+    }
+
+    static scanTemplateFilesForManifest(templateDir, userSrcDir) {
+        const files = [];
+        const scanDir = (dir) => {
+            if (!Fs.existsSync(dir)) return;
+
+            const entries = Fs.readdirSync(dir, { withFileTypes: true });
+            for (const entry of entries) {
+                const fullPath = Path.join(dir, entry.name);
+                const relativePath = Path.relative(templateDir, fullPath).replace(/\\/g, '/');
+
+                // Skip config files - we don't track those
+                if (entry.name === 'config.js' || entry.name === 'jamsedu.config.js') continue;
+
+                if (entry.isDirectory()) {
+                    scanDir(fullPath);
+                } else if (entry.isFile()) {
+                    const content = Fs.readFileSync(fullPath, 'utf-8');
+                    const version = this.parseVersionFromFile(content);
+                    
+                    // ONLY track files with version tags
+                    if (!version) continue;
+                    
+                    const component = this.parseComponentFromFile(content);
+
+                    // Map template path to user path (normalize to relative with forward slashes)
+                    let userPath = relativePath;
+                    if (relativePath.startsWith('src/')) {
+                        userPath = relativePath.replace(/^src\//, `${userSrcDir}/`);
+                    }
+                    // Normalize path separators
+                    userPath = userPath.replace(/\\/g, '/');
+
+                    files.push({
+                        templatePath: relativePath,
+                        userPath: userPath,
+                        version: version,
+                        component: component || Path.basename(relativePath, Path.extname(relativePath))
+                    });
+                }
+            }
+        };
+
+        scanDir(templateDir);
+        return files;
     }
 
     static parseVersionFromFile(content) {
@@ -367,6 +415,11 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         const cssMatch = content.match(/\/\*\s*@jamsedu-version:\s*([\d.]+)\s*\*\//);
         if (cssMatch) {
             return cssMatch[1];
+        }
+        // Try HTML comment format (for markdown): <!-- @jamsedu-version: 1.0.0 -->
+        const htmlMatch = content.match(/<!--\s*@jamsedu-version:\s*([\d.]+)\s*-->/);
+        if (htmlMatch) {
+            return htmlMatch[1];
         }
         return null;
     }
@@ -381,6 +434,11 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         const cssMatch = content.match(/\/\*\s*@jamsedu-component:\s*(\S+)\s*\*\//);
         if (cssMatch) {
             return cssMatch[1];
+        }
+        // Try HTML comment format (for markdown): <!-- @jamsedu-component: component-name -->
+        const htmlMatch = content.match(/<!--\s*@jamsedu-component:\s*(\S+)\s*-->/);
+        if (htmlMatch) {
+            return htmlMatch[1];
         }
         return null;
     }
@@ -434,6 +492,37 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
             console.clear();
         } catch (err) {
             // Ignore errors if clear() fails
+        }
+    }
+
+    static ensureGitignore(cwd, destDir) {
+        const gitignorePath = Path.join(cwd, '.gitignore');
+        let content = '';
+
+        // Read existing .gitignore if it exists
+        if (Fs.existsSync(gitignorePath)) {
+            content = Fs.readFileSync(gitignorePath, 'utf-8');
+        }
+
+        // Normalize destDir path for .gitignore (use forward slashes)
+        const destDirNormalized = destDir.replace(/\\/g, '/');
+
+        // Check if destDir is already in .gitignore
+        const lines = content.split('\n');
+        const destDirPattern = new RegExp(`^${destDirNormalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/?$`);
+        const alreadyIgnored = lines.some(line => {
+            const trimmed = line.trim();
+            return trimmed && (trimmed === destDirNormalized || trimmed === `${destDirNormalized}/` || destDirPattern.test(trimmed));
+        });
+
+        // Add destDir if not already present
+        if (!alreadyIgnored) {
+            if (content && !content.endsWith('\n')) {
+                content += '\n';
+            }
+            content += `${destDirNormalized}/\n`;
+            Fs.writeFileSync(gitignorePath, content, 'utf-8');
+            Print.info(`Added ${destDirNormalized}/ to .gitignore`);
         }
     }
 

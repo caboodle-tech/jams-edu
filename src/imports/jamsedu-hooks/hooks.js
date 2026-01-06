@@ -1,7 +1,19 @@
-import JamsEduVideo from './videos.js';
-import JamsTables from './tables.js';
+import jamsEduVideo from './videos.js';
+import jamsTables from './tables.js';
+import {
+    rootRelativeToRelativeUrls,
+    removeAllComments,
+    removeEmptyLines
+} from './common.js';
 
 export default {
-    pre: [],
-    post: [JamsEduVideo, JamsTables]
+    pre: [
+        removeAllComments
+    ],
+    post: [
+        jamsEduVideo,
+        jamsTables,
+        rootRelativeToRelativeUrls,
+        removeEmptyLines
+    ]
 };

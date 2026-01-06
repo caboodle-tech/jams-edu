@@ -31,8 +31,14 @@ class Updater {
         this.clearScreen();
         Print.notice(this.#header);
 
-        // Read user's config to get srcDir
-        const srcDir = userConfig.srcDir || 'src';
+        // Read user's config to get srcDir (normalize to relative path)
+        let srcDir = userConfig.srcDir || 'src';
+        // Normalize srcDir to relative path for comparison
+        if (Path.isAbsolute(srcDir)) {
+            srcDir = Path.relative(cwd, srcDir).replace(/\\/g, '/');
+        } else {
+            srcDir = srcDir.replace(/\\/g, '/');
+        }
 
         // Read manifest
         const manifestPath = Path.join(cwd, '.jamsedu', 'manifest.json');
@@ -49,10 +55,14 @@ class Updater {
         const packageJson = JSON.parse(Fs.readFileSync(packageJsonPath, 'utf-8'));
         const currentPackageVersion = packageJson.version;
 
-        // Update manifest srcDir if it changed
-        if (manifest.srcDir !== srcDir) {
+        // Update manifest srcDir if it changed (normalize manifest srcDir for comparison)
+        const manifestSrcDir = manifest.srcDir ? manifest.srcDir.replace(/\\/g, '/') : 'src';
+        if (manifestSrcDir !== srcDir) {
             manifest.srcDir = srcDir;
-            Print.info(`Updated manifest srcDir: ${manifest.srcDir} → ${srcDir}`);
+            // Only show message if paths are actually different (not just format difference)
+            if (Path.resolve(cwd, manifestSrcDir) !== Path.resolve(cwd, srcDir)) {
+                Print.info(`Updated manifest srcDir: ${manifestSrcDir} → ${srcDir}`);
+            }
         }
 
         // Scan template files from installed package
@@ -74,12 +84,18 @@ class Updater {
             Print.info(`JamsEdu package updated: ${manifest.jamseduPackageVersion} → ${currentPackageVersion}`);
         }
 
-        // Check if there are any updates available
-        if (updates.available.length === 0 && updates.new.length === 0) {
+        // Check if there are any updates available (including customized files with updates)
+        const hasRegularUpdates = updates.available.length > 0 || updates.new.length > 0;
+        const hasCustomizedUpdates = updates.customizedWithUpdates && updates.customizedWithUpdates.length > 0;
+        
+        if (!hasRegularUpdates && !hasCustomizedUpdates) {
             Print.success('\n✅ All files are up to date!');
             if (manifest.jamseduPackageVersion === currentPackageVersion) {
                 Print.info(`JamsEdu package version: ${currentPackageVersion}`);
             }
+            // Save manifest if we updated userCustomized flags
+            const manifestPath = Path.join(cwd, '.jamsedu', 'manifest.json');
+            Fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
             return;
         }
 
@@ -87,88 +103,136 @@ class Updater {
         const allUpdates = [...updates.available, ...updates.new];
         const selected = new Set();
 
-        // Ask for backup first
-        Print.out('\n⚠️  IMPORTANT: Back up your project before updating!');
-        const createBackup = this.getResponse('Create automatic backup? (y/n) [y]', 'y');
-        let backupPath = null;
-        if (['y', 'ye', 'yes'].includes(createBackup.trim().toLowerCase())) {
-            backupPath = this.createBackup(cwd, updates);
-            Print.success(`Backup created at: ${backupPath}`);
+        // Ask for backup first (only if there are regular updates)
+        if (hasRegularUpdates) {
+            Print.out('\n⚠️  IMPORTANT: Back up your project before updating!');
+            const createBackup = this.getResponse('Create automatic backup? (y/n) [y]', 'y');
+            let backupPath = null;
+            if (['y', 'ye', 'yes'].includes(createBackup.trim().toLowerCase())) {
+                backupPath = this.createBackup(cwd, updates);
+                Print.success(`Backup created at: ${backupPath}`);
+            }
         }
 
-        // Display checklist with numbers
-        Print.out('\n\x1b[36mAvailable Updates:\x1b[0m\n');
+        // Display regular updates
+        if (hasRegularUpdates) {
+            Print.out('\n\x1b[36mAvailable Updates:\x1b[0m\n');
 
-        for (let i = 0; i < allUpdates.length; i++) {
-            const update = allUpdates[i];
-            const num = `\x1b[33m${i + 1}\x1b[0m`;
-            
-            let status = '';
-            let versionInfo = '';
-            if (update.modified) {
-                status = '\x1b[33m⚠️  MODIFIED\x1b[0m';
-                versionInfo = `\x1b[90m${update.userVersion} → ${update.templateVersion}\x1b[0m`;
-            } else if (update.templateFile) {
-                status = '\x1b[32mUPDATE\x1b[0m';
-                versionInfo = `\x1b[90m${update.userVersion} → ${update.templateVersion}\x1b[0m`;
-            } else {
-                status = '\x1b[36m[NEW]\x1b[0m';
-                versionInfo = `\x1b[90mv${update.version} - New component\x1b[0m`;
-            }
-
-            Print.out(`  ${num}. ${status} \x1b[1m${update.component}\x1b[0m`);
-            Print.out(`     \x1b[90m${update.file}\x1b[0m`);
-            if (versionInfo) {
-                Print.out(`     ${versionInfo}`);
-            }
-            Print.out('');
-        }
-
-        Print.out('\n\x1b[36mEnter numbers separated by commas (e.g., "1,2,3" or "1-3,4,7-9"), "all" for everything:\x1b[0m');
-        const input = this.getResponse('> ', '');
-        
-        if (input.toLowerCase() === 'all') {
             for (let i = 0; i < allUpdates.length; i++) {
-                selected.add(i);
-            }
-        } else if (input.trim() !== '') {
-            // Parse numbers and ranges
-            const parts = input.split(',').map(p => p.trim());
-            for (const part of parts) {
-                if (part.includes('-')) {
-                    // Handle range like "1-3"
-                    const [start, end] = part.split('-').map(n => parseInt(n.trim()) - 1);
-                    if (!isNaN(start) && !isNaN(end) && start >= 0 && end < allUpdates.length && start <= end) {
-                        for (let i = start; i <= end; i++) {
-                            selected.add(i);
-                        }
-                    }
+                const update = allUpdates[i];
+                const num = `\x1b[33m${i + 1}\x1b[0m`;
+                
+                let status = '';
+                let versionInfo = '';
+                if (update.modified) {
+                    status = '\x1b[33m⚠️  MODIFIED\x1b[0m';
+                    versionInfo = `\x1b[90m${update.userVersion || 'unknown'} → ${update.templateVersion || 'unknown'}\x1b[0m`;
+                } else if (update.templateFile) {
+                    status = '\x1b[32mUPDATE\x1b[0m';
+                    versionInfo = `\x1b[90m${update.userVersion || 'unknown'} → ${update.templateVersion || 'unknown'}\x1b[0m`;
                 } else {
-                    // Handle single number
-                    const num = parseInt(part) - 1;
-                    if (!isNaN(num) && num >= 0 && num < allUpdates.length) {
-                        selected.add(num);
+                    status = '\x1b[36m[NEW]\x1b[0m';
+                    versionInfo = `\x1b[90mv${update.version || '1.0.0'} - New component\x1b[0m`;
+                }
+
+                Print.out(`  ${num}. ${status} \x1b[1m${update.component}\x1b[0m`);
+                Print.out(`     \x1b[90m${update.file}\x1b[0m`);
+                if (versionInfo) {
+                    Print.out(`     ${versionInfo}`);
+                }
+                Print.out('');
+            }
+        }
+
+        // Handle customized files with updates (especially docs)
+        let customizedSelected = [];
+        if (hasCustomizedUpdates) {
+            Print.out('\n\x1b[33m⚠️  Customized Files with Updates Available:\x1b[0m\n');
+            Print.out('These files have been customized but newer versions are available.\n');
+            
+            for (let i = 0; i < updates.customizedWithUpdates.length; i++) {
+                const update = updates.customizedWithUpdates[i];
+                Print.out(`  ${i + 1}. \x1b[1m${update.component}\x1b[0m`);
+                Print.out(`     \x1b[90m${update.file}\x1b[0m`);
+                Print.out(`     \x1b[90mYour version: ${update.userVersion || 'unknown'} → Template version: ${update.templateVersion || 'unknown'}\x1b[0m`);
+                Print.out('');
+            }
+            
+            Print.out('\x1b[36mShow customized files with updates? (y/N)\x1b[0m');
+            const showCustomized = this.getResponse('> ', 'n');
+            
+            if (showCustomized.toLowerCase() === 'y') {
+                Print.out('\nWhat would you like to do with each customized file?\n');
+                for (let i = 0; i < updates.customizedWithUpdates.length; i++) {
+                    const update = updates.customizedWithUpdates[i];
+                    Print.out(`\n${i + 1}. ${update.component} (${update.file})`);
+                    Print.out('   Options:');
+                    Print.out('   1) Keep customized (skip update)');
+                    Print.out('   2) Accept update (overwrite your changes)');
+                    Print.out('   3) Skip for now');
+                    const choice = this.getResponse('   Your choice (1-3) [1]: ', '1');
+                    
+                    if (choice === '2') {
+                        customizedSelected.push(update);
                     }
                 }
             }
         }
 
-
-        // Get selected updates
-        const selectedUpdates = Array.from(selected).map(i => allUpdates[i]);
-
-        // Apply updates
-        this.applyUpdates(selectedUpdates, templateDir, cwd, srcDir, manifest, currentPackageVersion);
-
-        Print.success('\n✅ Update complete!');
-        if (backupPath) {
-            Print.info(`Backup available at: ${backupPath}`);
+        // Only show selection prompt if there are regular updates
+        if (hasRegularUpdates) {
+            Print.out('\n\x1b[36mEnter numbers separated by commas (e.g., "1,2,3" or "1-3,4,7-9"), "all" for everything:\x1b[0m');
+            const input = this.getResponse('> ', '');
+            
+            if (input.toLowerCase() === 'all') {
+                for (let i = 0; i < allUpdates.length; i++) {
+                    selected.add(i);
+                }
+            } else if (input.trim() !== '') {
+                // Parse numbers and ranges
+                const parts = input.split(',').map(p => p.trim());
+                for (const part of parts) {
+                    if (part.includes('-')) {
+                        // Handle range like "1-3"
+                        const [start, end] = part.split('-').map(n => parseInt(n.trim()) - 1);
+                        if (!isNaN(start) && !isNaN(end) && start >= 0 && end < allUpdates.length && start <= end) {
+                            for (let i = start; i <= end; i++) {
+                                selected.add(i);
+                            }
+                        }
+                    } else {
+                        // Handle single number
+                        const num = parseInt(part) - 1;
+                        if (!isNaN(num) && num >= 0 && num < allUpdates.length) {
+                            selected.add(num);
+                        }
+                    }
+                }
+            }
         }
+
+        // Get selected updates (regular + customized)
+        const selectedUpdates = [
+            ...Array.from(selected).map(i => allUpdates[i]),
+            ...customizedSelected
+        ];
+
+        // Apply updates if any were selected
+        if (selectedUpdates.length > 0) {
+            this.applyUpdates(selectedUpdates, templateDir, cwd, srcDir, manifest, currentPackageVersion);
+            Print.success('\n✅ Update complete!');
+        } else {
+            Print.info('\nNo updates selected.');
+        }
+        
+        // Save manifest (in case userCustomized flags were updated)
+        const manifestPath = Path.join(cwd, '.jamsedu', 'manifest.json');
+        Fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
     }
 
     static scanTemplateFiles(templateDir, userSrcDir) {
         const files = [];
-        const scanDir = (dir, basePath = '') => {
+        const scanDir = (dir) => {
             if (!Fs.existsSync(dir)) return;
 
             const entries = Fs.readdirSync(dir, { withFileTypes: true });
@@ -176,27 +240,33 @@ class Updater {
                 const fullPath = Path.join(dir, entry.name);
                 const relativePath = Path.relative(templateDir, fullPath).replace(/\\/g, '/');
 
-                // Skip jamsedu.config.js - we don't update that
-                if (entry.name === 'jamsedu.config.js') continue;
+                // Skip config files - we don't update those (config is in .jamsedu/config.js)
+                if (entry.name === 'config.js' || entry.name === 'jamsedu.config.js') continue;
 
                 if (entry.isDirectory()) {
-                    scanDir(fullPath, relativePath);
+                    scanDir(fullPath);
                 } else if (entry.isFile()) {
                     const content = Fs.readFileSync(fullPath, 'utf-8');
                     const version = this.parseVersionFromFile(content);
+                    
+                    // ONLY track files with version tags
+                    if (!version) continue;
+                    
                     const component = this.parseComponentFromFile(content);
 
-                    // Map template path to user path
+                    // Map template path to user path (normalize to relative with forward slashes)
                     let userPath = relativePath;
                     if (relativePath.startsWith('src/')) {
                         userPath = relativePath.replace(/^src\//, `${userSrcDir}/`);
                     }
+                    // Normalize path separators
+                    userPath = userPath.replace(/\\/g, '/');
 
                     files.push({
                         templatePath: relativePath,
                         userPath: userPath,
                         fullTemplatePath: fullPath,
-                        version: version || '1.0.0',
+                        version: version,
                         component: component || Path.basename(relativePath, Path.extname(relativePath)),
                         content: content
                     });
@@ -210,31 +280,39 @@ class Updater {
 
     static scanUserFiles(cwd, srcDir, manifest) {
         const files = [];
+        // Scan all directories that might contain tracked files
         const jamseduDirs = [
             Path.join(cwd, srcDir, 'js', 'jamsedu'),
             Path.join(cwd, srcDir, 'css', 'jamsedu'),
             Path.join(cwd, 'eslint'),
             Path.join(cwd, 'docs'),
-            Path.join(cwd, '.vscode')
+            Path.join(cwd, '.vscode'),
+            Path.join(cwd, srcDir, 'css') // For main.css
         ];
 
         for (const dir of jamseduDirs) {
             if (Fs.existsSync(dir)) {
                 const scanned = this.scanDirectory(dir, cwd);
                 for (const filePath of scanned) {
-                    const fullPath = Path.join(cwd, filePath);
+                    // Normalize path to relative with forward slashes
+                    const normalizedPath = filePath.replace(/\\/g, '/');
+                    const fullPath = Path.join(cwd, normalizedPath);
                     if (Fs.existsSync(fullPath)) {
                         const content = Fs.readFileSync(fullPath, 'utf-8');
                         const hash = Crypto.createHash('sha256').update(content).digest('hex');
                         const version = this.parseVersionFromFile(content);
                         const component = this.parseComponentFromFile(content);
+                        
+                        // Use component name to find manifest entry
+                        const componentName = component || Path.basename(normalizedPath, Path.extname(normalizedPath));
+                        const manifestEntry = manifest.components[componentName];
 
                         files.push({
-                            file: filePath,
+                            file: normalizedPath,
                             hash: hash,
                             version: version,
-                            component: component || Path.basename(filePath, Path.extname(filePath)),
-                            manifestEntry: manifest.components[component || Path.basename(filePath, Path.extname(filePath))]
+                            component: componentName,
+                            manifestEntry: manifestEntry
                         });
                     }
                 }
@@ -247,46 +325,110 @@ class Updater {
     static compareFiles(templateFiles, userFiles, manifest, cwd) {
         const available = [];
         const newFiles = [];
+        const customizedWithUpdates = []; // For docs and other Tier 2 files
+
+        // Helper to determine if file is Tier 1 (core framework) or Tier 2 (customizable)
+        const isTier1 = (filePath) => {
+            const normalized = filePath.replace(/\\/g, '/');
+            return normalized.includes('/js/jamsedu/') || normalized.includes('/css/jamsedu/');
+        };
 
         for (const templateFile of templateFiles) {
-            const userFile = userFiles.find(f => f.file === templateFile.userPath);
+            // Normalize paths for comparison
+            const normalizedTemplatePath = templateFile.userPath.replace(/\\/g, '/');
+            const userFile = userFiles.find(f => {
+                const normalizedUserPath = f.file.replace(/\\/g, '/');
+                return normalizedUserPath === normalizedTemplatePath;
+            });
 
             if (!userFile) {
-                // New file
+                // New file - not in user's project yet
                 newFiles.push({
-                    file: templateFile.userPath,
+                    file: normalizedTemplatePath,
                     component: templateFile.component,
                     version: templateFile.version,
                     templateFile: templateFile
                 });
             } else {
                 // Existing file - check if update needed
-                // Use manifest version as source of truth (it's updated after each update)
-                const manifestVersion = userFile.manifestEntry?.version;
-                const userVersion = manifestVersion || userFile.version || '1.0.0';
-                const manifestHash = userFile.manifestEntry?.hash;
+                const manifestEntry = userFile.manifestEntry;
+                const manifestVersion = manifestEntry?.version;
+                const manifestHash = manifestEntry?.hash;
+                const userCustomized = manifestEntry?.userCustomized || false;
                 
-                // File is modified if current hash differs from manifest hash
-                // But only consider it modified if versions also match (user changed file without version bump)
-                const isModified = manifestHash && userFile.hash !== manifestHash && userVersion === manifestVersion;
+                // Calculate template file hash for comparison
+                const templateHash = Crypto.createHash('sha256').update(templateFile.content).digest('hex');
                 
-                // Only show as needing update if version actually differs
-                // If versions match, we're up to date (even if hash differs, that's a user modification)
-                if (userVersion !== templateFile.version) {
-                    available.push({
-                        file: templateFile.userPath,
-                        component: templateFile.component,
-                        userVersion: userVersion,
-                        templateVersion: templateFile.version,
-                        modified: isModified,
-                        templateFile: templateFile,
-                        userFile: userFile
-                    });
+                // Check if user has customized the file (current hash differs from manifest hash)
+                const isCurrentlyCustomized = manifestHash && userFile.hash !== manifestHash;
+                
+                // Auto-detect customization: if current hash differs from manifest, mark as customized
+                if (isCurrentlyCustomized && !userCustomized) {
+                    // Update manifest to mark as customized
+                    if (manifestEntry) {
+                        manifestEntry.userCustomized = true;
+                    }
+                }
+                
+                const isTier1File = isTier1(normalizedTemplatePath);
+                const isDocFile = normalizedTemplatePath.startsWith('docs/');
+                
+                // Tier 1 files: Always update if template differs (ignore userCustomized)
+                // Tier 2 files: Skip if userCustomized is true (unless it's a doc with special handling)
+                if (isTier1File) {
+                    // Tier 1: Always check for updates
+                    if (userFile.hash !== templateHash) {
+                        available.push({
+                            file: normalizedTemplatePath,
+                            component: templateFile.component,
+                            userVersion: manifestVersion || userFile.version || '1.0.0',
+                            templateVersion: templateFile.version,
+                            modified: isCurrentlyCustomized,
+                            templateFile: templateFile,
+                            userFile: userFile,
+                            templateHash: templateHash
+                        });
+                    }
+                } else {
+                    // Tier 2: Check userCustomized flag
+                    if (userCustomized && isCurrentlyCustomized) {
+                        // File is customized, but check if template has updates
+                        if (userFile.hash !== templateHash) {
+                            // VITAL for docs: Show update even if customized
+                            if (isDocFile) {
+                                customizedWithUpdates.push({
+                                    file: normalizedTemplatePath,
+                                    component: templateFile.component,
+                                    userVersion: manifestVersion || userFile.version || '1.0.0',
+                                    templateVersion: templateFile.version,
+                                    modified: true,
+                                    templateFile: templateFile,
+                                    userFile: userFile,
+                                    templateHash: templateHash
+                                });
+                            }
+                            // For non-docs, skip silently (user customized it)
+                        }
+                    } else {
+                        // Not customized (or was reset), check for updates normally
+                        if (userFile.hash !== templateHash) {
+                            available.push({
+                                file: normalizedTemplatePath,
+                                component: templateFile.component,
+                                userVersion: manifestVersion || userFile.version || '1.0.0',
+                                templateVersion: templateFile.version,
+                                modified: isCurrentlyCustomized,
+                                templateFile: templateFile,
+                                userFile: userFile,
+                                templateHash: templateHash
+                            });
+                        }
+                    }
                 }
             }
         }
 
-        return { available, new: newFiles };
+        return { available, new: newFiles, customizedWithUpdates };
     }
 
     static parseSelection(selection, updates) {
@@ -359,10 +501,11 @@ class Updater {
             const updatedVersion = this.parseVersionFromFile(content) || update.templateVersion || update.version;
             
             manifest.components[update.component] = {
-                file: filePath, // Use normalized filePath, not update.file
+                file: filePath, // Use normalized filePath (relative with forward slashes)
                 version: updatedVersion,
                 hash: hash,
-                modified: false
+                modified: false,
+                userCustomized: false // Reset to false since we just updated from template
             };
         }
 
@@ -443,25 +586,39 @@ class Updater {
     }
 
     static parseVersionFromFile(content) {
+        // JavaScript comment format: // @jamsedu-version: 1.0.0
         const jsMatch = content.match(/\/\/\s*@jamsedu-version:\s*([\d.]+)/);
         if (jsMatch) {
             return jsMatch[1];
         }
+        // CSS comment format: /* @jamsedu-version: 1.0.0 */
         const cssMatch = content.match(/\/\*\s*@jamsedu-version:\s*([\d.]+)\s*\*\//);
         if (cssMatch) {
             return cssMatch[1];
+        }
+        // HTML comment format (for markdown): <!-- @jamsedu-version: 1.0.0 -->
+        const htmlMatch = content.match(/<!--\s*@jamsedu-version:\s*([\d.]+)\s*-->/);
+        if (htmlMatch) {
+            return htmlMatch[1];
         }
         return null;
     }
 
     static parseComponentFromFile(content) {
+        // JavaScript comment format: // @jamsedu-component: component-name
         const jsMatch = content.match(/\/\/\s*@jamsedu-component:\s*(\S+)/);
         if (jsMatch) {
             return jsMatch[1];
         }
+        // CSS comment format: /* @jamsedu-component: component-name */
         const cssMatch = content.match(/\/\*\s*@jamsedu-component:\s*(\S+)\s*\*\//);
         if (cssMatch) {
             return cssMatch[1];
+        }
+        // HTML comment format (for markdown): <!-- @jamsedu-component: component-name -->
+        const htmlMatch = content.match(/<!--\s*@jamsedu-component:\s*(\S+)\s*-->/);
+        if (htmlMatch) {
+            return htmlMatch[1];
         }
         return null;
     }

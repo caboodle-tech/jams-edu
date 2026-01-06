@@ -1,3 +1,5 @@
+<!-- @jamsedu-version: 4.2.0 -->
+<!-- @jamsedu-component: docs-JHP-TEMPLATES -->
 # JHP Templates Guide
 
 ## What is JHP?

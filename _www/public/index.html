@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+        <link href="./css/main.css" rel="stylesheet">
+        <title>JamsEdu</title>
+        <meta name="keywords" content="JamsEdu, Jamstack, Static Site Generator, SSG, Educational Content, Informational, Compliance, HighlightJS, KaTeX, Mermaid"><meta name="description" content="JamsEdu is a lightweight Jamstack tool for building dynamic static sites. Originally made for educational content, it can power much more, with HighlightJS, KaTeX, and Mermaid support built-in.">
+        <script type="module" src="./js/main.js"></script>
+    </head>
+    <body>
+<header>
+    This is the pages header.
+    <nav>
+    <ul>
+        <li><a href="./">Home</a></li>
+    </ul>
+</nav>
+</header>
+<main>
+<h1>Heading 1</h1>
+<h2>Heading 2</h2>
+<h3>Heading 3</h3>
+<h4>Heading 4</h4>
+<h5>Heading 5</h5>
+<h6>Heading 6</h6>
+<hr>
+<p>
+    This is <mark>highlighted</mark> text using the <code>&lt;mark&gt;</code> tag.
+</p>
+<p>
+    The kdb tag is used to define keyboard input: <kbd>&uarr;</kbd> <kbd>&uarr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&larr;</kbd> <kbd>&rarr;</kbd> <kbd>&larr;</kbd> <kbd>&rarr;</kbd> <kbd>B</kbd> <kbd>A</kbd>
+</p>
+<div class="table-container"><table>
+    <thead>
+        <tr>
+            <th>Company</th>
+            <th>Contact</th>
+            <th>Country</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Alfreds Futterkiste</td>
+            <td>Maria Anders</td>
+            <td>Germany</td>
+        </tr>
+        <tr>
+            <td>Centro comercial Moctezuma</td>
+            <td>Francisco Chang</td>
+            <td>Mexico</td>
+        </tr>
+        <tr>
+            <td>Ernst Handel</td>
+            <td>Roland Mendel</td>
+            <td>Austria</td>
+        </tr>
+        <tr>
+            <td>Island Trading</td>
+            <td>Helen Bennett</td>
+            <td>UK</td>
+        </tr>
+        <tr>
+            <td>Laughing Bacchus Winecellars</td>
+            <td>Yoshi Tannamuri</td>
+            <td>Canada</td>
+        </tr>
+        <tr>
+            <td>Magazzini Alimentari Riuniti</td>
+            <td>Giovanni Rovelli</td>
+            <td>Italy</td>
+        </tr>
+    </tbody>
+</table>
+<p>
+    Inline code example: <code>const x = 42;</code>
+</p>
+<pre><code class="language-js">
+// Multiline code block with highlight.js style
+function greet(name) {
+    console.log(`Hello, ${name}!`);
+}
+greet('World');
+</code></pre>
+<div class="document">
+    <div class="title">Unit 2 Code Review</div>
+    <div class="header">
+        <div><input type="text" placeholder="Your Name"></div>
+        <div><input type="date"></div>
+    </div>
+    <div class="section">Repositories Reviewed</div>
+    <div>
+        <input type="text" class="link" placeholder="Teammates Name"> <input type="url" placeholder="Repo URL">
+    </div>
+    <div class="subsection">Refactoring Status:</div>
+    <select>
+        <option value="❌ Not Started">Not started</option>
+        <option value="⚠️ In Progress">In progress</option>
+        <option value="✅ Completed">Completed MVC refactoring</option>
+    </select>
+    <div class="subsection">GitHub Issues Created:</div>
+    <ul>
+        <li><input type="text" class="link" placeholder="Issue Name"> <input type="url" placeholder="Issue URL"></li>
+        <template>
+            <li><input type="text" class="link" placeholder="Issue Name"> <input type="url" placeholder="Issue URL"></li>
+        </template>
+        <button class="template">Add Another Issue</button>
+    </ul>
+    <template>
+        <div class="spacer"></div>
+        <div>
+            <input type="text" class="link" placeholder="Teammates Name"> <input type="url" placeholder="Repo URL">
+        </div>
+        <div class="subsection">Refactoring Status:</div>
+        <select>
+            <option value="❌ Not Started">Not started</option>
+            <option value="⚠️ In Progress">In progress</option>
+            <option value="✅ Completed">Completed MVC refactoring</option>
+        </select>
+        <div class="subsection">GitHub Issues Created:</div>
+        <ul>
+            <li><input type="text" class="link" placeholder="Issue Name"> <input type="url" placeholder="Issue URL"></li>
+            <template>
+                <li><input type="text" class="link" placeholder="Issue Name"> <input type="url" placeholder="Issue URL"></li>
+            </template>
+            <button class="template">Add Another Issue</button>
+        </ul>
+    </template>
+    <button class="template">Review Additional Teammate</button>
+    <div class="section">Reflection</div>
+    <div class="instructions">
+        Write 2-3 <strong>paragraphs</strong>, not bullet points, reflecting on:
+        <ul>
+            <li>What you learned about code quality from reviewing others' work</li>
+            <li>How reviewing both traditional and MVC-structured code affected your understanding</li>
+            <li>What you discovered about the benefits and challenges of code organization</li>
+            <li>How this experience will help you write better code yourself</li>
+            <li>How you approached giving constructive feedback to teammates at different stages of refactoring</li>
+        </ul>
+    </div>
+    <p class="instructions">
+        Keep in mind that your ability to write clearly and communicate professionally will be evaluated in this assignment. It's important to express your ideas in an articulate and comprehensive manner.
+    </p>
+    <textarea class="rich" placeholder="Write your reflection here..."></textarea>
+    <input type="file" multiple>
+    <div class="section">Completion Confirmation</div>
+    <div>
+        I have notified both teammates that their code reviews are complete and they can view the GitHub issues I created. I notified them via <input type="text" placeholder="Contact Method"> on <input type="date">.
+    </div>
+</div>
+</main>
+<footer>
+    This is the pages footer.
+    <br>
+    Created with: JHP v3.0.0
+</footer>
+</body>
+</html>

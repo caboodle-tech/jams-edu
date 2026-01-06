@@ -1,3 +1,5 @@
+<!-- @jamsedu-version: 4.2.0 -->
+<!-- @jamsedu-component: docs-JAVASCRIPT-API -->
 # JavaScript API Documentation
 
 JamsEdu provides three main JavaScript components that you can use in your projects.
