@@ -5,6 +5,12 @@ import Path from 'path';
 import Print from './imports/print.js';
 import PromptUser from 'prompt-sync';
 import { execSync } from 'child_process';
+import {
+    normalizeContentForHash,
+    parseComponentFromFile,
+    parseVersionFromFile,
+    stripJamseduComments
+} from './imports/strip-jamsedu-comments.js';
 
 // Get an instance of the Prompt to simplify user input.
 const Prompt = PromptUser({ sigint: true });
@@ -330,9 +336,9 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
                             Fs.mkdirSync(parentDir, { recursive: true });
                         }
 
-                        // Read template file, strip version tags, then write to destination
+                        // Read template file, strip JamsEdu comments, then write to destination
                         const templateContent = Fs.readFileSync(srcPath, 'utf-8');
-                        const cleanedContent = this.stripVersionTags(templateContent);
+                        const cleanedContent = stripJamseduComments(templateContent);
                         Fs.writeFileSync(destPath, cleanedContent, 'utf-8');
                     }
                 }
@@ -378,9 +384,9 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
 
             if (Fs.existsSync(fullUserPath)) {
                 const content = Fs.readFileSync(fullUserPath, 'utf-8');
-                const hash = Crypto.createHash('sha256').update(content).digest('hex');
-                const version = this.parseVersionFromFile(content) || templateFile.version;
-                const component = this.parseComponentFromFile(content) || templateFile.component;
+                const hash = Crypto.createHash('sha256').update(normalizeContentForHash(content)).digest('hex');
+                const version = parseVersionFromFile(content) || templateFile.version;
+                const component = parseComponentFromFile(content) || templateFile.component;
 
                 // Check if this file was skipped (using template-relative path)
                 const wasSkipped = skippedSet.has(templateFile.templatePath);
@@ -417,12 +423,12 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
                     scanDir(fullPath);
                 } else if (entry.isFile()) {
                     const content = Fs.readFileSync(fullPath, 'utf-8');
-                    const version = this.parseVersionFromFile(content);
+                    const version = parseVersionFromFile(content);
                     
                     // ONLY track files with version tags
                     if (!version) continue;
                     
-                    const component = this.parseComponentFromFile(content);
+                    const component = parseComponentFromFile(content);
 
                     // Map template path to user path (normalize to relative with forward slashes)
                     let userPath = relativePath;
@@ -444,60 +450,6 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
 
         scanDir(templateDir);
         return files;
-    }
-
-    static stripVersionTags(content) {
-        // Remove JavaScript comment format: // @jamsedu-version: 1.0.0
-        content = content.replace(/\/\/\s*@jamsedu-version:\s*[\d.]+\s*\n?/g, '');
-        // Remove JavaScript comment format: // @jamsedu-component: name
-        content = content.replace(/\/\/\s*@jamsedu-component:\s*\S+\s*\n?/g, '');
-        // Remove CSS comment format: /* @jamsedu-version: 1.0.0 */
-        content = content.replace(/\/\*\s*@jamsedu-version:\s*[\d.]+\s*\*\//g, '');
-        // Remove CSS comment format: /* @jamsedu-component: name */
-        content = content.replace(/\/\*\s*@jamsedu-component:\s*\S+\s*\*\//g, '');
-        // Remove HTML comment format (for markdown): <!-- @jamsedu-version: 1.0.0 -->
-        content = content.replace(/<!--\s*@jamsedu-version:\s*[\d.]+\s*-->\s*\n?/g, '');
-        // Remove HTML comment format: <!-- @jamsedu-component: name -->
-        content = content.replace(/<!--\s*@jamsedu-component:\s*\S+\s*-->\s*\n?/g, '');
-        return content;
-    }
-
-    static parseVersionFromFile(content) {
-        // Try JavaScript comment format: // @jamsedu-version: 1.0.0
-        const jsMatch = content.match(/\/\/\s*@jamsedu-version:\s*([\d.]+)/);
-        if (jsMatch) {
-            return jsMatch[1];
-        }
-        // Try CSS comment format: /* @jamsedu-version: 1.0.0 */
-        const cssMatch = content.match(/\/\*\s*@jamsedu-version:\s*([\d.]+)\s*\*\//);
-        if (cssMatch) {
-            return cssMatch[1];
-        }
-        // Try HTML comment format (for markdown): <!-- @jamsedu-version: 1.0.0 -->
-        const htmlMatch = content.match(/<!--\s*@jamsedu-version:\s*([\d.]+)\s*-->/);
-        if (htmlMatch) {
-            return htmlMatch[1];
-        }
-        return null;
-    }
-
-    static parseComponentFromFile(content) {
-        // Try JavaScript comment format: // @jamsedu-component: tiny-doc
-        const jsMatch = content.match(/\/\/\s*@jamsedu-component:\s*(\S+)/);
-        if (jsMatch) {
-            return jsMatch[1];
-        }
-        // Try CSS comment format: /* @jamsedu-component: tiny-document */
-        const cssMatch = content.match(/\/\*\s*@jamsedu-component:\s*(\S+)\s*\*\//);
-        if (cssMatch) {
-            return cssMatch[1];
-        }
-        // Try HTML comment format (for markdown): <!-- @jamsedu-component: component-name -->
-        const htmlMatch = content.match(/<!--\s*@jamsedu-component:\s*(\S+)\s*-->/);
-        if (htmlMatch) {
-            return htmlMatch[1];
-        }
-        return null;
     }
 
     static scanDirectory(dir, baseDir) {

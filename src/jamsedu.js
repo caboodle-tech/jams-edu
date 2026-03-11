@@ -5,6 +5,7 @@ import Path from 'path';
 import Print from './imports/print.js';
 import { exit } from 'process';
 import { WhatIs } from './imports/helpers.js';
+import { isTextFileForStripping, stripJamseduComments } from './imports/strip-jamsedu-comments.js';
 
 export default class JamsEdu {
 
@@ -128,7 +129,13 @@ export default class JamsEdu {
     #copyFile(src, dest) {
         try {
             Fs.mkdirSync(Path.dirname(dest), { recursive: true });
-            Fs.copyFileSync(src, dest);
+            if (isTextFileForStripping(src)) {
+                const content = Fs.readFileSync(src, 'utf8');
+                const cleaned = stripJamseduComments(content);
+                Fs.writeFileSync(dest, cleaned, 'utf8');
+            } else {
+                Fs.copyFileSync(src, dest);
+            }
         } catch (err) {
             Print.error(`Failed to copy file from ${src} to ${dest}`);
             if (this.#verbose) {

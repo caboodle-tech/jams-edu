@@ -45,6 +45,14 @@ if (args.where) {
     exit();
 }
 
+// Handle --backup command (full site backup; doesn't need config)
+if (args.backup) {
+    const { fullSiteBackup } = await import('../src/backup.js');
+    const rel = fullSiteBackup(USERS_ROOT);
+    Print.success(`Full site backup: ${rel}`);
+    exit();
+}
+
 // Handle restore command (clears ports) - doesn't need config
 // Can be called as: jamsedu --restore 5000 5001 OR jamsedu 5000 5001 (if no other args)
 const numericArgs = process.argv.slice(2).filter(arg => !arg.startsWith('--') && !isNaN(Number(arg)) && Number(arg) > 0);

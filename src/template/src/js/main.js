@@ -6,12 +6,12 @@ import { DomWatcher, TinyDocument, TinyWysiwyg } from './jamsedu/index.js';
 
 /**
  * Add your custom code below.
- * 
+ *
  * You can use the exported classes:
  * - DomWatcher: Watch for DOM elements matching selectors
  * - TinyDocument: Create and manage document editors
  * - TinyWysiwyg: Create rich text editors
- * 
+ *
  * Example:
  *   DomWatcher.watch('.my-element', (element) => {
  *       console.log('Found element:', element);

@@ -2,9 +2,8 @@ import HtmlParser from '@html-eslint/parser';
 import HtmlPlugin from '@html-eslint/eslint-plugin';
 import HtmlRules from './eslint/html-rules.js';
 import JsRules from './eslint/js-rules.js';
+import JsonPlugin from '@eslint/json';
 import JsonRules from './eslint/json-rules.js';
-import JsoncParser from 'jsonc-eslint-parser';
-import JsoncPlugin from 'eslint-plugin-jsonc';
 
 export default [
     {
@@ -29,15 +28,12 @@ export default [
         rules: { ...JsRules }
     },
     {
-        // Caboodle Tech JSON settings.
+        // Caboodle Tech JSON settings (standard JSON only; official @eslint/json plugin).
         files: ['**/*.json'],
-        languageOptions: {
-            parser: JsoncParser,
-            ecmaVersion: 'latest'
-        },
         plugins: {
-            jsonc: JsoncPlugin
+            json: JsonPlugin
         },
+        language: 'json/json',
         rules: { ...JsonRules }
     }
 ];

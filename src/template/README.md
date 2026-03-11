@@ -48,10 +48,10 @@ This template includes:
 
 ## Documentation
 
-- **[JHP Templates Guide](./docs/JHP-TEMPLATES.md)** - Learn how to use JHP template engine
-- **[JavaScript Setup](./docs/JAVASCRIPT-SETUP.md)** - ⚠️ **IMPORTANT**: How to include JavaScript files
-- **[CSS Customization](./docs/CSS-CUSTOMIZATION.md)** - Customize JamsEdu components
-- **[JavaScript API](./docs/JAVASCRIPT-API.md)** - Use TinyDocument, TinyWysiwyg, and DomWatcher
+- **[JHP Templates Guide](./docs/jhp-templates.jamsedu.md)** - Learn how to use JHP template engine
+- **[JavaScript Setup](./docs/javascript-setup.jamsedu.md)** - ⚠️ **IMPORTANT**: How to include JavaScript files
+- **[CSS Customization](./docs/css-customization.jamsedu.md)** - Customize JamsEdu components
+- **[JavaScript API](./docs/javascript-api.jamsedu.md)** - Use TinyDocument, TinyWysiwyg, and DomWatcher
 
 ## Key Concepts
 
@@ -95,10 +95,10 @@ Override JamsEdu components using CSS variables:
 
 ## Next Steps
 
-1. Read the [JHP Templates Guide](./docs/JHP-TEMPLATES.md) to learn about templates
-2. Check [JavaScript Setup](./docs/JAVASCRIPT-SETUP.md) for proper script inclusion
-3. Customize styles using [CSS Customization Guide](./docs/CSS-CUSTOMIZATION.md)
-4. Explore the [JavaScript API](./docs/JAVASCRIPT-API.md) for component usage
+1. Read the [JHP Templates Guide](./docs/jhp-templates.jamsedu.md) to learn about templates
+2. Check [JavaScript Setup](./docs/javascript-setup.jamsedu.md) for proper script inclusion
+3. Customize styles using [CSS Customization Guide](./docs/css-customization.jamsedu.md)
+4. Explore the [JavaScript API](./docs/javascript-api.jamsedu.md) for component usage
 
 ## Getting Help
 

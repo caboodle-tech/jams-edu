@@ -34,7 +34,7 @@ export default {
             classes: 'always'
         }
     ],
-    'arrow-body-style': ['error', 'as-needed'],
+    'arrow-body-style': ['error', 'always'],
     'arrow-parens': ['error', 'always'],
     'arrow-spacing': ['error', { before: true, after: true }],
     'block-spacing': ['error', 'always'],

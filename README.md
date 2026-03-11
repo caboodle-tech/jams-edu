@@ -80,13 +80,13 @@ jamsedu --watch --verbose
 
 At this point you're ready to explore more advanced features of JamsEdu:
 
-- Adding template [processing hooks](#hooks-object)
+- Adding template [processing hooks](#hooks-pre-and-post)
 - Additional [configuration options](#configuration-options)
 - Customizing JamsEdu components (see template `docs/` folder)
 
 ## JamsEdu Configuration File
 
-The JamsEdu configuration file is required for every JamsEdu project. The `jamsedu.config.js` file should be placed at the root of your project. All paths referenced in the configuration should be relative to this root location. You do not need to include preceding path parts like `./` or `../`. The following is a bare minimum configuration file:
+The JamsEdu configuration file is required for every JamsEdu project. Running `jamsedu --init` creates `.jamsedu/config.js` at your project root. By default the CLI uses `.jamsedu/config.js` if present, otherwise `jamsedu.config.js`. You can use any file as the config as long as you tell JamsEdu which file, e.g. `jamsedu --config path/to/my.config.js`. All paths in the config are relative to the project root (no leading `./` or `../` needed). The following is a bare minimum configuration:
 
 ```js
 export default {
@@ -96,11 +96,16 @@ export default {
 };
 ```
 
-| Option       | Explanation                                                                                           |
-|--------------|-------------------------------------------------------------------------------------------------------|
-| `destDir`    | Where the files for the compiled (built) site will be placed.                                         |
-| `srcDir`     | Where the sites source files are stored.                                                              |
-| `templateDir`| Where the template files and variables for your site are; this should be within the `srcDir` somewhere! |
+| Option        | Required | Explanation                                                                 |
+|---------------|----------|-----------------------------------------------------------------------------|
+| `destDir`     | Yes      | Where the compiled (built) site is written.                                 |
+| `srcDir`      | Yes      | Where the site's source files live.                                         |
+| `templateDir` | Yes      | Where template and variable files live (typically inside `srcDir`).         |
+| `websiteUrl`  | No       | Base URL for the site (e.g. `https://example.com`); used e.g. for sitemap. |
+| `verbose`     | No       | Set to `true` for extra CLI output.                                         |
+| `pre`         | No       | Array of hook functions run before the template process.                    |
+| `post`        | No       | Array of hook functions run after the template process.                     |
+| `doNotCopy`   | No       | Array of file extensions to exclude from build output.                      |
 
 ### Configuration Options
 
@@ -118,29 +123,30 @@ export default {
 ```
 
 > [!WARNING]
-> Setting this option overwrites JamsEdu's default settings. You must include all file extensions you want to prevent from being output. Ensure you don't accidentally expose sensitive files! Consider using the [`keep`](#--keep) compiler directive for exceptions instead.
+> Setting this option overwrites JamsEdu's default settings. You must include all file extensions you want to prevent from being output. Ensure you don't accidentally expose sensitive files!
 
 When adding file extensions to `doNotCopy`, omit the leading dot. For complex file extensions (e.g., `some-important-file.private.json`), add the entire extension without the dot: `'private.json'`.
 
-#### `hooks` (object)
+#### Hooks (`pre` and `post`)
 
-Hooks allow you to register custom processing functions into JamsEdu's template process. After the primary template process has completed, the file then passes through all registered hooks before output. Register hooks by adding the `hooks` object to your configuration:
+Hooks let you register custom processing functions at different stages of the template process. **Pre** hooks run before the primary template process; **post** hooks run after it, before output. Each hook receives a `scope` object with a `dom` property: a DOM-like tree (from [simple-html-parser](https://github.com/caboodle-tech/simple-html-parser)) that you query and mutate in place. Add `pre` and/or `post` arrays to your configuration:
 
 ```js
+import myPostHook from './hooks/myPostHook.js';
+
 export default {
-    hooks: {
-        your_custom_hook: (html, som) => {...}
-    },
+    pre: [],
+    post: [myPostHook],
     destDir: 'www',
     srcDir: 'src',
     templateDir: 'src/templates'
 };
 ```
 
-The key should be a unique identifier for your hook, and the value should be a callback function (typically an imported module). Hooks must return either the original `html` or a modified version. For implementation details, refer to JamsEdu's [built-in hooks](#TMP).
+Each array holds callback functions (typically imported modules). Your hooks run in addition to JamsEdu's built-in post hooks (e.g. video embedding). For how to write a hook, what's on `scope`, and the DOM API, see **[Writing hooks](./docs/hooks.md)**.
 
 > [!TIP]
-> Be careful when naming hooks. Existing hooks can be overwritten by registering a new hook with the same name. This feature allows you to overwrite JamsEdu's built-in hooks if desired.
+> Your `pre` and `post` arrays are merged with JamsEdu's built-in hooks; your hooks run in addition to the defaults.
 
 #### `verbose` (boolean)
 

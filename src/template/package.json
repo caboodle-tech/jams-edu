@@ -3,9 +3,8 @@
     "devDependencies": {
         "@html-eslint/eslint-plugin": "^0.52.1",
         "@html-eslint/parser": "^0.52.0",
-        "eslint": "^9.39.2",
-        "eslint-plugin-jsonc": "^2.21.0",
-        "jsonc-eslint-parser": "^2.4.2"
+        "@eslint/json": "^1.1.0",
+        "eslint": "^9.39.2"
     },
     "scripts": {
         "build": "jamsedu --build",

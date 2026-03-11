@@ -12,6 +12,14 @@
     non-technical users to swiftly build dynamic static websites.
 
 # Options
+    backup, -backup, --backup
+        Create a full site backup (tar.gz) of the project. Stored in
+        .jamsedu/backups/ as site-backup-<timestamp>.tar.gz. Archive root
+        is the project root (no leading directory). Excludes only
+        node_modules, .jamsedu/backups, and .git. Includes .gitignore,
+        .vscode, .jamsedu (config/manifest), and other dotfiles. Requires
+        "tar" on your PATH.
+
     build, -build, --build
         Perform a one time build of the sites source files.
 
@@ -33,20 +41,21 @@
         starts a watcher that auto builds the site source files when changed.
 
     update, -update, --update
-        Interactive update utility for JamsEdu template files and components.
-        Guides you through updating TinyDocument, TinyWysiwyg, CSS components,
-        ESLint configuration, and documentation. Creates backups automatically
-        and allows selective component updates with conflict resolution.
+        Interactive update for JamsEdu template files. Lets you choose which
+        components to update, creates backups when needed, and handles conflicts
+        per file (overwrite, skip, or backup then overwrite).
 
     force, -force, --force
-        When used with --update, allows updating files that have been marked as
-        customized by the user. This will overwrite user modifications with the
-        template versions. Use with caution.
+        With --update: include files marked as customized and overwrite them
+        with the template versions. Use this to reset or downgrade customized
+        files to the JamsEdu template even when there are no new updates. Use
+        with caution.
 
     restore-backup, -restore-backup, --restore-backup TIMESTAMP
-        Restore your project from a backup created during an update operation.
-        Provide the timestamp of the backup you wish to restore (format:
-        YYYY-MM-DD-HH-MM-SS).
+        Restore all files from a backup created during an update (by timestamp;
+        format YYYY-MM-DD-HH-MM-SS). This restores the whole backup, not
+        individual files. To restore a single file, copy it from the backup
+        folder under .jamsedu/backups/<timestamp>/.
 
     restore, -restore, --restore [PORT1] [PORT2] ...
         Clear ports by terminating processes that are using them. Useful for
@@ -59,9 +68,9 @@
 
 # Arguments
     -config FILE, --config=FILE
-        The relative path from the projects root to the config file to use, file
-        extension included. By default `.jamsedu/config.js` is searched for and
-        automatically used when this argument is missing.
+        The path to the config file to use (relative to the project root), file
+        extension included. You can use any file as the config as long as you
+        specify it here. By default `.jamsedu/config.js` is used.
 
     PORT1 [PORT2] ...
         Port numbers to clear when using the restore command. Can be used with
