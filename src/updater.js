@@ -3,17 +3,15 @@ import Crypto from 'crypto';
 import Fs from 'fs';
 import Path from 'path';
 import Print from './imports/print.js';
-import PromptUser from 'prompt-sync';
+import { promptLine } from './imports/readline-prompt.js';
 import URL from 'url';
+import { templateSrcPathToUserPath } from './imports/template-path-mapping.js';
 import {
     normalizeContentForHash,
     parseComponentFromFile,
     parseVersionFromFile,
     stripJamseduComments
 } from './imports/strip-jamsedu-comments.js';
-
-// Get an instance of the Prompt to simplify user input.
-const Prompt = PromptUser({ sigint: true });
 
 class Updater {
 
@@ -33,6 +31,15 @@ class Updater {
         }
     }
 
+    /**
+     * Run interactive template update against the user project.
+     *
+     * @param {string} cwd Project root (usersRoot).
+     * @param {string} jamseduWd Installed JamsEdu package root (template + package.json).
+     * @param {{ srcDir?: string, destDir?: string, assetsDir?: string, assetPaths?: Record<string, string> }} userConfig
+     *        Layout options from the user config (same semantics as .jamsedu/config.js); used for path mapping, not CLI flags.
+     * @param {boolean} [force]
+     */
     static async update(cwd, jamseduWd, userConfig, force = false) {
         this.clearScreen();
         Print.notice(this.#header);
@@ -46,20 +53,57 @@ class Updater {
             srcDir = srcDir.replace(/\\/g, '/');
         }
 
-        // Read manifest (declare once at top of function)
-        const manifestPath = Path.join(cwd, '.jamsedu', 'manifest.json');
-        if (!Fs.existsSync(manifestPath)) {
-            Print.error('Manifest file not found. This project may not have been initialized with JamsEdu.');
-            Print.info('Run `jamsedu --init` to initialize your project first.');
-            return;
-        }
-
-        const manifest = JSON.parse(Fs.readFileSync(manifestPath, 'utf-8'));
-
-        // Read package version from installed JamsEdu
         const packageJsonPath = Path.join(jamseduWd, 'package.json');
         const packageJson = JSON.parse(Fs.readFileSync(packageJsonPath, 'utf-8'));
         const currentPackageVersion = packageJson.version;
+
+        const manifestPath = Path.join(cwd, '.jamsedu', 'manifest.json');
+        const manifestDir = Path.join(cwd, '.jamsedu');
+        /** @type {object} */
+        let manifest;
+
+        if (!Fs.existsSync(manifestPath)) {
+            Print.warn('Manifest not found. Rebuilding it from your config paths and the installed template.');
+            Print.info(`Using srcDir (relative): ${srcDir}; assetsDir: ${typeof userConfig.assetsDir === 'string' ? userConfig.assetsDir : '(default)'}`);
+            if (!Fs.existsSync(manifestDir)) {
+                Fs.mkdirSync(manifestDir, { recursive: true });
+            }
+            manifest = {
+                jamseduPackageVersion: currentPackageVersion,
+                templateVersion: currentPackageVersion,
+                installed: new Date().toISOString(),
+                lastUpdated: null,
+                srcDir,
+                components: {}
+            };
+        } else {
+            let raw;
+            try {
+                raw = Fs.readFileSync(manifestPath, 'utf-8');
+                manifest = JSON.parse(raw);
+            } catch {
+                Print.warn('Manifest could not be parsed as JSON. Rebuilding from your config and the template scan.');
+                manifest = {
+                    jamseduPackageVersion: currentPackageVersion,
+                    templateVersion: currentPackageVersion,
+                    installed: new Date().toISOString(),
+                    lastUpdated: null,
+                    srcDir,
+                    components: {}
+                };
+            }
+            if (!manifest || typeof manifest !== 'object' || !manifest.components || typeof manifest.components !== 'object') {
+                Print.warn('Manifest structure was invalid. Resetting component list; metadata will be refreshed from the template.');
+                manifest = {
+                    jamseduPackageVersion: currentPackageVersion,
+                    templateVersion: currentPackageVersion,
+                    installed: new Date().toISOString(),
+                    lastUpdated: manifest && manifest.lastUpdated != null ? manifest.lastUpdated : null,
+                    srcDir,
+                    components: {}
+                };
+            }
+        }
 
         // Update manifest srcDir if it changed (normalize manifest srcDir for comparison)
         const manifestSrcDir = manifest.srcDir ? manifest.srcDir.replace(/\\/g, '/') : 'src';
@@ -79,7 +123,7 @@ class Updater {
             return;
         }
 
-        const templateFiles = this.scanTemplateFiles(templateDir, srcDir);
+        const templateFiles = this.scanTemplateFiles(templateDir, srcDir, userConfig);
         
         // Clean up and correct manifest (remove stale entries, add missing entries, fix component names)
         // This runs before scanning user files so we have a clean manifest to work with
@@ -94,7 +138,7 @@ class Updater {
             for (const { componentName, filePath } of removedFromTemplate) {
                 Print.out(`  • ${filePath} (${componentName})`);
             }
-            const removeFiles = this.getResponse('\nDo you want to remove them from your project? (y/n) [n]', 'n');
+            const removeFiles = await this.getResponse('\nDo you want to remove them from your project? (y/n) [n]', 'n');
             if (['y', 'ye', 'yes'].includes(removeFiles.trim().toLowerCase())) {
                 for (const { filePath } of removedFromTemplate) {
                     const fullPath = Path.join(cwd, filePath);
@@ -108,7 +152,7 @@ class Updater {
             }
         }
 
-        const userFiles = this.scanUserFiles(cwd, srcDir, manifest);
+        const userFiles = this.scanUserFiles(cwd, srcDir, manifest, userConfig);
 
         // Compare files
         const updates = this.compareFiles(templateFiles, userFiles, manifest, cwd, force);
@@ -150,7 +194,7 @@ class Updater {
             Print.out('A backup will be automatically created before updating.');
             Print.out('You can restore or copy back any custom changes you want to keep from the backup.');
             Print.out('');
-            const confirm = this.getResponse('Are you sure you want to continue? (yes/no) [no]', 'no');
+            const confirm = await this.getResponse('Are you sure you want to continue? (yes/no) [no]', 'no');
             if (confirm.toLowerCase() !== 'yes') {
                 Print.info('Force update cancelled.');
                 return;
@@ -179,7 +223,7 @@ class Updater {
             // Ask for backup first (only if there are actual updates to apply)
             if (hasRegularUpdates && allUpdates.length > 0) {
                 Print.out('\n⚠️  IMPORTANT: Back up your project before updating!');
-                const createBackup = this.getResponse('Create automatic backup? (y/n) [y]', 'y');
+                const createBackup = await this.getResponse('Create automatic backup? (y/n) [y]', 'y');
                 if (['y', 'ye', 'yes'].includes(createBackup.trim().toLowerCase())) {
                     backupPath = this.createBackup(cwd, updates);
                     Print.success(`Backup created at: ${backupPath}`);
@@ -232,7 +276,7 @@ class Updater {
             }
             
             Print.out('\x1b[36mShow customized files with updates? (y/N)\x1b[0m');
-            const showCustomized = this.getResponse('> ', 'n');
+            const showCustomized = await this.getResponse('> ', 'n');
             
             if (showCustomized.toLowerCase() === 'y') {
                 Print.out('\nWhat would you like to do with each customized file?\n');
@@ -243,7 +287,7 @@ class Updater {
                     Print.out('   1) Keep customized (skip update)');
                     Print.out('   2) Accept update (overwrite your changes)');
                     Print.out('   3) Skip for now');
-                    const choice = this.getResponse('   Your choice (1-3) [1]: ', '1');
+                    const choice = await this.getResponse('   Your choice (1-3) [1]: ', '1');
                     
                     if (choice === '2') {
                         customizedSelected.push(update);
@@ -255,7 +299,7 @@ class Updater {
         // Only show selection prompt if there are regular updates and not in force mode
         if (hasRegularUpdates && !force) {
             Print.out('\n\x1b[36mEnter numbers separated by commas (e.g., "1,2,3" or "1-3,4,7-9"), "all" for everything:\x1b[0m');
-            const input = this.getResponse('> ', '');
+            const input = await this.getResponse('> ', '');
             
             if (input.toLowerCase() === 'all') {
                 for (let i = 0; i < allUpdates.length; i++) {
@@ -292,7 +336,7 @@ class Updater {
 
         // Apply updates if any were selected
         if (selectedUpdates.length > 0) {
-            this.applyUpdates(selectedUpdates, templateDir, cwd, srcDir, manifest, currentPackageVersion, backupPath);
+            await this.applyUpdates(selectedUpdates, templateDir, cwd, srcDir, manifest, currentPackageVersion, backupPath, userConfig, force);
             Print.success('\n✅ Update complete!');
         } else {
             Print.info('\nNo updates selected.');
@@ -302,7 +346,7 @@ class Updater {
         Fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
     }
 
-    static scanTemplateFiles(templateDir, userSrcDir) {
+    static scanTemplateFiles(templateDir, userSrcDir, userConfig = {}) {
         const files = [];
         const scanDir = (dir) => {
             if (!Fs.existsSync(dir)) return;
@@ -326,12 +370,12 @@ class Updater {
                     
                     const component = parseComponentFromFile(content);
 
-                    // Map template path to user path (normalize to relative with forward slashes)
+                    // Map template path to user path; apply assetsDir/assetPaths so source layout matches user choice
                     let userPath = relativePath;
                     if (relativePath.startsWith('src/')) {
-                        userPath = relativePath.replace(/^src\//, `${userSrcDir}/`);
+                        const pathAfterSrc = relativePath.replace(/^src\//, '');
+                        userPath = templateSrcPathToUserPath(userSrcDir, pathAfterSrc, userConfig);
                     }
-                    // Normalize path separators
                     userPath = userPath.replace(/\\/g, '/');
 
                     files.push({
@@ -350,9 +394,9 @@ class Updater {
         return files;
     }
 
-    static scanUserFiles(cwd, srcDir, manifest) {
+    static scanUserFiles(cwd, srcDir, manifest, userConfig = {}) {
         const files = [];
-        // Scan all directories that might contain tracked files
+        // Scan all directories that might contain tracked files (default layout)
         const jamseduDirs = [
             Path.join(cwd, srcDir, 'js', 'jamsedu'),
             Path.join(cwd, srcDir, 'css', 'jamsedu'),
@@ -361,6 +405,17 @@ class Updater {
             Path.join(cwd, '.vscode'),
             Path.join(cwd, srcDir, 'css') // For main.css
         ];
+        // If user moved assets (assetsDir or assetPaths), also scan those locations under srcDir
+        if (typeof userConfig.assetsDir === 'string' && userConfig.assetsDir) {
+            jamseduDirs.push(Path.join(cwd, srcDir, userConfig.assetsDir));
+        }
+        if (userConfig.assetPaths && typeof userConfig.assetPaths === 'object') {
+            for (const value of Object.values(userConfig.assetPaths)) {
+                if (typeof value === 'string' && value) {
+                    jamseduDirs.push(Path.join(cwd, srcDir, value));
+                }
+            }
+        }
         
         // Also check root-level files that might be tracked (like eslint.config.js)
         const rootFiles = ['eslint.config.js'];
@@ -583,7 +638,52 @@ class Updater {
             }
         }
 
+        // Safety pass: ensure every template file missing on disk is offered as new (catches new files from template)
+        for (const templateFile of templateFiles) {
+            if (!templateFile.component) continue;
+            const normalizedUserPath = templateFile.userPath.replace(/\\/g, '/');
+            const fullDest = Path.join(cwd, normalizedUserPath);
+            if (Fs.existsSync(fullDest)) continue;
+            const alreadyListed = available.some((a) => a.file === normalizedUserPath || a.component === templateFile.component)
+                || newFiles.some((n) => n.file === normalizedUserPath || n.component === templateFile.component);
+            if (!alreadyListed) {
+                newFiles.push({
+                    file: normalizedUserPath,
+                    component: templateFile.component,
+                    version: templateFile.version,
+                    templateFile: templateFile
+                });
+            }
+        }
+
         return { available, new: newFiles, customizedWithUpdates };
+    }
+
+    /**
+     * Finds all files under rootDir with the given basename. Returns paths relative to rootDir (forward slashes).
+     * @param {string} rootDir Absolute path to search under.
+     * @param {string} basename Filename to match.
+     * @returns {string[]} Relative paths to matching files.
+     */
+    static findFilesWithBasename(rootDir, basename) {
+        const matches = [];
+        const scan = (dir) => {
+            if (!Fs.existsSync(dir)) {
+                return;
+            }
+            const entries = Fs.readdirSync(dir, { withFileTypes: true });
+            for (const entry of entries) {
+                const fullPath = Path.join(dir, entry.name);
+                if (entry.isDirectory()) {
+                    scan(fullPath);
+                } else if (entry.isFile() && entry.name === basename) {
+                    const rel = Path.relative(rootDir, fullPath).replace(/\\/g, '/');
+                    matches.push(rel);
+                }
+            }
+        };
+        scan(rootDir);
+        return matches;
     }
 
     static correctManifest(manifest, templateFiles, cwd, srcDir) {
@@ -607,14 +707,14 @@ class Updater {
                 continue;
             }
 
-            const filePath = entry.file;
+            let filePath = entry.file;
             if (!filePath) {
                 // Entry has no file path, remove it
                 delete manifest.components[componentName];
                 continue;
             }
 
-            const fullPath = Path.join(cwd, filePath);
+            let fullPath = Path.join(cwd, filePath);
             const templateFile = templateMap.get(componentName);
 
             // Component no longer in template: remove from manifest and optionally offer to delete file
@@ -626,19 +726,25 @@ class Updater {
                 continue;
             }
 
-            // Check if file exists
+            // File missing at recorded path: try to self-heal by finding same basename under srcDir
             if (!Fs.existsSync(fullPath)) {
-                // File doesn't exist; keep the entry so it can be restored during update
-                manifest.components[componentName] = {
-                    ...entry,
-                    version: templateFile.version || entry.version || '1.0.0',
-                    // Keep existing hash if present, will be updated when file is restored
-                    hash: entry.hash || '',
-                    modified: false,
-                    userCustomized: false
-                };
-                seenComponents.add(componentName);
-                continue;
+                const srcRoot = Path.join(cwd, srcDir);
+                const found = this.findFilesWithBasename(srcRoot, Path.basename(filePath));
+                if (found.length === 1) {
+                    entry.file = Path.relative(cwd, Path.join(srcRoot, found[0])).replace(/\\/g, '/');
+                    fullPath = Path.join(cwd, entry.file);
+                } else {
+                    // Keep the entry so it can be restored during update
+                    manifest.components[componentName] = {
+                        ...entry,
+                        version: templateFile.version || entry.version || '1.0.0',
+                        hash: entry.hash || '',
+                        modified: false,
+                        userCustomized: false
+                    };
+                    seenComponents.add(componentName);
+                    continue;
+                }
             }
 
             // Check if component name matches template file's component name
@@ -754,8 +860,15 @@ class Updater {
         return selected;
     }
 
-    static applyUpdates(selectedUpdates, templateDir, cwd, srcDir, manifest, packageVersion, initialBackupPath = null) {
+    static async applyUpdates(selectedUpdates, templateDir, cwd, srcDir, manifest, packageVersion, initialBackupPath = null, userConfig = {}, force = false) {
         let backupPath = initialBackupPath;
+
+        // When using assets layout, move old css/js/images into assets/ first so user content is kept; then overwrites below apply fresh template
+        const assetsDir = typeof userConfig.assetsDir === 'string' ? userConfig.assetsDir : '';
+        if (assetsDir) {
+            this.removeOldAssetDirsUnderSrc(cwd, srcDir, assetsDir);
+        }
+
         for (const update of selectedUpdates) {
             // Ensure update.file is relative (not absolute)
             let filePath = update.file;
@@ -770,12 +883,13 @@ class Updater {
             const templatePath = update.templateFile?.fullTemplatePath || 
                 Path.join(templateDir, update.templateFile?.templatePath || filePath);
 
-            // Handle conflicts for modified files
-            if (update.modified && Fs.existsSync(destPath)) {
+            // In force mode skip the overwrite prompt; otherwise prompt for modified files
+            if (!force && update.modified && Fs.existsSync(destPath)) {
                 Print.warn(`\n⚠️  File has been modified: ${update.file}`);
                 const overwriteLabel = backupPath ? '1) Overwrite (backup made)' : '1) Overwrite';
-                const choice = this.getResponse(
-                    `${overwriteLabel}  2) Skip  3) Backup & overwrite [1]: `,
+                const backupOption = backupPath ? '' : '  3) Backup & overwrite';
+                const choice = await this.getResponse(
+                    `${overwriteLabel}  2) Skip${backupOption} [1]: `,
                     '1'
                 );
 
@@ -783,7 +897,7 @@ class Updater {
                     Print.info(`Skipping ${update.file}`);
                     continue;
                 }
-                if (choice === '3' || choice.toLowerCase().includes('backup')) {
+                if (!backupPath && (choice === '3' || choice.toLowerCase().includes('backup'))) {
                     backupPath = this.ensureBackupAndAddFile(cwd, backupPath, filePath);
                     if (backupPath) {
                         Print.info(`Backed up to same session: ${update.file}`);
@@ -826,6 +940,68 @@ class Updater {
         // Save manifest
         const manifestPath = Path.join(cwd, '.jamsedu', 'manifest.json');
         Fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+    }
+
+    /**
+     * Recursively copy contents of sourceDir into targetDir (preserves user files), then remove sourceDir.
+     * @param {string} sourceDir Absolute path to the directory to move from.
+     * @param {string} targetDir Absolute path to the directory to move into.
+     */
+    static moveDirContentsInto(sourceDir, targetDir) {
+        if (!Fs.existsSync(sourceDir)) {
+            return;
+        }
+        const entries = Fs.readdirSync(sourceDir, { withFileTypes: true });
+        for (const entry of entries) {
+            const srcPath = Path.join(sourceDir, entry.name);
+            const destPath = Path.join(targetDir, entry.name);
+            if (entry.isDirectory()) {
+                if (!Fs.existsSync(destPath)) {
+                    Fs.mkdirSync(destPath, { recursive: true });
+                }
+                this.moveDirContentsInto(srcPath, destPath);
+                try {
+                    Fs.rmdirSync(srcPath);
+                } catch (err) {
+                    Print.warn(`Could not remove empty dir ${srcPath}: ${err.message}`);
+                }
+            } else {
+                try {
+                    Fs.mkdirSync(Path.dirname(destPath), { recursive: true });
+                    Fs.copyFileSync(srcPath, destPath);
+                    Fs.unlinkSync(srcPath);
+                } catch (err) {
+                    Print.warn(`Could not move ${srcPath} to ${destPath}: ${err.message}`);
+                }
+            }
+        }
+        try {
+            Fs.rmdirSync(sourceDir);
+        } catch (err) {
+            // Ignore if not empty
+        }
+    }
+
+    /**
+     * When using assetsDir, move old css/js/images dirs under srcDir into assets/ so user content is kept, then remove old dirs.
+     * @param {string} cwd Project root.
+     * @param {string} srcDir Source dir (e.g. 'www/src').
+     * @param {string} assetsDir Assets dir name (e.g. 'assets').
+     */
+    static removeOldAssetDirsUnderSrc(cwd, srcDir, assetsDir) {
+        const srcDirPath = Path.join(cwd, ...srcDir.replace(/\\/g, '/').split('/').filter(Boolean));
+        const oldDirs = ['css', 'js', 'images'];
+        for (const name of oldDirs) {
+            const oldPath = Path.join(srcDirPath, name);
+            const newPath = Path.join(srcDirPath, assetsDir, name);
+            if (!Fs.existsSync(oldPath)) {
+                continue;
+            }
+            if (!Fs.existsSync(newPath)) {
+                Fs.mkdirSync(newPath, { recursive: true });
+            }
+            this.moveDirContentsInto(oldPath, newPath);
+        }
     }
 
     static createBackup(cwd, updates) {
@@ -884,7 +1060,7 @@ class Updater {
         return backupPath;
     }
 
-    static restoreBackup(cwd, timestamp) {
+    static async restoreBackup(cwd, timestamp) {
         const backupPath = Path.join(cwd, '.jamsedu', 'backups', timestamp);
         if (!Fs.existsSync(backupPath)) {
             Print.error(`Backup not found: ${timestamp}`);
@@ -892,7 +1068,7 @@ class Updater {
         }
 
         Print.warn(`This will restore files from backup: ${timestamp}`);
-        const confirm = this.getResponse('Are you sure? (yes/no) [no]', 'no');
+        const confirm = await this.getResponse('Are you sure? (yes/no) [no]', 'no');
         if (confirm.toLowerCase() !== 'yes') {
             Print.info('Restore cancelled.');
             return;
@@ -944,9 +1120,9 @@ class Updater {
         return files;
     }
 
-    static getResponse(question, defaultValue = null) {
+    static async getResponse(question, defaultValue = null) {
         Print.out(question);
-        const response = Prompt('> ');
+        const response = await promptLine('> ');
         return response.trim() === '' && defaultValue !== null ? defaultValue : response.trim();
     }
 

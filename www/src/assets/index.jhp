@@ -1,0 +1,28 @@
+<script>
+    const title = 'Hello, World!';
+    const description = 'Welcome to your new JamsEdu project';
+    
+    $include('./templates/header.html');
+</script>
+
+<h1>Hello, World!</h1>
+
+<p>Welcome to your new JamsEdu project! &#x1F389;</p>
+
+<p>This is a simple example page to help you get started. You can edit this file at <code>src/index.jhp</code>.</p>
+
+<h2>What's Next?</h2>
+
+<ul>
+    <li>Edit this file to customize your homepage</li>
+    <li>Check out the <code>docs/</code> directory for detailed guides</li>
+    <li>Run <code>jamsedu --build</code> to build your site</li>
+    <li>Run <code>jamsedu --watch</code> to start the development server</li>
+</ul>
+
+<p>Learn more about JHP templates, CSS customization, and the JavaScript API in the documentation!</p>
+
+<script>
+    $include('./templates/footer.html');
+</script>
+

@@ -7,7 +7,18 @@ import { exit } from 'process';
 import { WhatIs } from './imports/helpers.js';
 import { isTextFileForStripping, stripJamseduComments } from './imports/strip-jamsedu-comments.js';
 
+/** Extension → asset type for assetsDir / assetPaths mapping. */
+const ASSET_TYPE_BY_EXT = Object.freeze({
+    css: ['css'],
+    js: ['js', 'mjs'],
+    images: ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico']
+});
+
 export default class JamsEdu {
+
+    #assetsDir = '';
+
+    #assetPaths = null;
 
     #destDir = '';
 
@@ -26,6 +37,13 @@ export default class JamsEdu {
     };
 
     #srcDir = '';
+
+    #watchDebounceMs = 80;
+
+    #watchDebounceTimer = null;
+
+    #pendingWatchEvents = [];
+
 
     #templateDir = '';
 
@@ -57,6 +75,10 @@ export default class JamsEdu {
         this.#templateDir = Path.join(usersRoot, config.templateDir || '');
         this.#usersRoot = usersRoot;
         this.#verbose = config.verbose === true;
+
+        // Optional: where to put CSS, JS, images. assetPaths overrides assetsDir per type.
+        this.#assetsDir = typeof config.assetsDir === 'string' ? config.assetsDir : '';
+        this.#assetPaths = WhatIs(config.assetPaths) === 'object' ? config.assetPaths : null;
 
         // Initialize JHP and add the users processors if any.
         this.#JHP = new JHP();
@@ -126,6 +148,94 @@ export default class JamsEdu {
         }
     }
 
+    /**
+     * Returns asset type for an extension, or null. Used for assetsDir / assetPaths mapping.
+     * @param {string} ext Extension without dot (e.g. 'css', 'png').
+     * @returns {string|null} 'css' | 'js' | 'images' | null.
+     */
+    #getAssetType(ext) {
+        if (!ext || typeof ext !== 'string') {
+            return null;
+        }
+        const lower = ext.toLowerCase();
+        for (const [type, exts] of Object.entries(ASSET_TYPE_BY_EXT)) {
+            if (exts.includes(lower)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Computes destination path from a path relative to srcDir. Applies .jhp→.html and assetsDir/assetPaths.
+     * @param {string} relativePath Path relative to srcDir.
+     * @param {boolean} isJhp Whether the source is a .jhp file.
+     * @param {string} [ext] Extension without dot (for non-jhp asset mapping).
+     * @returns {string} Absolute destination path.
+     */
+    #getDestPathFromRelative(relativePath, isJhp, ext = '') {
+        const normalized = Path.normalize(relativePath.replace(/\//g, Path.sep));
+        if (normalized.startsWith('..') || Path.isAbsolute(normalized)) {
+            return Path.join(this.#destDir, normalized);
+        }
+        if (isJhp) {
+            const withHtml = normalized.replace(this.#regex.jhp, '.html');
+            return Path.join(this.#destDir, withHtml);
+        }
+        const assetType = this.#getAssetType(ext);
+        const hasPerType = this.#assetPaths && assetType && typeof this.#assetPaths[assetType] === 'string';
+        const useCatchAll = this.#assetsDir && assetType;
+        if (hasPerType) {
+            return Path.join(this.#destDir, this.#assetPaths[assetType], normalized);
+        }
+        if (useCatchAll) {
+            // Source may already be under assets (e.g. src/assets/css/...) so avoid double-prepending
+            const assetsPrefix = this.#assetsDir + Path.sep;
+            const assetsPrefixSlash = this.#assetsDir + '/';
+            if (normalized.startsWith(assetsPrefix) || normalized.startsWith(assetsPrefixSlash)) {
+                return Path.join(this.#destDir, normalized);
+            }
+            return Path.join(this.#destDir, this.#assetsDir, normalized);
+        }
+        return Path.join(this.#destDir, normalized);
+    }
+
+    /**
+     * Resolves a watched path (relative to srcDir) to a destination path under destDir.
+     * Uses same mapping as build (assetsDir/assetPaths, .jhp→.html). Returns null if outside destDir.
+     * @param {string} relativePath Path relative to srcDir (forward slashes from watcher).
+     * @param {boolean} wasJhp Whether the source was a .jhp file (so output is .html).
+     * @param {string} [ext] Extension without dot (for asset mapping on unlink).
+     * @returns {string|null} Absolute dest path or null if outside destDir.
+     */
+    #resolveDestPath(relativePath, wasJhp = false, ext = '') {
+        const destPath = this.#getDestPathFromRelative(relativePath, wasJhp, ext);
+        const resolved = Path.resolve(destPath);
+        const destDirResolved = Path.resolve(this.#destDir);
+        const rel = Path.relative(destDirResolved, resolved);
+        if (rel.startsWith('..') || Path.isAbsolute(rel)) {
+            return null;
+        }
+        return resolved;
+    }
+
+    /**
+     * Removes a file or directory at the given dest path. Used to keep output in sync on unlink/unlinkDir.
+     * @param {string} destPath Absolute path under destDir.
+     */
+    #removeDestPath(destPath) {
+        if (!destPath || !Fs.existsSync(destPath)) {
+            return;
+        }
+        const stat = Fs.statSync(destPath);
+        if (stat.isDirectory()) {
+            this.#clearDirectory(destPath);
+            Fs.rmdirSync(destPath);
+        } else {
+            Fs.unlinkSync(destPath);
+        }
+    }
+
     #copyFile(src, dest) {
         try {
             Fs.mkdirSync(Path.dirname(dest), { recursive: true });
@@ -180,14 +290,16 @@ export default class JamsEdu {
             return;
         }
 
-        let dest = src.replace(this.#srcDir, this.#destDir);
+        const relativePath = Path.relative(this.#srcDir, src);
+        const isJhp = src.endsWith('.jhp');
+        const ext = Path.extname(src).replace('.', '');
+        const dest = this.#getDestPathFromRelative(relativePath, isJhp, ext);
 
-        if (src.endsWith('.jhp')) {
+        if (isJhp) {
             const cwd = Path.dirname(src);
             const relPath = this.#determineRelativePath(src);
             const content = Fs.readFileSync(src, 'utf8');
             const processed = this.#JHP.process(content, { cwd, relPath });
-            dest = dest.replace(this.#regex.jhp, '.html');
             this.#writeFile(dest, processed);
         } else {
             this.#copyFile(src, dest);
@@ -228,14 +340,15 @@ export default class JamsEdu {
             }
         }, false);
 
-        // Watch the source directory for changes.
+        // Watch the source directory for changes; debounced so renames and rapid edits batch.
         this.#NSS.watch(this.#srcDir, {
             events: {
-                all: this.#watcherCallback.bind(this)
+                all: this.#watcherCallbackDebounced.bind(this)
             },
             followSymlinks: false,
             ignoreInitial: true,
             cwd: this.#srcDir
+            // unlink/unlinkDir are delivered via 'all' so output stays in sync when src is deleted/renamed.
         });
 
         // Show some useful information to the user.
@@ -249,26 +362,86 @@ export default class JamsEdu {
         Print.info('These addresses are meant for local network use only.');
     }
 
-    #watcherCallback(event, path, statsOrDetails) {
-        const { ext } = statsOrDetails;
-        const src = Path.join(this.#srcDir, path);
+    /**
+     * Debounced entry for watch events; batches rapid events (e.g. rename = unlink + add).
+     */
+    #watcherCallbackDebounced(event, path, statsOrDetails = {}) {
+        this.#pendingWatchEvents.push({ event, path, statsOrDetails });
+        if (this.#watchDebounceTimer !== null) {
+            clearTimeout(this.#watchDebounceTimer);
+        }
+        this.#watchDebounceTimer = setTimeout(() => {
+            this.#watchDebounceTimer = null;
+            this.#processPendingWatchEvents();
+        }, this.#watchDebounceMs);
+    }
 
-        if (ext === 'css') {
-            this.#processFile(src);
-            this.#NSS.reloadAllStyles();
+    /**
+     * Processes batched watch events: unlink/unlinkDir first (sync output), then change/add (build), then reload.
+     */
+    #processPendingWatchEvents() {
+        const pending = this.#pendingWatchEvents.splice(0, this.#pendingWatchEvents.length);
+        if (pending.length === 0) {
             return;
         }
 
-        if (event === 'change' && src.startsWith(this.#templateDir)) {
-            this.build();
+        let reloadAll = false;
+        const pagesToReload = new Set();
+        let reloadStyles = false;
+
+        // Process unlink/unlinkDir first so output matches src (and renames don't leave stale files).
+        for (const { event, path } of pending) {
+            if (event === 'unlink') {
+                const wasJhp = path.toLowerCase().endsWith('.jhp');
+                const ext = Path.extname(path).replace('.', '');
+                const destPath = this.#resolveDestPath(path, wasJhp, ext);
+                if (destPath) {
+                    this.#removeDestPath(destPath);
+                }
+                reloadAll = true;
+            } else if (event === 'unlinkDir') {
+                const destPath = this.#resolveDestPath(path, false, '');
+                if (destPath) {
+                    this.#removeDestPath(destPath);
+                }
+                reloadAll = true;
+            }
+        }
+
+        // Then process change/add (build step).
+        for (const { event, path, statsOrDetails } of pending) {
+            if (event !== 'change' && event !== 'add') {
+                continue;
+            }
+            const ext = statsOrDetails?.ext ?? Path.extname(path).replace('.', '');
+            const src = Path.join(this.#srcDir, path);
+
+            if (ext === 'css') {
+                this.#processFile(src);
+                reloadStyles = true;
+                continue;
+            }
+            if (src.startsWith(this.#templateDir)) {
+                this.build();
+                reloadAll = true;
+                continue;
+            }
+            if (ext === 'jhp') {
+                this.#processFile(src);
+                pagesToReload.add(path.replace(this.#regex.jhp, '.html'));
+            }
+            // Only css, template, and jhp are processed; other file types are ignored for efficiency.
+        }
+
+        if (reloadAll) {
             this.#NSS.reloadAllPages();
-            return;
-        }
-
-        if (event === 'change' && ext === 'jhp') {
-            this.#processFile(src);
-            this.#NSS.reloadSinglePage(path.replace(this.#regex.jhp, '.html'));
-            return;
+        } else {
+            if (reloadStyles) {
+                this.#NSS.reloadAllStyles();
+            }
+            for (const pagePath of pagesToReload) {
+                this.#NSS.reloadSinglePage(pagePath);
+            }
         }
     }
 

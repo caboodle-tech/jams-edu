@@ -1,4 +1,8 @@
-/* @jamsedu-version: 1.0.0 */
+/* @jamsedu-version: 1.0.1 */
 /* @jamsedu-component: jamsedu-css */
 @import './tiny-document.css';
 @import './tiny-wysiwyg.css';
+
+:where(pre.mermaid, div.math) {
+    text-align: center;
+}

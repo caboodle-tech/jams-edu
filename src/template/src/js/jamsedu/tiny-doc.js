@@ -1,4 +1,4 @@
-// @jamsedu-version: 1.0.0
+// @jamsedu-version: 1.1.0
 // @jamsedu-component: tiny-doc
 import TinyWysiwyg from './tiny-wysiwyg.js';
 
@@ -18,7 +18,7 @@ class TinyDocument {
         'input[type="date"]': this.#setupDate.bind(this),
         'input[type="file"]': this.#setupFileInputs.bind(this),
         'input[type="text"]': this.#setupInput.bind(this),
-        'input[type="url"]': this.#setupUrlInputs.bind(this),
+        'input[type="url"]': this.#setupLinkInputs.bind(this),
         select: this.#setupSelects.bind(this),
         textarea: this.#setupTextareas.bind(this)
     };
@@ -27,7 +27,8 @@ class TinyDocument {
     #icons = {
         close: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
         img: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image-icon lucide-image"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`,
-        imgUpload: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image-up-icon lucide-image-up"><path d="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10l-3.1-3.1a2 2 0 0 0-2.814.014L6 21"/><path d="m14 19.5 3-3 3 3"/><path d="M17 22v-5.5"/><circle cx="9" cy="9" r="2"/></svg>`
+        imgUpload: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image-up-icon lucide-image-up"><path d="M10.3 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10l-3.1-3.1a2 2 0 0 0-2.814.014L6 21"/><path d="m14 19.5 3-3 3 3"/><path d="M17 22v-5.5"/><circle cx="9" cy="9" r="2"/></svg>`,
+        link: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></svg>`
     };
     /* eslint-enable max-len */
 
@@ -86,7 +87,7 @@ class TinyDocument {
 
     #generateStyleSheet() {
         /* eslint-disable max-len */
-        return `<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif}.document{margin:0;padding:.5in;max-width:100%;ol,ul{margin:0 0 14pt 0;padding-left:.5in}li{margin:6pt 0}a{color:#1976d2;text-decoration:none;&:hover{text-decoration:underline}}div,p{page-break-inside:avoid}.doc-header,.doc-subsection,.doc-template-wrapper{page-break-inside:avoid}.doc-section{page-break-after:avoid}.doc-preview{display:block;.doc-preview-item{display:block;img{max-width:100%;height:auto;margin:12pt auto}}}.doc-instructions,.doc-download,.tiny-wysiwyg-container,.doc-template-button,.doc-file-wrapper,.doc-download-button,.doc-trash-button,.doc-remove{display:none!important}.doc-title{font-size:24pt;font-weight:700;text-align:center;margin:0 0 24pt 0}.doc-header{display:flex;justify-content:space-between;margin-bottom:24pt}.doc-section{font-size:16pt;font-weight:700;margin:24pt 0 14pt 0;border-bottom:1px solid #000;padding-bottom:3pt}.doc-subsection{font-size:14pt;font-weight:700;margin:18pt 0 6pt 0}.doc-indent{margin-left:.25in}.doc-spacer{display:block;margin-bottom:18pt;clear:both;min-height:1px}.center{text-align:center}.not-provided{color:#757575}blockquote{position:relative;border:1px solid #c5c5c5;border-left:4pt solid #c5c5c5;background-color:#f4f4f4;padding:6pt 6pt 6pt calc(18pt + 20px);margin:12pt 0;&::before{font-family:Arial;content:"\\201C";color:#c5c5c5;font-size:48pt;position:absolute;left:10px;top:-2px}}h1,h2,h3,h4,h5,h6{font-size:14pt;font-weight:700;margin:18pt 0 6pt 0}pre{background-color:#f4f4f4;padding:6pt;border-radius:2pt;margin:12pt 0;font-family:'Roboto Mono','Courier New',monospace;font-size:11pt;border:1px solid #c5c5c5;white-space:pre-wrap;word-wrap:break-word}}</style>`;
+        return `<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif}.document{margin:0;padding:.5in;max-width:100%;ol,ul{margin:0 0 14pt 0;padding-left:.5in}li{margin:6pt 0}a{color:#1976d2;text-decoration:none;&:hover{text-decoration:underline}}div,p{page-break-inside:avoid}.doc-header,.doc-subsection,.doc-template-wrapper{page-break-inside:avoid}.doc-section{page-break-after:avoid}.doc-preview{display:block;.doc-preview-item{display:block;img{max-width:100%;height:auto;margin:12pt auto}}}.doc-instructions,.doc-download,.tiny-wysiwyg-container,.doc-template-button,.doc-file-wrapper,.doc-download-button,.doc-trash-button,.doc-remove,.doc-link-icon{display:none!important}.doc-title{font-size:24pt;font-weight:700;text-align:center;margin:0 0 24pt 0}.doc-header{display:flex;justify-content:space-between;margin-bottom:24pt}.doc-section{font-size:16pt;font-weight:700;margin:24pt 0 14pt 0;border-bottom:1px solid #000;padding-bottom:3pt}.doc-subsection{font-size:14pt;font-weight:700;margin:18pt 0 6pt 0}.doc-indent{margin-left:.25in}.doc-spacer{display:block;margin-bottom:18pt;clear:both;min-height:1px}.center{text-align:center}.not-provided{color:#757575}blockquote{position:relative;border:1px solid #c5c5c5;border-left:4pt solid #c5c5c5;background-color:#f4f4f4;padding:6pt 6pt 6pt calc(18pt + 20px);margin:12pt 0;&::before{font-family:Arial;content:"\\201C";color:#c5c5c5;font-size:48pt;position:absolute;left:10px;top:-2px}}h1,h2,h3,h4,h5,h6{font-size:14pt;font-weight:700;margin:18pt 0 6pt 0}pre{background-color:#f4f4f4;padding:6pt;border-radius:2pt;margin:12pt 0;font-family:'Roboto Mono','Courier New',monospace;font-size:11pt;border:1px solid #c5c5c5;white-space:pre-wrap;word-wrap:break-word}}</style>`;
         /* eslint-enable max-len */
     }
 
@@ -262,9 +263,203 @@ class TinyDocument {
         elem.addEventListener('input', resize);
     }
 
-    #setupUrlInputs(elem, _) {
-        elem.classList.add('doc-input', 'doc-url');
-        elem.setAttribute('pattern', 'https?://.+');
+    #setupLinkInputs(elem, _) {
+        const isRaw = elem.hasAttribute('data-raw');
+
+        // Normalize prompt -> data-prompt
+        if (elem.hasAttribute('prompt')) {
+            elem.dataset.prompt = elem.getAttribute('prompt');
+            elem.removeAttribute('prompt');
+        }
+
+        const prompt = elem.dataset.prompt || '';
+        const originalPlaceholder = elem.placeholder || '';
+
+        // Wrap input in a container for icon positioning
+        const wrapper = document.createElement('span');
+        wrapper.classList.add('doc-link-wrapper');
+        elem.parentNode.replaceChild(wrapper, elem);
+        wrapper.appendChild(elem);
+
+        // Add the link icon
+        const icon = document.createElement('span');
+        icon.classList.add('doc-link-icon');
+        icon.innerHTML = this.#icons.link;
+        wrapper.appendChild(icon);
+
+        elem.setAttribute('readonly', '');
+        elem.classList.add('doc-input', 'doc-link');
+        elem.value = '';
+
+        // If data attributes are pre-populated, set initial state
+        if (elem.dataset.url) {
+            elem.value = elem.dataset.text || elem.dataset.url;
+            elem.classList.add('filled');
+        }
+
+        elem.addEventListener('click', () => {
+            this.#openLinkPopover(elem, isRaw, originalPlaceholder, prompt);
+        });
+
+        icon.addEventListener('click', () => {
+            this.#openLinkPopover(elem, isRaw, originalPlaceholder, prompt);
+        });
+    }
+
+    /**
+     * Normalizes link popover heading: appends ":" if the text does not end with . ? ! or :.
+     * @param {string} text
+     * @returns {string}
+     */
+    #formatLinkPopoverHeading(text) {
+        const trimmed = String(text).trim();
+        if (!trimmed) {
+            return '';
+        }
+        const last = trimmed.slice(-1);
+        if ('.?!:'.includes(last)) {
+            return trimmed;
+        }
+        return `${trimmed}:`;
+    }
+
+    /**
+     * @param {HTMLInputElement} elem
+     * @param {boolean} isRaw
+     * @param {string} originalPlaceholder
+     * @param {string} prompt
+     */
+    #openLinkPopover(elem, isRaw, originalPlaceholder, prompt) {
+        // Don't open multiple
+        if (this.#document.querySelector('dialog.doc-link-popover')) {
+            return;
+        }
+
+        const trimmedPrompt = prompt && String(prompt).trim() ? String(prompt).trim() : '';
+        const hasPlaceholder = Boolean(originalPlaceholder && String(originalPlaceholder).trim());
+        const labelPlaceholder = hasPlaceholder ? String(originalPlaceholder).trim() : 'Link Text';
+
+        let headingText;
+        if (trimmedPrompt) {
+            headingText = this.#formatLinkPopoverHeading(trimmedPrompt);
+        } else if (isRaw) {
+            if (hasPlaceholder) {
+                headingText = this.#formatLinkPopoverHeading(String(originalPlaceholder).trim());
+            } else {
+                headingText = this.#formatLinkPopoverHeading('Link Value');
+            }
+        } else if (!hasPlaceholder) {
+            headingText = this.#formatLinkPopoverHeading('Link Information');
+        } else {
+            headingText = this.#formatLinkPopoverHeading(String(originalPlaceholder).trim());
+        }
+
+        const dialog = document.createElement('dialog');
+        dialog.classList.add('doc-link-popover');
+
+        const heading = document.createElement('div');
+        heading.classList.add('doc-link-popover-heading');
+        heading.textContent = headingText || 'Add Link';
+
+        const urlField = document.createElement('input');
+        urlField.type = 'url';
+        urlField.placeholder = 'https://...';
+        urlField.classList.add('doc-link-popover-input');
+        urlField.value = elem.dataset.url || '';
+
+        let textField = null;
+        if (!isRaw) {
+            textField = document.createElement('input');
+            textField.type = 'text';
+            textField.placeholder = labelPlaceholder;
+            textField.classList.add('doc-link-popover-input');
+            textField.value = elem.dataset.text || '';
+        }
+
+        const actions = document.createElement('div');
+        actions.classList.add('doc-link-popover-actions');
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.innerHTML = this.#icons.close;
+        cancelBtn.classList.add('doc-button', 'doc-link-cancel');
+
+        const saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.textContent = 'Save';
+        saveBtn.classList.add('doc-button', 'doc-link-save');
+
+        const clearBtn = document.createElement('button');
+        clearBtn.type = 'button';
+        clearBtn.textContent = 'Clear';
+        clearBtn.classList.add('doc-button', 'doc-link-clear');
+
+        actions.appendChild(cancelBtn);
+        actions.appendChild(clearBtn);
+        actions.appendChild(saveBtn);
+
+        dialog.appendChild(heading);
+        if (!isRaw) {
+            dialog.appendChild(textField);
+        }
+        dialog.appendChild(urlField);
+        dialog.appendChild(actions);
+
+        this.#document.appendChild(dialog);
+        dialog.showModal();
+
+        // Focus the first relevant field
+        if (textField && !textField.value) {
+            textField.focus();
+        } else {
+            urlField.focus();
+        }
+
+        const closeDialog = () => {
+            dialog.close();
+            dialog.remove();
+        };
+
+        // Save handler
+        saveBtn.addEventListener('click', () => {
+            const url = urlField.value.trim();
+            const text = textField ? textField.value.trim() : '';
+
+            if (url) {
+                elem.dataset.url = url;
+                if (text) {
+                    elem.dataset.text = text;
+                    elem.value = text;
+                } else {
+                    delete elem.dataset.text;
+                    elem.value = url;
+                }
+                elem.classList.add('filled');
+            }
+
+            closeDialog();
+        });
+
+        // Clear handler
+        clearBtn.addEventListener('click', () => {
+            delete elem.dataset.url;
+            delete elem.dataset.text;
+            elem.value = '';
+            elem.classList.remove('filled');
+            closeDialog();
+        });
+
+        // Native backdrop click to close
+        dialog.addEventListener('click', (evt) => {
+            if (evt.target === dialog) {
+                closeDialog();
+            }
+        });
+
+        // Native Escape key closes it automatically, clean up on close
+        dialog.addEventListener('close', () => {
+            dialog.remove();
+        });
     }
 
     #setupTemplateButtons(elem, _) {
@@ -422,21 +617,13 @@ class TinyDocument {
     }
 
     #validateLinks() {
-        const linkInputs = this.#document.querySelectorAll('input.link');
+        const linkInputs = this.#document.querySelectorAll('input.doc-link');
         const missingUrls = [];
 
         linkInputs.forEach((input) => {
-            if (!input.value.trim()) {
-                return;
-            }
-
-            let nextElement = input.nextElementSibling;
-            while (nextElement && nextElement.tagName !== 'INPUT') {
-                nextElement = nextElement.nextElementSibling;
-            }
-
-            if (nextElement && nextElement.type === 'url' && !nextElement.value.trim()) {
-                missingUrls.push(input.value.trim());
+            // If there's a display text but no URL, that's a problem
+            if (input.dataset.text && !input.dataset.url) {
+                missingUrls.push(input.dataset.text);
             }
         });
 
@@ -488,64 +675,37 @@ class TinyDocument {
 
     #processInputsInClone(clone) {
         const inputs = Array.from(clone.querySelectorAll('input'));
-        const processedIndices = new Set();
 
-        inputs.forEach((input, idx) => {
-            if (processedIndices.has(idx)) {
-                return;
-            }
+        inputs.forEach((input) => {
 
-            // Handle link + URL pairs
-            if (input.classList.contains('link')) {
-                const urlInput = this.#findNextUrlInput(inputs, idx);
+            // Handle link inputs (type="url" with doc-link class)
+            if (input.classList.contains('doc-link')) {
+                const url = input.dataset.url || '';
+                const text = input.dataset.text || '';
 
-                if (urlInput) {
-                    const urlIdx = inputs.indexOf(urlInput);
-                    processedIndices.add(urlIdx);
+                // Replace the wrapper with just the link or not-provided span
+                const wrapper = input.closest('.doc-link-wrapper');
+                const parent = wrapper ? wrapper.parentNode : input.parentNode;
 
-                    const linkText = input.value.trim();
-                    const linkUrl = urlInput.value.trim();
-
-                    if (linkText && linkUrl) {
-                        const a = document.createElement('a');
-                        a.href = linkUrl;
-                        a.textContent = linkText;
-                        a.target = '_blank';
-                        input.parentNode.replaceChild(a, input);
-                        urlInput.remove();
-                    } else if (!linkText && !linkUrl) {
-                        const span = document.createElement('span');
-                        span.className = 'not-provided';
-                        span.textContent = '[Not Provided]';
-                        input.parentNode.replaceChild(span, input);
-                        urlInput.remove();
-                    } else {
-                        const span = document.createElement('span');
-                        span.textContent = linkText || '[Not Provided]';
-                        if (!linkText) {
-                            span.className = 'not-provided';
-                        }
-                        input.parentNode.replaceChild(span, input);
-                        urlInput.remove();
-                    }
-                    return;
-                }
-            }
-
-            // Handle standalone URL inputs
-            if (input.type === 'url' && !processedIndices.has(idx)) {
-                const urlValue = input.value.trim();
-                if (urlValue) {
+                if (url) {
                     const a = document.createElement('a');
-                    a.href = urlValue;
-                    a.textContent = urlValue;
+                    a.href = url;
+                    a.textContent = text || url;
                     a.target = '_blank';
-                    input.parentNode.replaceChild(a, input);
+                    if (wrapper) {
+                        parent.replaceChild(a, wrapper);
+                    } else {
+                        parent.replaceChild(a, input);
+                    }
                 } else {
                     const span = document.createElement('span');
                     span.className = 'not-provided';
                     span.textContent = '[Not Provided]';
-                    input.parentNode.replaceChild(span, input);
+                    if (wrapper) {
+                        parent.replaceChild(span, wrapper);
+                    } else {
+                        parent.replaceChild(span, input);
+                    }
                 }
                 return;
             }
@@ -567,6 +727,11 @@ class TinyDocument {
                 return;
             }
 
+            // Handle file inputs (skip, handled separately)
+            if (input.type === 'file') {
+                return;
+            }
+
             // Handle all other inputs
             const span = document.createElement('span');
             const value = input.value.trim();
@@ -580,20 +745,6 @@ class TinyDocument {
 
             input.parentNode.replaceChild(span, input);
         });
-    }
-
-    #findNextUrlInput(inputs, startIdx) {
-        for (let i = startIdx + 1; i < inputs.length; i++) {
-            if (inputs[i].type === 'url') {
-                return inputs[i];
-            }
-            // Stop searching if we hit another input with class 'link' or a different input type
-            if (inputs[i].classList.contains('link') ||
-                (inputs[i].type !== 'text' && inputs[i].type !== 'url')) {
-                break;
-            }
-        }
-        return null;
     }
 
     #formatDate(dateString, isUS = false) {

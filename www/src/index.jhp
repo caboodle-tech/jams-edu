@@ -77,7 +77,7 @@ function greet(name) {
 greet('World');
 </code></pre>
 
-<div class="document">
+<!-- <div class="document">
     <div class="title">Unit 2 Code Review</div>
 
     <div class="header">
@@ -88,7 +88,7 @@ greet('World');
     <div class="section">Repositories Reviewed</div>
 
     <div>
-        <input type="text" class="link" placeholder="Teammates Name"> <input type="url" placeholder="Repo URL">
+        <input type="url" placeholder="Teammates Name" prompt="Link to teammate's GitHub repo">
     </div>
     <div class="subsection">Refactoring Status:</div>
     <select>
@@ -98,9 +98,9 @@ greet('World');
     </select>
     <div class="subsection">GitHub Issues Created:</div>
     <ul>
-        <li><input type="text" class="link" placeholder="Issue Name"> <input type="url" placeholder="Issue URL"></li>
+        <li><input type="url" placeholder="Issue Name" prompt="Link to GitHub issue"></li>
         <template>
-            <li><input type="text" class="link" placeholder="Issue Name"> <input type="url" placeholder="Issue URL"></li>
+            <li><input type="url" placeholder="Issue Name" prompt="Link to GitHub issue"></li>
         </template>
         <button class="template">Add Another Issue</button>
     </ul>
@@ -108,7 +108,7 @@ greet('World');
     <template>
         <div class="spacer"></div>
         <div>
-            <input type="text" class="link" placeholder="Teammates Name"> <input type="url" placeholder="Repo URL">
+            <input type="url" placeholder="Teammates Name" prompt="Link to teammate's GitHub repo">
         </div>
         <div class="subsection">Refactoring Status:</div>
         <select>
@@ -118,9 +118,9 @@ greet('World');
         </select>
         <div class="subsection">GitHub Issues Created:</div>
         <ul>
-            <li><input type="text" class="link" placeholder="Issue Name"> <input type="url" placeholder="Issue URL"></li>
+            <li><input type="url" placeholder="Issue Name" prompt="Link to GitHub issue"></li>
             <template>
-                <li><input type="text" class="link" placeholder="Issue Name"> <input type="url" placeholder="Issue URL"></li>
+                <li><input type="url" placeholder="Issue Name" prompt="Link to GitHub issue"></li>
             </template>
             <button class="template">Add Another Issue</button>
         </ul>
@@ -152,6 +152,38 @@ greet('World');
 
     <div>
         I have notified both teammates that their code reviews are complete and they can view the GitHub issues I created. I notified them via <input type="text" placeholder="Contact Method"> on <input type="date">.
+    </div>
+</div> -->
+<div class="document">
+    <div class="title">Link Input Test Document</div>
+
+    <div class="section">Default (Display Text + URL)</div>
+    <div>With placeholder: <input type="url" placeholder="Teammates Name" prompt="Link to their GitHub repo and a really long story? What is this turns into an essay?"></div>
+    <div>No placeholder: <input type="url" prompt="Paste the repo URL"></div>
+    <div>No prompt: <input type="url" placeholder="Issue Name"></div>
+    <div>No placeholder, no prompt: <input type="url"></div>
+
+    <div class="section">Raw URL Only (data-raw)</div>
+    <div>With placeholder: <input type="url" data-raw placeholder="Repo URL"></div>
+    <div>No placeholder: <input type="url" data-raw></div>
+    <div>With prompt: <input type="url" data-raw placeholder="Deployment" prompt="Link to deployed site"></div>
+
+    <div class="section">Inside Templates</div>
+    <ul>
+        <li><input type="url" placeholder="Issue Name" prompt="Link to GitHub issue"></li>
+        <template>
+            <li><input type="url" placeholder="Issue Name" prompt="Link to GitHub issue"></li>
+        </template>
+        <button class="template">Add Another Issue</button>
+    </ul>
+
+    <div class="section">Pre-populated (data attributes)</div>
+    <div><input type="url" placeholder="Teammates Name" prompt="Link to repo" data-url="https://github.com/example" data-text="Jane Doe"></div>
+    <div><input type="url" data-raw placeholder="Site URL" data-url="https://example.com"></div>
+
+    <div class="section">Mixed With Other Inputs</div>
+    <div>
+        Reviewed by <input type="text" placeholder="Your Name"> on <input type="date"> — see <input type="url" placeholder="Review Link" prompt="Link to the review">
     </div>
 </div>
 

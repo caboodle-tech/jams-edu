@@ -1,0 +1,8 @@
+
+
+@import './tiny-document.css';
+@import './tiny-wysiwyg.css';
+
+:where(pre.mermaid, div.math) {
+    text-align: center;
+}

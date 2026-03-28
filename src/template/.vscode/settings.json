@@ -1,0 +1,26 @@
+// @jamsedu-version: 1.1.0
+// @jamsedu-component: vscode-settings
+{
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "eslint.format.enable": true,
+    "eslint.lintTask.enable": true,
+    "eslint.validate": [
+        "html",
+        "json",
+        "javascript"
+    ],
+    "explorer.compactFolders": false,
+    "files.associations": {
+        "*.jhp": "html"
+    },
+    "files.eol": "\n",
+    "[*]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true
+    }
+}

@@ -1,5 +1,5 @@
-/* @jamsedu-version: 1.0.0 */
-/* @jamsedu-component: tiny-wysiwyg */
+/* @jamsedu-version: 1.1.0 */
+/* @jamsedu-component: tiny-document */
 @layer base, theme;
 
 @layer base {
@@ -99,6 +99,7 @@
             outline: none;
             background-color: var(--_content-bg-color);
             color: var(--_text-color);
+            position: relative;
 
             a {
                 color: var(--_link-color);
@@ -136,6 +137,19 @@
             }
         }
 
+        .tw-content.tw-empty::before {
+            content: attr(data-placeholder);
+            color: var(--_placeholder-color, #999999);
+            pointer-events: none;
+            position: absolute;
+            top: var(--_padding);
+            left: var(--_padding);
+        }
+
+        .tw-content:focus.tw-empty::before {
+            display: none;
+        }
+
         .tw-link-modal {
             position: fixed;
             top: 0;
@@ -150,7 +164,7 @@
                 width: 100%;
                 height: 100%;
                 background-color: var(--_modal-backdrop-color);
-                z-index: 999;
+                z-index: 9000;
             }
 
             .tw-lm-content {

@@ -20,7 +20,7 @@ const USERS_ROOT = args.cwd;
 
 // Initializing a new JamsEdu project if the "--init" flag is provided.
 if (args.init) {
-    Initializer.init(USERS_ROOT, JAMSEDU_ROOT);
+    await Initializer.init(USERS_ROOT, JAMSEDU_ROOT);
     exit();
 }
 
@@ -156,7 +156,13 @@ config.post = [...(JamsEduHooks.post || []), ...(config.post || [])];
 if (args.update) {
     // Import updater dynamically to avoid circular dependencies
     const Updater = (await import('../src/updater.js')).default;
-    await Updater.update(USERS_ROOT, JAMSEDU_ROOT, config, args.force || false);
+    const updateConfig = {
+        srcDir: config.srcDir,
+        destDir: config.destDir,
+        assetsDir: config.assetsDir,
+        assetPaths: config.assetPaths
+    };
+    await Updater.update(USERS_ROOT, JAMSEDU_ROOT, updateConfig, args.force || false);
     exit();
 }
 
@@ -165,7 +171,7 @@ if (args['restore-backup'] || args.restoreBackup) {
     // Import updater dynamically
     const Updater = (await import('../src/updater.js')).default;
     const timestamp = args['restore-backup'] || args.restoreBackup;
-    Updater.restoreBackup(USERS_ROOT, timestamp);
+    await Updater.restoreBackup(USERS_ROOT, timestamp);
     exit();
 }
 

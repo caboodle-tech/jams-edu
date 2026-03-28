@@ -1,5 +1,3 @@
-// @jamsedu-version: 1.0.0
-// @jamsedu-component: tiny-wysiwyg
 class TinyWysiwyg {
 
     #blocks = ['PRE', 'BLOCKQUOTE'];

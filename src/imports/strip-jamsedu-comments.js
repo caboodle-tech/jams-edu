@@ -71,7 +71,7 @@ export const normalizeContentForHash = (content) => {
         .replace(/\r\n/g, '\n')
         .replace(/\r/g, '\n')
         .split('\n')
-        .map((line) => line.replace(/\s+$/, ''))
+        .map((line) => { return line.replace(/\s+$/, ''); })
         .join('\n')
         .trimEnd();
 };

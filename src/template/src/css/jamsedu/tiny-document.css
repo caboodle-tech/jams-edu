@@ -1,4 +1,4 @@
-/* @jamsedu-version: 1.0.0 */
+/* @jamsedu-version: 1.1.0 */
 /* @jamsedu-component: tiny-document */
 @layer base, theme;
 
@@ -158,6 +158,12 @@
             font-size: var(--_font-size);
             font-weight: bold;
             margin: 18pt 0 6pt 0;
+
+            input,
+            select,
+            textarea {
+                font-weight: normal;
+            }
         }
 
         .doc-title {
@@ -219,6 +225,15 @@
         }
 
         .tw-content {
+            position: relative;
+
+            &.tw-empty::before {
+                content: attr(data-placeholder);
+                color: var(--_placeholder-color);
+                pointer-events: none;
+                font-style: italic;
+            }
+
             p {
                 margin: 0 0 7pt 0 !important;
             }
@@ -353,6 +368,163 @@
             color: var(--_text-color);
         }
 
+        /* Link input with popover */
+        .doc-link-wrapper {
+            display: inline-flex;
+            align-items: center;
+            position: relative;
+
+            &:has(.doc-link:not(.filled):not([placeholder])) {
+                .doc-link-icon {
+                    right: 50%;
+                    transform: translate(50%, -50%);
+                }
+            }
+        }
+
+        .doc-link-icon {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            color: var(--_placeholder-color);
+            transition: color var(--_transition-smooth);
+
+            svg {
+                width: 18px;
+                height: 18px;
+            }
+        }
+
+        input.doc-input.doc-link {
+            cursor: pointer;
+            caret-color: transparent;
+            padding-right: 28px;
+        }
+
+        input.doc-input.doc-link.filled {
+            color: var(--_link-color);
+            text-decoration: underline;
+        }
+
+        input.doc-input.doc-link.filled ~ .doc-link-icon {
+            color: var(--_link-color);
+        }
+
+        dialog.doc-link-popover {
+            border: 1px solid var(--_border-color);
+            border-radius: var(--_border-radius);
+            padding: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            min-width: 300px;
+            max-width: 500px;
+            font-family: inherit;
+            font-size: var(--_font-size);
+            background: var(--_bg-color);
+            color: var(--_text-color);
+            overflow: visible;
+
+            &::backdrop {
+                background: rgba(0, 0, 0, 0.15);
+            }
+        }
+
+        .doc-link-popover-heading {
+            margin-bottom: 12px;
+            color: var(--_text-color);
+        }
+
+        .doc-link-popover-input {
+            display: block;
+            width: 100%;
+            border: 1px solid var(--_border-color);
+            border-radius: var(--_border-radius);
+            padding: 8px 10px;
+            font-size: var(--_font-size);
+            font-family: inherit;
+            background: var(--_bg-color);
+            color: var(--_text-color);
+            margin-bottom: 8px;
+            outline: none;
+            transition: border-color var(--_transition-smooth), box-shadow var(--_transition-smooth);
+
+            &:focus-visible {
+                border-color: var(--_focus-color);
+                box-shadow: var(--_focus-shadow);
+            }
+        }
+
+        .doc-link-popover-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .doc-link-save,
+        .doc-link-clear {
+            border: none;
+            border-radius: var(--_border-radius);
+            padding: 6px 16px;
+            margin-top: 0;
+            font-size: calc(var(--_font-size) - 2pt);
+            cursor: pointer;
+            font-family: inherit;
+            transition: background var(--_transition-smooth);
+        }
+
+        .doc-link-save {
+            background: var(--_primary-bg-color);
+            color: var(--_primary-text-color);
+
+            &:hover {
+                background: var(--_primary-hover-bg-color);
+            }
+        }
+
+        .doc-link-clear {
+            background: transparent;
+            border: 1px solid var(--_border-color);
+            color: var(--_text-color);
+
+            &:hover {
+                border-color: var(--_danger-color);
+                color: var(--_danger-color);
+            }
+        }
+
+        .doc-link-cancel {
+            position: absolute;
+            top: -40px;
+            right:-40px;
+            border: 1px solid var(--_border-color);
+            border-radius: 50%;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            background: var(--_bg-color);
+            color: var(--_text-color);
+            display: flex;
+            height: 40px;
+            width: 40px;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            cursor: pointer;
+            transition: background var(--_transition-smooth);
+            pointer-events: auto;
+
+            &:active {
+                pointer-events: none;
+            }
+
+            &:hover {
+                background: var(--_border-color-light);
+            }
+        }
+
         select.doc-select {
             display: block;
             width: auto;
@@ -471,7 +643,9 @@
             .doc-file-wrapper,
             .doc-download-button,
             .doc-trash-button,
-            .doc-remove {
+            .doc-remove,
+            .doc-link-icon,
+            .doc-link-popover {
                 display: none !important;
             }
 

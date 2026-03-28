@@ -8,7 +8,7 @@
  */
 const parseUrl = (url) => {
     const urlObj = new URL(url);
-    const urlParts = urlObj.pathname.split('/').filter((part) => part);
+    const urlParts = urlObj.pathname.split('/').filter((part) => { return part; });
 
     const params = {};
     urlObj.searchParams.forEach((value, key) => {
@@ -246,7 +246,7 @@ const jamsEduVideo = (scope) => {
     const videoNodes = scope.dom.querySelectorAll('video[src]');
 
     for (const videoNode of videoNodes) {
-        const parent = videoNode.parent;
+        const { parent } = videoNode;
         if (parent && parent.type === 'tag-open' && parent.name === 'figure') {
             continue;
         }

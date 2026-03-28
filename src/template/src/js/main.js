@@ -1,8 +1,10 @@
+// @jamsedu-version: 2.0.0
+// @jamsedu-component: main-js
 /**
  * Import the JamsEdu library to initialize components and make classes available.
  * This will automatically initialize TinyDocument and TinyWysiwyg editors.
  */
-import { DomWatcher, TinyDocument, TinyWysiwyg } from './jamsedu/index.js';
+import { DomWatcher } from './jamsedu/index.js';
 
 /**
  * Add your custom code below.

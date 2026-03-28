@@ -1,5 +1,3 @@
-// @jamsedu-version: 1.0.0
-// @jamsedu-component: dom-watcher
 /**
  * @class DOMWatcher
  * Observes the DOM for elements matching CSS selectors.

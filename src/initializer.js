@@ -3,17 +3,16 @@ import Crypto from 'crypto';
 import Fs from 'fs';
 import Path from 'path';
 import Print from './imports/print.js';
-import PromptUser from 'prompt-sync';
+import { promptLine } from './imports/readline-prompt.js';
+import URL from 'url';
 import { execSync } from 'child_process';
+import { sanitizeAssetPaths, templateSrcPathToUserPath } from './imports/template-path-mapping.js';
 import {
     normalizeContentForHash,
     parseComponentFromFile,
     parseVersionFromFile,
     stripJamseduComments
 } from './imports/strip-jamsedu-comments.js';
-
-// Get an instance of the Prompt to simplify user input.
-const Prompt = PromptUser({ sigint: true });
 
 class Initializer {
 
@@ -62,35 +61,129 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         return result.trim();
     }
 
-    static init(cwd, jamseduWd) {
+    /**
+     * Prefer `.jamsedu/config.js`, then legacy `jamsedu.config.js` at project root.
+     * @param {string} cwd Project root
+     * @returns {{ absPath: string, label: string } | null}
+     */
+    static findExistingUserConfig(cwd) {
+        const primary = Path.join(cwd, '.jamsedu', 'config.js');
+        const legacy = Path.join(cwd, 'jamsedu.config.js');
+        if (Fs.existsSync(primary)) {
+            return { absPath: primary, label: '.jamsedu/config.js' };
+        }
+        if (Fs.existsSync(legacy)) {
+            return { absPath: legacy, label: 'jamsedu.config.js (legacy)' };
+        }
+        return null;
+    }
+
+    /**
+     * Normalize a path from a user config file to a project-relative path with forward slashes.
+     * @param {string} cwd Project root
+     * @param {unknown} value Config value
+     * @param {string} fallback If value is empty
+     * @returns {string}
+     */
+    static resolveConfigRelPath(cwd, value, fallback) {
+        const fb = fallback.replace(/\\/g, '/');
+        if (value == null || String(value).trim() === '') {
+            return fb;
+        }
+        const raw = String(value).trim();
+        if (Path.isAbsolute(raw)) {
+            const rel = Path.relative(cwd, raw).replace(/\\/g, '/');
+            return rel || fb;
+        }
+        return raw.replace(/\\/g, '/').replace(/^\/+/, '');
+    }
+
+    static async init(cwd, jamseduWd) {
         const packageJson = JSON.parse(Fs.readFileSync(Path.join(jamseduWd, 'package.json'), 'utf-8'));
         const packageVersion = packageJson.version;
 
         this.clearScreen();
         Print.notice(`${this.#header.replace('{{VERSION}}', packageVersion)}`);
-        Prompt('');
+        await promptLine('');
         this.clearScreen();
 
-        const srcDir = this.getResponse('Source Directory\n\nThe source directory is where your sites source files will reside. Please enter the name, including relative path if desired, for your projects source directory.\n\nPress [enter] without a response to accept the default: src', 'src');
+        let srcDir;
+        let destDir;
+        let userTemplateDir;
+        let cleanedWebsiteUrl = '';
+        let assetsDir = '';
+        /** @type {Record<string, string> | null} */
+        let assetPaths = null;
+        let useExistingConfig = false;
 
-        const tmpSrcDir = srcDir.endsWith('/') ? srcDir.slice(0, -1) : srcDir;
+        const existingConfig = this.findExistingUserConfig(cwd);
+        if (existingConfig) {
+            Print.out(`\n\x1b[33mExisting JamsEdu configuration found:\x1b[0m\n  ${existingConfig.label}\n`);
+            const reuse = await this.getResponse(
+                `Use this configuration for paths (srcDir, destDir, templateDir, assets folder, website URL)?
 
-        const userTemplateDir = this.getResponse(`Templates Directory\n\nThe templates directory is where your sites template and variable files will reside. This ideally should be nested within your source directory. Please enter the name, including relative path if desired, for your templates directory.\n\nPress [enter] without a response to accept the default: ${tmpSrcDir}/templates`, `${tmpSrcDir}/templates`);
+Template files will still be copied or merged using the conflict step next. Your config file on disk will not be overwritten.
 
-        const destDir = this.getResponse('Destination Directory\n\nThe destination directory is where your sites built files will be output to. Please enter the name, including relative path if desired, for your projects destination directory.\n\nPress [enter] without a response to accept the default: public', 'public');
+(y) use existing config  (n) run the full setup wizard and write a new .jamsedu/config.js
 
-        const websiteUrl = this.getResponse(`Website URL\n\nThe website URL is the base URL for your published website including the protocol (e.g., https://example.com). This is required if you want JamsEdu to automatically build your sitemap. Please enter the URL for your website.\n\nPress [enter] to accept the default: \x1b[3mempty\x1b[0m`, '');
-
-        let cleanedWebsiteUrl = websiteUrl;
-        if (cleanedWebsiteUrl.endsWith('/')) {
-            cleanedWebsiteUrl = cleanedWebsiteUrl.slice(0, -1);
+Your choice [y]`,
+                'y'
+            );
+            const acceptReuse = reuse.trim() === '' || /^y(es)?$/i.test(reuse.trim());
+            if (acceptReuse) {
+                try {
+                    const mod = await import(URL.pathToFileURL(existingConfig.absPath).href);
+                    const cfg = mod.default;
+                    if (cfg && typeof cfg === 'object') {
+                        srcDir = this.resolveConfigRelPath(cwd, cfg.srcDir, 'src');
+                        destDir = this.resolveConfigRelPath(cwd, cfg.destDir, 'public');
+                        userTemplateDir = this.resolveConfigRelPath(cwd, cfg.templateDir, `${srcDir}/templates`);
+                        assetsDir = typeof cfg.assetsDir === 'string' ? cfg.assetsDir.replace(/\\/g, '/').replace(/^\/+/, '') : '';
+                        assetPaths = sanitizeAssetPaths(cfg.assetPaths);
+                        if (typeof cfg.websiteUrl === 'string' && cfg.websiteUrl.trim() !== '') {
+                            cleanedWebsiteUrl = cfg.websiteUrl.trim();
+                            if (cleanedWebsiteUrl.endsWith('/')) {
+                                cleanedWebsiteUrl = cleanedWebsiteUrl.slice(0, -1);
+                            }
+                        }
+                        useExistingConfig = true;
+                        Print.success(
+                            `Using your existing configuration:
+  srcDir: ${srcDir}
+  destDir: ${destDir}
+  templateDir: ${userTemplateDir}
+  assetsDir: ${assetsDir || '(none)'}
+${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWebsiteUrl ? `  websiteUrl: ${cleanedWebsiteUrl}\n` : ''}`
+                        );
+                    }
+                } catch (err) {
+                    Print.error(`Could not load existing config: ${err.message}`);
+                    Print.info('Continuing with the interactive setup wizard.\n');
+                }
+            }
         }
 
-        const config = `export default {
-    destDir: '${destDir}',
-    srcDir: '${srcDir}',
-    templateDir: '${userTemplateDir}'${cleanedWebsiteUrl ? `,\n    websiteUrl: '${cleanedWebsiteUrl}'` : ''}
-};\n`;
+        if (!useExistingConfig) {
+            srcDir = await this.getResponse('Source Directory\n\nThe source directory is where your sites source files will reside. Please enter the name, including relative path if desired, for your projects source directory.\n\nPress [enter] without a response to accept the default: src', 'src');
+
+            const tmpSrcDir = srcDir.endsWith('/') ? srcDir.slice(0, -1) : srcDir;
+
+            userTemplateDir = await this.getResponse(`Templates Directory\n\nThe templates directory is where your sites template and variable files will reside. This ideally should be nested within your source directory. Please enter the name, including relative path if desired, for your templates directory.\n\nPress [enter] without a response to accept the default: ${tmpSrcDir}/templates`, `${tmpSrcDir}/templates`);
+
+            destDir = await this.getResponse('Destination Directory\n\nThe destination directory is where your sites built files will be output to. Please enter the name, including relative path if desired, for your projects destination directory.\n\nPress [enter] without a response to accept the default: public', 'public');
+
+            const websiteUrl = await this.getResponse(`Website URL\n\nThe website URL is the base URL for your published website including the protocol (e.g., https://example.com). This is required if you want JamsEdu to automatically build your sitemap. Please enter the URL for your website.\n\nPress [enter] to accept the default: \x1b[3mempty\x1b[0m`, '');
+
+            cleanedWebsiteUrl = websiteUrl;
+            if (cleanedWebsiteUrl.endsWith('/')) {
+                cleanedWebsiteUrl = cleanedWebsiteUrl.slice(0, -1);
+            }
+
+            const useAssetsFolder = await this.getResponse('Use an assets folder for CSS, JS, and images? (y/n) [y]', 'y');
+            assetsDir = /^n(o)?$/i.test(useAssetsFolder.trim()) ? '' : 'assets';
+        }
+
+        const layoutConfig = { assetsDir, assetPaths };
 
         // Check for existing files and handle conflicts (before generating config)
         const jamseduTemplateDir = Path.join(jamseduWd, 'src', 'template');
@@ -100,14 +193,19 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
             return;
         }
 
-        const conflictResolution = this.handleFileConflicts(cwd, jamseduTemplateDir, srcDir);
+        const conflictResolution = await this.handleFileConflicts(cwd, jamseduTemplateDir, srcDir, layoutConfig);
         if (!conflictResolution) {
             Print.warn('Initialization cancelled by user.');
             return;
         }
 
-        // Copy template files recursively (ESLint is included, no question needed)
-        const skippedFiles = this.copyTemplateFiles(jamseduTemplateDir, cwd, conflictResolution, srcDir);
+        // Copy template files recursively (structure matches user choice so updates and build respect it)
+        const skippedFiles = this.copyTemplateFiles(jamseduTemplateDir, cwd, conflictResolution, srcDir, layoutConfig);
+
+        // When using assets layout, remove old css/js/images under srcDir so only assets/ layout remains; ensure assets/images exists
+        if (assetsDir) {
+            this.removeOldAssetDirsUnderSrc(cwd, srcDir, assetsDir);
+        }
 
         // Ensure .gitignore includes destDir
         this.ensureGitignore(cwd, destDir);
@@ -119,10 +217,20 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
             Fs.mkdirSync(jamseduDir, { recursive: true });
         }
         const configFilePath = Path.join(jamseduDir, 'config.js');
-        Fs.writeFileSync(configFilePath, config);
+        if (!useExistingConfig) {
+            const configFileContent = `export default {
+    destDir: '${destDir}',
+    srcDir: '${srcDir}',
+    templateDir: '${userTemplateDir}'${assetsDir ? `,\n    assetsDir: '${assetsDir}'` : ''}${cleanedWebsiteUrl ? `,\n    websiteUrl: '${cleanedWebsiteUrl}'` : ''}
+};\n`;
+            Fs.writeFileSync(configFilePath, configFileContent);
+        } else if (existingConfig) {
+            const rel = Path.relative(cwd, existingConfig.absPath).replace(/\\/g, '/');
+            Print.info(`Left your config file unchanged (${rel || existingConfig.label}).`);
+        }
 
-        // Create manifest for update system (pass skipped files to mark as customized)
-        this.createManifest(cwd, srcDir, jamseduWd, packageVersion, skippedFiles);
+        // Create manifest for update system (pass skipped files to mark as customized; use same path mapping as copy)
+        this.createManifest(cwd, srcDir, jamseduWd, packageVersion, skippedFiles, layoutConfig);
 
         // Create template directory if it doesn't exist
         const userTemplateDirPath = Path.join(cwd, userTemplateDir);
@@ -152,15 +260,15 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         this.printClosingPrompt(installedForUser);
     }
 
-    static getResponse(question, defaultValue = null) {
+    static async getResponse(question, defaultValue = null) {
         let response;
         while (true) {
             try {
                 Print.out(this.fitToLength(question, 80));
-                response = Prompt('> ');
+                response = await promptLine('> ');
                 if (response.trim() === '' && defaultValue === null) {
                     Print.warn('Response cannot be empty please try again! Press enter to continue.');
-                    Prompt();
+                    await promptLine('');
                     this.clearScreen();
                     // eslint-disable-next-line no-continue
                     continue;
@@ -175,10 +283,12 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         return response.trim();
     }
 
-    static handleFileConflicts(cwd, templateDir, userSrcDir) {
-        // Scan template directory to find what files would be copied to project root
-        const filesToCopy = this.scanTemplateFilesForConflictCheck(templateDir, userSrcDir);
-        
+    /**
+     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null }} userConfig Same layout keys as .jamsedu/config.js
+     */
+    static async handleFileConflicts(cwd, templateDir, userSrcDir, userConfig = {}) {
+        const filesToCopy = this.scanTemplateFilesForConflictCheck(templateDir, userSrcDir, userConfig);
+
         // Check which of these files actually exist in the project root
         const conflictingFiles = [];
         for (const filePath of filesToCopy) {
@@ -193,9 +303,9 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         }
 
         Print.warn(`\n⚠️  Found ${conflictingFiles.length} existing file(s) or directory(ies) that would conflict with template files.`);
-        Print.out('Conflicting files/directories: ' + conflictingFiles.slice(0, 5).join(', ') + (conflictingFiles.length > 5 ? '...' : ''));
+        Print.out(`Conflicting files/directories: ${conflictingFiles.slice(0, 5).join(', ')}${conflictingFiles.length > 5 ? '...' : ''}`);
 
-        const response = this.getResponse('\nHow would you like to proceed?\n\n1) Overwrite - Replace existing files with template files\n2) Skip - Don\'t copy files that already exist, only copy new ones\n3) Fresh Install - Delete conflicting files first, then copy (⚠️  DESTRUCTIVE!)\n4) Cancel - Abort initialization\n\nEnter your choice (1-4)', '1');
+        const response = await this.getResponse('\nHow would you like to proceed?\n\n1) Overwrite - Replace existing files with template files\n2) Skip - Don\'t copy files that already exist, only copy new ones\n3) Fresh Install - Delete conflicting files first, then copy (⚠️  DESTRUCTIVE!)\n4) Cancel - Abort initialization\n\nEnter your choice (1-4)', '1');
 
         const choice = response.trim();
 
@@ -204,7 +314,7 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         }
 
         if (choice === '3' || choice.toLowerCase() === 'fresh install' || choice.toLowerCase() === 'fresh') {
-            const confirm = this.getResponse('\n⚠️  WARNING: This will DELETE the conflicting files!\n\nAre you absolutely sure? Type "yes" to confirm, or anything else to cancel.', '');
+            const confirm = await this.getResponse('\n⚠️  WARNING: This will DELETE the conflicting files!\n\nAre you absolutely sure? Type "yes" to confirm, or anything else to cancel.', '');
             if (confirm.toLowerCase() !== 'yes') {
                 Print.warn('Fresh install cancelled.');
                 return null;
@@ -235,10 +345,13 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         return 'overwrite';
     }
 
-    static scanTemplateFilesForConflictCheck(templateDir, userSrcDir) {
+    /**
+     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null }} userConfig
+     */
+    static scanTemplateFilesForConflictCheck(templateDir, userSrcDir, userConfig = {}) {
         const files = [];
         const normalizedSrcDir = userSrcDir.replace(/\\/g, '/');
-        
+
         const scanDir = (dir) => {
             if (!Fs.existsSync(dir)) return;
 
@@ -247,7 +360,6 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
                 const fullPath = Path.join(dir, entry.name);
                 const relativePath = Path.relative(templateDir, fullPath).replace(/\\/g, '/');
 
-                // Skip config.js files - we generate config in .jamsedu/config.js separately
                 if (entry.name === 'config.js' || entry.name === 'jamsedu.config.js') {
                     continue;
                 }
@@ -255,15 +367,11 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
                 if (entry.isDirectory()) {
                     scanDir(fullPath);
                 } else if (entry.isFile()) {
-                    // Map template paths to user paths (same logic as copyTemplateFiles)
                     let destPath;
                     if (relativePath.startsWith('src/')) {
-                        // Map src/... to userSrcDir/...
                         const pathAfterSrc = relativePath.replace(/^src\//, '');
-                        const srcDirParts = normalizedSrcDir.split('/').filter(p => p);
-                        destPath = Path.join(...srcDirParts, ...pathAfterSrc.split('/')).replace(/\\/g, '/');
+                        destPath = templateSrcPathToUserPath(normalizedSrcDir, pathAfterSrc, userConfig);
                     } else {
-                        // Root-level files go to project root
                         destPath = relativePath;
                     }
                     files.push(destPath);
@@ -275,11 +383,13 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         return files;
     }
 
-    static copyTemplateFiles(templateDir, cwd, conflictMode, userSrcDir) {
+    /**
+     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null }} userConfig
+     */
+    static copyTemplateFiles(templateDir, cwd, conflictMode, userSrcDir, userConfig = {}) {
         Print.info('Copying template files...');
         const skippedFiles = [];
 
-        // Normalize userSrcDir to relative path with forward slashes
         const normalizedSrcDir = userSrcDir.replace(/\\/g, '/');
 
         const copyRecursive = (src, templateBasePath = '') => {
@@ -290,24 +400,19 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
                     const srcPath = Path.join(src, entry.name);
                     const relativePath = Path.relative(templateDir, srcPath).replace(/\\/g, '/');
 
-                    // Skip config.js files - we generate config in .jamsedu/config.js separately
                     if (entry.name === 'config.js' || entry.name === 'jamsedu.config.js') {
                         continue;
                     }
 
-                    // Map template paths to user paths
-                    // Files under src/ in template should map to user's srcDir
                     let destPath;
                     if (relativePath.startsWith('src/')) {
-                        // Map src/... to userSrcDir/...
                         const pathAfterSrc = relativePath.replace(/^src\//, '');
-                        // Split normalizedSrcDir by / and join properly for cross-platform support
-                        const srcDirParts = normalizedSrcDir.split('/').filter(p => p);
-                        destPath = Path.join(cwd, ...srcDirParts, ...pathAfterSrc.split('/'));
+                        const userRel = templateSrcPathToUserPath(normalizedSrcDir, pathAfterSrc, userConfig);
+                        destPath = Path.join(cwd, ...userRel.split('/').filter(Boolean));
                     } else {
-                        // Root-level files (eslint/, docs/, etc.) go to project root
-                        // Split relativePath by / for proper cross-platform joining
-                        const pathParts = relativePath.split('/').filter(p => p);
+                        const pathParts = relativePath.split('/').filter((p) => {
+                            return p;
+                        });
                         destPath = Path.join(cwd, ...pathParts);
                     }
 
@@ -348,11 +453,83 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         };
 
         copyRecursive(templateDir);
+
+        const imagesRel = templateSrcPathToUserPath(normalizedSrcDir, 'images', userConfig);
+        const imagesDir = Path.join(cwd, ...imagesRel.split('/').filter(Boolean));
+        if (!Fs.existsSync(imagesDir)) {
+            Fs.mkdirSync(imagesDir, { recursive: true });
+        }
+
         Print.success('Template files copied successfully!');
         return skippedFiles;
     }
 
-    static createManifest(cwd, srcDir, jamseduWd, packageVersion, skippedFiles = []) {
+    /**
+     * Recursively copy contents of sourceDir into targetDir (preserves user files), then remove sourceDir.
+     * @param {string} sourceDir Absolute path to the directory to move from.
+     * @param {string} targetDir Absolute path to the directory to move into.
+     */
+    static moveDirContentsInto(sourceDir, targetDir) {
+        if (!Fs.existsSync(sourceDir)) {
+            return;
+        }
+        const entries = Fs.readdirSync(sourceDir, { withFileTypes: true });
+        for (const entry of entries) {
+            const srcPath = Path.join(sourceDir, entry.name);
+            const destPath = Path.join(targetDir, entry.name);
+            if (entry.isDirectory()) {
+                if (!Fs.existsSync(destPath)) {
+                    Fs.mkdirSync(destPath, { recursive: true });
+                }
+                this.moveDirContentsInto(srcPath, destPath);
+                try {
+                    Fs.rmdirSync(srcPath);
+                } catch (err) {
+                    Print.warn(`Could not remove empty dir ${srcPath}: ${err.message}`);
+                }
+            } else {
+                try {
+                    Fs.mkdirSync(Path.dirname(destPath), { recursive: true });
+                    Fs.copyFileSync(srcPath, destPath);
+                    Fs.unlinkSync(srcPath);
+                } catch (err) {
+                    Print.warn(`Could not move ${srcPath} to ${destPath}: ${err.message}`);
+                }
+            }
+        }
+        try {
+            Fs.rmdirSync(sourceDir);
+        } catch (err) {
+            // Ignore if not empty (e.g. symlinks left)
+        }
+    }
+
+    /**
+     * When using assetsDir, move old css/js/images dirs under srcDir into assets/ so user content is kept, then remove old dirs.
+     * @param {string} cwd Project root.
+     * @param {string} srcDir Source dir (e.g. 'www/src').
+     * @param {string} assetsDir Assets dir name (e.g. 'assets').
+     */
+    static removeOldAssetDirsUnderSrc(cwd, srcDir, assetsDir) {
+        const srcDirPath = Path.join(cwd, ...srcDir.replace(/\\/g, '/').split('/').filter(Boolean));
+        const oldDirs = ['css', 'js', 'images'];
+        for (const name of oldDirs) {
+            const oldPath = Path.join(srcDirPath, name);
+            const newPath = Path.join(srcDirPath, assetsDir, name);
+            if (!Fs.existsSync(oldPath)) {
+                continue;
+            }
+            if (!Fs.existsSync(newPath)) {
+                Fs.mkdirSync(newPath, { recursive: true });
+            }
+            this.moveDirContentsInto(oldPath, newPath);
+        }
+    }
+
+    /**
+     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null }} userConfig
+     */
+    static createManifest(cwd, srcDir, jamseduWd, packageVersion, skippedFiles = [], userConfig = {}) {
         const manifestDir = Path.join(cwd, '.jamsedu');
         if (!Fs.existsSync(manifestDir)) {
             Fs.mkdirSync(manifestDir, { recursive: true });
@@ -371,11 +548,11 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         };
 
         // Create a set of skipped file paths for quick lookup (normalize to match template paths)
-        const skippedSet = new Set(skippedFiles.map(f => f.replace(/\\/g, '/')));
+        const skippedSet = new Set(skippedFiles.map((f) => { return f.replace(/\\/g, '/'); }));
 
-        // Scan template directory to find all files with version tags (like updater does)
+        // Scan template directory to find all files with version tags (same path mapping as copyTemplateFiles)
         const templateDir = Path.join(jamseduWd, 'src', 'template');
-        const templateFiles = this.scanTemplateFilesForManifest(templateDir, normalizedSrcDir);
+        const templateFiles = this.scanTemplateFilesForManifest(templateDir, normalizedSrcDir, userConfig);
 
         // For each template file, check if it exists in user's project and track it
         for (const templateFile of templateFiles) {
@@ -394,7 +571,7 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
                 manifest.components[component] = {
                     file: userFilePath.replace(/\\/g, '/'), // Normalize path
                     version: version || packageVersion,
-                    hash: hash,
+                    hash,
                     modified: false,
                     userCustomized: wasSkipped // Mark as customized if it was skipped
                 };
@@ -406,8 +583,12 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         Fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
     }
 
-    static scanTemplateFilesForManifest(templateDir, userSrcDir) {
+    /**
+     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null }} userConfig
+     */
+    static scanTemplateFilesForManifest(templateDir, userSrcDir, userConfig = {}) {
         const files = [];
+        const normalizedSrcDir = userSrcDir.replace(/\\/g, '/');
         const scanDir = (dir) => {
             if (!Fs.existsSync(dir)) return;
 
@@ -416,7 +597,6 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
                 const fullPath = Path.join(dir, entry.name);
                 const relativePath = Path.relative(templateDir, fullPath).replace(/\\/g, '/');
 
-                // Skip config files - we don't track those
                 if (entry.name === 'config.js' || entry.name === 'jamsedu.config.js') continue;
 
                 if (entry.isDirectory()) {
@@ -424,24 +604,22 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
                 } else if (entry.isFile()) {
                     const content = Fs.readFileSync(fullPath, 'utf-8');
                     const version = parseVersionFromFile(content);
-                    
-                    // ONLY track files with version tags
+
                     if (!version) continue;
-                    
+
                     const component = parseComponentFromFile(content);
 
-                    // Map template path to user path (normalize to relative with forward slashes)
                     let userPath = relativePath;
                     if (relativePath.startsWith('src/')) {
-                        userPath = relativePath.replace(/^src\//, `${userSrcDir}/`);
+                        const pathAfterSrc = relativePath.replace(/^src\//, '');
+                        userPath = templateSrcPathToUserPath(normalizedSrcDir, pathAfterSrc, userConfig);
                     }
-                    // Normalize path separators
                     userPath = userPath.replace(/\\/g, '/');
 
                     files.push({
                         templatePath: relativePath,
-                        userPath: userPath,
-                        version: version,
+                        userPath,
+                        version,
                         component: component || Path.basename(relativePath, Path.extname(relativePath))
                     });
                 }
@@ -519,7 +697,7 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         // Check if destDir is already in .gitignore
         const lines = content.split('\n');
         const destDirPattern = new RegExp(`^${destDirNormalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/?$`);
-        const alreadyIgnored = lines.some(line => {
+        const alreadyIgnored = lines.some((line) => {
             const trimmed = line.trim();
             return trimmed && (trimmed === destDirNormalized || trimmed === `${destDirNormalized}/` || destDirPattern.test(trimmed));
         });

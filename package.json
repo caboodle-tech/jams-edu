@@ -7,16 +7,17 @@
     "scripts": {
         "start": "node bin/cli.js --watch",
         "build": "node bin/cli.js --build",
+        "build:debug": "node bin/cli.js --build --verbose",
         "init": "node bin/cli.js --init",
-        "update": "node bin/cli.js --update"
+        "update": "node bin/cli.js --update",
+        "watch:debug": "node bin/cli.js --watch --verbose"
     },
     "dependencies": {
-        "@caboodle-tech/jhp": "^3.4.1",
-        "@caboodle-tech/node-simple-server": "^4.2.7",
-        "prompt-sync": "^4.2.0"
+        "@caboodle-tech/jhp": "^3.5.1",
+        "@caboodle-tech/node-simple-server": "^4.3.0"
     },
     "devDependencies": {
-        "@eslint/json": "^1.1.0",
+        "@eslint/json": "^1.2.0",
         "@html-eslint/eslint-plugin": "^0.52.1",
         "@html-eslint/parser": "^0.52.0",
         "eslint": "^9.39.4"

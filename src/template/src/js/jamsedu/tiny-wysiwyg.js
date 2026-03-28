@@ -1,4 +1,4 @@
-// @jamsedu-version: 1.0.0
+// @jamsedu-version: 1.1.0
 // @jamsedu-component: tiny-wysiwyg
 class TinyWysiwyg {
 
@@ -142,13 +142,13 @@ class TinyWysiwyg {
         this.linkModal.innerHTML = `
             <div class="tw-lm-backdrop"></div>
             <div class="tw-lm-content">
-                <h3 id="tw-lm-title">Insert Link</h3>
-                <label for="tw-lm-link-url">URL:</label>
-                <input type="url" id="tw-lm-link-url" placeholder="https://example.com">
+                <h3 class="tw-lm-title">Insert Link</h3>
+                <label>URL:</label>
+                <input type="url" class="tw-lm-link-url" placeholder="https://example.com">
                 <div class="tw-lm-buttons">
-                    <button class="danger" id="tw-lm-unlink-btn" style="display:none;">Remove Link</button>
-                    <button id="tw-lm-cancel-btn">Cancel</button>
-                    <button class="primary" id="tw-lm-insert-btn">Insert</button>
+                    <button class="danger tw-lm-unlink-btn" style="display:none;">Remove Link</button>
+                    <button class="tw-lm-cancel-btn">Cancel</button>
+                    <button class="primary tw-lm-insert-btn">Insert</button>
                 </div>
             </div>
         `;
@@ -156,10 +156,10 @@ class TinyWysiwyg {
         this.container.appendChild(this.linkModal);
 
         // Set up modal event listeners once
-        const urlInput = this.linkModal.querySelector('#tw-lm-link-url');
-        const insertBtn = this.linkModal.querySelector('#tw-lm-insert-btn');
-        const cancelBtn = this.linkModal.querySelector('#tw-lm-cancel-btn');
-        const unlinkBtn = this.linkModal.querySelector('#tw-lm-unlink-btn');
+        const urlInput = this.linkModal.querySelector('.tw-lm-link-url');
+        const insertBtn = this.linkModal.querySelector('.tw-lm-insert-btn');
+        const cancelBtn = this.linkModal.querySelector('.tw-lm-cancel-btn');
+        const unlinkBtn = this.linkModal.querySelector('.tw-lm-unlink-btn');
 
         insertBtn.addEventListener('click', () => {
             const url = urlInput.value.trim();
@@ -1620,10 +1620,10 @@ class TinyWysiwyg {
     }
 
     showLinkModal(currentUrl, existingLink) {
-        const title = this.linkModal.querySelector('#tw-lm-title');
-        const urlInput = this.linkModal.querySelector('#tw-lm-link-url');
-        const insertBtn = this.linkModal.querySelector('#tw-lm-insert-btn');
-        const unlinkBtn = this.linkModal.querySelector('#tw-lm-unlink-btn');
+        const title = this.linkModal.querySelector('.tw-lm-title');
+        const urlInput = this.linkModal.querySelector('.tw-lm-link-url');
+        const insertBtn = this.linkModal.querySelector('.tw-lm-insert-btn');
+        const unlinkBtn = this.linkModal.querySelector('.tw-lm-unlink-btn');
 
         const isEdit = !!existingLink;
         title.textContent = isEdit ? 'Edit Link' : 'Insert Link';

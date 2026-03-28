@@ -42,9 +42,13 @@ This template includes:
 │   └── *.jhp             # Your page templates
 ├── eslint/                # ESLint configuration
 ├── docs/                  # Documentation (this folder)
-├── jamsedu.config.js      # JamsEdu configuration
+├── .jamsedu/config.js     # JamsEdu configuration
 └── package.json           # Project dependencies
 ```
+
+### Asset output paths
+
+By default, CSS, JS, and images are written under `destDir` with the same structure as `srcDir`. To put them under a single assets directory, set **`assetsDir`** in `.jamsedu/config.js` (e.g. `assetsDir: 'assets'`). To control each type separately, set **`assetPaths`** (e.g. `assetPaths: { css: 'assets/styles', js: 'assets/scripts', images: 'assets/images' }`). Per-type entries override `assetsDir` for that type.
 
 ## Documentation
 

@@ -1,12 +1,16 @@
-// @jamsedu-version: 1.0.0
+// @jamsedu-version: 2.0.1
 // @jamsedu-component: jamsedu-index
 import DomWatcher from './dom-watcher.js';
+import Katex from './katex.js';
+import Mermaid from './mermaid.js';
 import TinyDocument from './tiny-doc.js';
 import TinyWysiwyg from './tiny-wysiwyg.js';
 
 // Auto-initialize components
+Katex.autoInitialize();
+Mermaid.autoInitialize();
 TinyDocument.autoInitialize();
 TinyWysiwyg.autoInitialize();
 
-// Export classes for use in user code
-export { DomWatcher, TinyDocument, TinyWysiwyg };
+// Export class(es) for use in user code
+export { DomWatcher };

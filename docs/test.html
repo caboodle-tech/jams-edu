@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>KaTeX Domain + Version Smart Loader</title>
+
+    <script type="module" src="katex-loader.js"></script>
+    <!-- <script type="module">
+        import { configure } from './katex-loader.js';
+        configure({ katexVersion: '0.16.9' });
+    </script> -->
+
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            padding: 40px;
+        }
+
+        .math {
+            margin: 20px 0;
+            font-size: 1.4em;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <h1>KaTeX Domain + Version Loader</h1>
+
+    <div class="math" data-formula="c = \pm\sqrt{a^2 + b^2}"></div>
+    <div class="math" data-formula="\int_{0}^{\infty} e^{-x^2} dx = \frac{\sqrt{\pi}}{2}"></div>
+
+    <div class="math macro">
+        \f = #1f(#2)
+    </div>
+    <div class="math">
+        \f\relax{x} = \int_{-\infty}^\infty
+            \f\hat\xi\,e^{2 \pi i \xi x}
+            \,d\xi
+    </div>
+
+</body>
+
+</html>

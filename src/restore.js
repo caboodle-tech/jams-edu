@@ -6,10 +6,9 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import os from 'os';
 import Print from './imports/print.js';
-import PromptUser from 'prompt-sync';
+import { promptLine } from './imports/readline-prompt.js';
 
 const execAsync = promisify(exec);
-const Prompt = PromptUser({ sigint: true });
 
 class PortKiller {
 
@@ -113,7 +112,7 @@ class PortKiller {
             const processName = await killer.getProcessInfo(process.pid);
             Print.out(`Found process ${processName} (PID: ${process.pid}) using port ${port}`);
 
-            const answer = Prompt('Do you want to kill this process? (y/N): ');
+            const answer = await promptLine('Do you want to kill this process? (y/N): ');
 
             if (answer.toLowerCase() === 'y') {
                 const success = await killer.killProcess(process.pid);
