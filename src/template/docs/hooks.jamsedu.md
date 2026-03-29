@@ -1,3 +1,5 @@
+<!-- @jamsedu-version: 5.0.0 -->
+<!-- @jamsedu-component: docs-hooks -->
 # Writing Hooks for JamsEdu
 
 Hooks let you run custom logic during the template build. **Pre** hooks run before the main template process; **post** hooks run after it, right before the final HTML is written. Both receive the same `scope` object and work by mutating the DOM in place.

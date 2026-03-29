@@ -1,11 +1,15 @@
 <script>
-    const title = 'KaTeX & Mermaid Demo';
-    const description = 'Examples of math (KaTeX) and diagrams (Mermaid).';
+    const title = 'KaTeX, Mermaid & PDF Demo';
+    const description = 'Examples of math (KaTeX), diagrams (Mermaid), and an embedded PDF.';
 
-    $include('./templates/header.html');
+    $include('../templates/header.html');
 </script>
 
-<h1>KaTeX & Mermaid Demo</h1>
+<h1>KaTeX, Mermaid & PDF Demo</h1>
+
+<h2>PDF</h2>
+
+<embed src="/assets/docs/jamsedu-demo.pdf" type="application/pdf" min-height="1000px">
 
 <h2>KaTeX examples</h2>
 
@@ -65,5 +69,5 @@ classDiagram
 </pre>
 
 <script>
-    $include('./templates/footer.html');
+    $include('../templates/footer.html');
 </script>

@@ -45,6 +45,11 @@ export default class JamsEdu {
     #pendingWatchEvents = [];
 
 
+    /**
+     * Absolute path to the folder where include-only partials live (.jhp or HTML used only via
+     * `$include`). Build and watch skip these files so nothing under this path is copied or emitted
+     * into destDir; they are only consumed while processing other .jhp pages. Empty string disables.
+     */
     #templateDir = '';
 
     #usersRoot = '';
@@ -72,7 +77,8 @@ export default class JamsEdu {
         // Keep a reference to important config values.
         this.#destDir = config.destDir;
         this.#srcDir = config.srcDir;
-        this.#templateDir = Path.join(usersRoot, config.templateDir || '');
+        const templateDirRaw = typeof config.templateDir === 'string' ? config.templateDir.trim() : '';
+        this.#templateDir = templateDirRaw ? Path.resolve(usersRoot, templateDirRaw) : '';
         this.#usersRoot = usersRoot;
         this.#verbose = config.verbose === true;
 
@@ -266,10 +272,18 @@ export default class JamsEdu {
         return depth === 0 ? '' : '../'.repeat(depth);
     }
 
-    pathContains(needle, haystack) {
-        const n = needle.replace(/\\/g, '/').toLowerCase();
-        const h = haystack.replace(/\\/g, '/').toLowerCase();
-        return h.includes(n);
+    /**
+     * @param {string} absoluteFilePath
+     * @returns {boolean}
+     */
+    #isUnderTemplateDir(absoluteFilePath) {
+        if (!this.#templateDir) {
+            return false;
+        }
+        const file = Path.resolve(absoluteFilePath);
+        const root = Path.resolve(this.#templateDir);
+        const rel = Path.relative(root, file);
+        return rel !== '' && !rel.startsWith('..') && !Path.isAbsolute(rel);
     }
 
     #processDir(src) {
@@ -285,8 +299,7 @@ export default class JamsEdu {
     }
 
     #processFile(src) {
-        // Skip files inside the template directory.
-        if (this.pathContains(this.#templateDir, src)) {
+        if (this.#isUnderTemplateDir(src)) {
             return;
         }
 
@@ -421,7 +434,7 @@ export default class JamsEdu {
                 reloadStyles = true;
                 continue;
             }
-            if (src.startsWith(this.#templateDir)) {
+            if (this.#isUnderTemplateDir(src)) {
                 this.build();
                 reloadAll = true;
                 continue;
@@ -429,8 +442,12 @@ export default class JamsEdu {
             if (ext === 'jhp') {
                 this.#processFile(src);
                 pagesToReload.add(path.replace(this.#regex.jhp, '.html'));
+                continue;
             }
-            // Only css, template, and jhp are processed; other file types are ignored for efficiency.
+            // Remaining files (js, images, fonts, etc.) are copied like a full build; browsers cache
+            // scripts, so reload all pages (same idea as NSS watch examples for .js).
+            this.#processFile(src);
+            reloadAll = true;
         }
 
         if (reloadAll) {

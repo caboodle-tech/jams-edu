@@ -1,4 +1,4 @@
-<!-- @jamsedu-version: 4.2.0 -->
+<!-- @jamsedu-version: 5.0.0 -->
 <!-- @jamsedu-component: docs-javascript-api -->
 # JavaScript API Documentation
 
@@ -26,7 +26,7 @@ import { DomWatcher, TinyDocument, TinyWysiwyg } from './jamsedu/index.js';
 
 ## TinyDocument
 
-TinyDocument creates interactive document editors from elements with the `.document` class.
+TinyDocument creates interactive document editors from elements with the `.document` class. For a comprehensive guide on all supported elements, attributes, and document authoring patterns, see the [TinyDocument Guide](./tiny-document_jamsedu.md).
 
 ### Auto-Initialization
 
@@ -52,26 +52,50 @@ const doc = new TinyDocument(docElement);
 
 TinyDocument automatically handles these elements:
 
-- **Input**: `input[type="text"]`, `input[type="url"]`, `input[type="date"]`
-- **Files**: `input[type="file"]` for images only! Includes image preview.
-- **Select**: `<select>` elements.
-- **Textarea**: `<textarea>` plain textarea or add `.rich` class for WYSIWYG.
-- **Template Buttons**: `button.template` (for cloning template content)
+- **Text Input**: `input[type="text"]`, `input[type="date"]`
+- **Link Input**: `input[type="url"]` — opens a dialog for entering a display name and URL
+- **Files**: `input[type="file"]` for images only. Includes image preview.
+- **Select**: `<select>` elements
+- **Textarea**: `<textarea>` plain textarea or add `.rich` class for WYSIWYG
+- **Template Buttons**: `button.template` for cloning `<template>` content
 - **Special Classes**: `.header`, `.section`, `.subsection`, `.title`, `.indent`, `.spacer`, `.instructions`
+
+### Link Input
+
+The `input[type="url"]` element provides a dialog-based link editor. Clicking the input opens a native `<dialog>` where users enter a display name and URL.
+
+```html
+<!-- Display text + URL (default) -->
+<input type="url" placeholder="Teammates Name" prompt="Link to their GitHub repo">
+
+<!-- URL only -->
+<input type="url" data-raw placeholder="Repo URL">
+```
+
+Supported attributes:
+
+- `placeholder` — label shown in the input and used as the text field placeholder in the dialog
+- `prompt` or `data-prompt` — heading text shown in the dialog (falls back to `placeholder` value)
+- `data-raw` — when present, the dialog only asks for a URL (no display text field)
+- `data-url` — pre-populate with a URL value
+- `data-text` — pre-populate with display text
 
 ### Example
 
 ```html
 <div class="document">
     <div class="title">My Document</div>
-    
+
     <div class="section">Personal Information</div>
     <input type="text" placeholder="Your Name">
     <input type="date">
-    
+
+    <div class="section">Links</div>
+    <input type="url" placeholder="Portfolio" prompt="Link to your portfolio">
+
     <div class="section">Description</div>
     <textarea class="rich" placeholder="Write your description..."></textarea>
-    
+
     <div class="section">Upload Image</div>
     <input type="file" accept="image/*">
 </div>
@@ -81,7 +105,8 @@ TinyDocument automatically handles these elements:
 
 TinyDocument automatically adds a "Download Document as PDF" button that:
 - Processes all form inputs
-- Converts file uploads to images
+- Converts link inputs to clickable links
+- Converts file uploads to inline images
 - Opens print dialog for PDF export
 
 ## TinyWysiwyg
@@ -107,14 +132,15 @@ const editor = new TinyWysiwyg(textarea);
 
 ### Features
 
-- **Formatting**: Bold, italic, underline, strike through
-- **Headings**: H1-H6
+- **Formatting**: Bold, italic, underline
+- **Headings**: H1
 - **Lists**: Ordered and unordered
 - **Links**: Insert and edit links
 - **Blockquote**: Quote blocks
-- **Code**: Inline and block code
+- **Code**: Code blocks
 - **Undo/Redo**: Full undo/redo support
 - **Keyboard Shortcuts**: Standard shortcuts (Ctrl+B, Ctrl+I, etc.)
+- **Placeholder**: Supports the textarea's `placeholder` attribute
 
 ### Example
 
@@ -128,14 +154,13 @@ The textarea is automatically replaced with a rich text editor.
 
 ```javascript
 const editor = new TinyWysiwyg(textarea);
-const htmlContent = editor.getContent(); // Get HTML content
-const textContent = editor.getTextContent(); // Get plain text
+const htmlContent = editor.getHTML();
 ```
 
 ### Setting Content
 
 ```javascript
-editor.setContent('<p>Hello <strong>World</strong>!</p>');
+editor.setHTML('<p>Hello <strong>World</strong>!</p>');
 ```
 
 ## DomWatcher
@@ -223,14 +248,11 @@ DomWatcher.watch('textarea.rich', (textarea) => {
 ### TinyWysiwyg
 
 - `new TinyWysiwyg(textarea)` - Create a new TinyWysiwyg instance
-- `TinyWysiwyg.autoInitialize()` - Auto-initialize all `.rich` textareas
-- `editor.getContent()` - Get HTML content
-- `editor.getTextContent()` - Get plain text content
-- `editor.setContent(html)` - Set HTML content
+- `editor.getHTML()` - Get HTML content
+- `editor.setHTML(html)` - Set HTML content
 - `editor.destroy()` - Remove the editor and restore textarea
 
 ### DomWatcher
 
 - `DomWatcher.watch(selector, callback)` - Watch for elements matching selector
 - Callback receives the matched element as first argument
-

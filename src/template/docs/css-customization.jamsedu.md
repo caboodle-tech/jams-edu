@@ -1,4 +1,4 @@
-<!-- @jamsedu-version: 4.2.0 -->
+<!-- @jamsedu-version: 5.0.0 -->
 <!-- @jamsedu-component: docs-css-customization -->
 # CSS Customization Guide
 

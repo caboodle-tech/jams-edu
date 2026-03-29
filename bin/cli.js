@@ -159,6 +159,7 @@ if (args.update) {
     const updateConfig = {
         srcDir: config.srcDir,
         destDir: config.destDir,
+        templateDir: config.templateDir,
         assetsDir: config.assetsDir,
         assetPaths: config.assetPaths
     };

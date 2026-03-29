@@ -832,4 +832,6 @@ class TinyDocument {
 
 }
 
+window.TinyDocument = TinyDocument;
+
 export default TinyDocument;

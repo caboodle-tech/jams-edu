@@ -36,7 +36,7 @@ class Updater {
      *
      * @param {string} cwd Project root (usersRoot).
      * @param {string} jamseduWd Installed JamsEdu package root (template + package.json).
-     * @param {{ srcDir?: string, destDir?: string, assetsDir?: string, assetPaths?: Record<string, string> }} userConfig
+     * @param {{ srcDir?: string, destDir?: string, templateDir?: string, assetsDir?: string, assetPaths?: Record<string, string> }} userConfig
      *        Layout options from the user config (same semantics as .jamsedu/config.js); used for path mapping, not CLI flags.
      * @param {boolean} [force]
      */
@@ -52,6 +52,20 @@ class Updater {
         } else {
             srcDir = srcDir.replace(/\\/g, '/');
         }
+
+        let templateDirMap = typeof userConfig.templateDir === 'string' ? userConfig.templateDir.trim() : '';
+        if (templateDirMap) {
+            if (Path.isAbsolute(templateDirMap)) {
+                templateDirMap = Path.relative(cwd, templateDirMap).replace(/\\/g, '/');
+            } else {
+                templateDirMap = templateDirMap.replace(/\\/g, '/').replace(/^\/+/, '');
+            }
+        }
+        const templatePathLayout = {
+            assetsDir: userConfig.assetsDir,
+            assetPaths: userConfig.assetPaths,
+            ...(templateDirMap ? { templateDir: templateDirMap } : {})
+        };
 
         const packageJsonPath = Path.join(jamseduWd, 'package.json');
         const packageJson = JSON.parse(Fs.readFileSync(packageJsonPath, 'utf-8'));
@@ -123,7 +137,7 @@ class Updater {
             return;
         }
 
-        const templateFiles = this.scanTemplateFiles(templateDir, srcDir, userConfig);
+        const templateFiles = this.scanTemplateFiles(templateDir, srcDir, templatePathLayout);
         
         // Clean up and correct manifest (remove stale entries, add missing entries, fix component names)
         // This runs before scanning user files so we have a clean manifest to work with
@@ -279,18 +293,39 @@ class Updater {
             const showCustomized = await this.getResponse('> ', 'n');
             
             if (showCustomized.toLowerCase() === 'y') {
-                Print.out('\nWhat would you like to do with each customized file?\n');
-                for (let i = 0; i < updates.customizedWithUpdates.length; i++) {
-                    const update = updates.customizedWithUpdates[i];
-                    Print.out(`\n${i + 1}. ${update.component} (${update.file})`);
-                    Print.out('   Options:');
-                    Print.out('   1) Keep customized (skip update)');
-                    Print.out('   2) Accept update (overwrite your changes)');
-                    Print.out('   3) Skip for now');
-                    const choice = await this.getResponse('   Your choice (1-3) [1]: ', '1');
-                    
-                    if (choice === '2') {
-                        customizedSelected.push(update);
+                Print.out('\nHow should these customized files be handled?\n');
+                Print.out('   1) Decide each file individually');
+                Print.out('   2) Keep all customized (skip every update in this list)');
+                Print.out('   3) Accept all template updates (overwrite all; you already chose to review this list)');
+                Print.out('   4) Skip this section (do not update any of these now)');
+                const bulk = await this.getResponse('   Your choice (1-4) [1]: ', '1');
+
+                const pushAccepted = (u) => {
+                    customizedSelected.push({
+                        ...u,
+                        /** User already confirmed replacing customized content; skip applyUpdates overwrite prompt */
+                        skipModifiedOverwritePrompt: true
+                    });
+                };
+
+                if (bulk === '3') {
+                    for (const update of updates.customizedWithUpdates) {
+                        pushAccepted(update);
+                    }
+                } else if (bulk !== '2' && bulk !== '4') {
+                    Print.out('\nPer-file choices (same options as above, per item):\n');
+                    for (let i = 0; i < updates.customizedWithUpdates.length; i++) {
+                        const update = updates.customizedWithUpdates[i];
+                        Print.out(`\n${i + 1}. ${update.component} (${update.file})`);
+                        Print.out('   Options:');
+                        Print.out('   1) Keep customized (skip update)');
+                        Print.out('   2) Accept update (overwrite your changes)');
+                        Print.out('   3) Skip for now');
+                        const choice = await this.getResponse('   Your choice (1-3) [1]: ', '1');
+
+                        if (choice === '2') {
+                            pushAccepted(update);
+                        }
                     }
                 }
             }
@@ -883,8 +918,9 @@ class Updater {
             const templatePath = update.templateFile?.fullTemplatePath || 
                 Path.join(templateDir, update.templateFile?.templatePath || filePath);
 
-            // In force mode skip the overwrite prompt; otherwise prompt for modified files
-            if (!force && update.modified && Fs.existsSync(destPath)) {
+            // In force mode skip the overwrite prompt; otherwise prompt for modified files.
+            // Customized docs: user already chose "Accept update" (or bulk accept); do not prompt again.
+            if (!force && update.modified && Fs.existsSync(destPath) && !update.skipModifiedOverwritePrompt) {
                 Print.warn(`\n⚠️  File has been modified: ${update.file}`);
                 const overwriteLabel = backupPath ? '1) Overwrite (backup made)' : '1) Overwrite';
                 const backupOption = backupPath ? '' : '  3) Backup & overwrite';

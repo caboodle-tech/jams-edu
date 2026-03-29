@@ -168,8 +168,6 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
 
             const tmpSrcDir = srcDir.endsWith('/') ? srcDir.slice(0, -1) : srcDir;
 
-            userTemplateDir = await this.getResponse(`Templates Directory\n\nThe templates directory is where your sites template and variable files will reside. This ideally should be nested within your source directory. Please enter the name, including relative path if desired, for your templates directory.\n\nPress [enter] without a response to accept the default: ${tmpSrcDir}/templates`, `${tmpSrcDir}/templates`);
-
             destDir = await this.getResponse('Destination Directory\n\nThe destination directory is where your sites built files will be output to. Please enter the name, including relative path if desired, for your projects destination directory.\n\nPress [enter] without a response to accept the default: public', 'public');
 
             const websiteUrl = await this.getResponse(`Website URL\n\nThe website URL is the base URL for your published website including the protocol (e.g., https://example.com). This is required if you want JamsEdu to automatically build your sitemap. Please enter the URL for your website.\n\nPress [enter] to accept the default: \x1b[3mempty\x1b[0m`, '');
@@ -181,9 +179,12 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
 
             const useAssetsFolder = await this.getResponse('Use an assets folder for CSS, JS, and images? (y/n) [y]', 'y');
             assetsDir = /^n(o)?$/i.test(useAssetsFolder.trim()) ? '' : 'assets';
+
+            const templateDirDefault = `${tmpSrcDir}/templates`;
+            userTemplateDir = await this.getResponse(`JHP partials directory\n\nReusable HTML partials (head, header, footer) are copied here. This path is saved as templateDir in .jamsedu/config.js; use the same path in your \$include() calls (e.g. ./templates/ from a page in src root). It is not part of the assets folder (css, js, images).\n\nPress [enter] to accept the default: ${templateDirDefault}`, templateDirDefault);
         }
 
-        const layoutConfig = { assetsDir, assetPaths };
+        const layoutConfig = { assetsDir, assetPaths, templateDir: userTemplateDir };
 
         // Check for existing files and handle conflicts (before generating config)
         const jamseduTemplateDir = Path.join(jamseduWd, 'src', 'template');
@@ -346,7 +347,7 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
     }
 
     /**
-     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null }} userConfig
+     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null, templateDir?: string }} userConfig
      */
     static scanTemplateFilesForConflictCheck(templateDir, userSrcDir, userConfig = {}) {
         const files = [];
@@ -384,7 +385,7 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
     }
 
     /**
-     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null }} userConfig
+     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null, templateDir?: string }} userConfig
      */
     static copyTemplateFiles(templateDir, cwd, conflictMode, userSrcDir, userConfig = {}) {
         Print.info('Copying template files...');
@@ -527,7 +528,7 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
     }
 
     /**
-     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null }} userConfig
+     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null, templateDir?: string }} userConfig
      */
     static createManifest(cwd, srcDir, jamseduWd, packageVersion, skippedFiles = [], userConfig = {}) {
         const manifestDir = Path.join(cwd, '.jamsedu');
@@ -584,7 +585,7 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
     }
 
     /**
-     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null }} userConfig
+     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null, templateDir?: string }} userConfig
      */
     static scanTemplateFilesForManifest(templateDir, userSrcDir, userConfig = {}) {
         const files = [];
