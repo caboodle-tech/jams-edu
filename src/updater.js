@@ -514,7 +514,11 @@ class Updater {
         // Helper to determine if file is Tier 1 (core framework) or Tier 2 (customizable)
         const isTier1 = (filePath) => {
             const normalized = filePath.replace(/\\/g, '/');
-            return normalized.includes('/js/jamsedu/') || normalized.includes('/css/jamsedu/');
+            return (
+                normalized.includes('/js/jamsedu/')
+                || normalized.includes('/css/jamsedu/')
+                || normalized.includes('/css/vendor/jamsedu/')
+            );
         };
 
         for (const templateFile of templateFiles) {

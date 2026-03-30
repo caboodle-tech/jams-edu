@@ -1,0 +1,19 @@
+/* @jamsedu-version: 1.1.0 */
+/* @jamsedu-component: callouts-css */
+@layer components {
+    :where(blockquote) {
+        border-left: 4px solid var(--color-accent);
+        background-color: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
+        margin: 1.5rem 0;
+        padding: 1rem 1.5rem;
+        border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    }
+
+    :where(blockquote p) {
+        font-size: 1.05em;
+        font-weight: 500;
+        font-style: italic;
+        margin: 0;
+        color: var(--color-text);
+    }
+}

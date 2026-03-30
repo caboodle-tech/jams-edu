@@ -1,25 +1,18 @@
-// @jamsedu-version: 1.2.4
-// @jamsedu-component: embed-pdf-js
+import './dom-watcher.js';
 
 /**
- * EmbedPDF Snippet loader: mounts viewers for `div[data-pdf]` and `embed[src$=".pdf"]`.
- * Loads `@embedpdf/snippet` from jsDelivr, maps `.embed-pdf-container` CSS variables into
- * `EmbedPDF.init({ theme })`, and defaults to fit-to-width zoom (see EmbedPDF `ZoomMode`).
- * Form editing and redaction UI are disabled by default. Document open/close, screenshot
- * capture, and password protect/lock UI are disabled; opening an encrypted PDF can still
- * prompt for a password (that flow is not the same as `document-protect` toolbar actions).
- * A placeholder fullscreen control is appended to `[data-epdf-i="right-group"]` (wiring TODO).
+ * Mounts EmbedPDF Snippet on `[data-pdf]` divs and pdf `<embed>`s. Loads `@embedpdf/snippet` from jsDelivr.
+ * Docs: https://www.embedpdf.com/docs/snippet/getting-started
  *
- * Mount identity: the loader assigns `data-pdf-id` on each `.embed-pdf-container` (`embed-pdf-1`,
- * `embed-pdf-2`, …). Do not set this on authored nodes; it is managed only here.
- *
- * Public API: `EmbedPdfLoader.shared.mountsById.get(id)` → `{ id, container, viewer, registry }`
- * (`registry` null until ready). Same order in `shared.viewers` / `shared.registries`. Each container
- * has `data-pdf-id`, `embedPdfId`, `embedPdfViewer`, and `embedPdfRegistry` (async).
- *
- * @see https://www.embedpdf.com/docs/snippet/getting-started
- * @see https://www.embedpdf.com/docs/snippet/plugins/plugin-zoom
- * @see https://www.embedpdf.com/docs/snippet/customizing-ui
+ * @typedef {object} EmbedPdfLoaderOptions
+ * @property {boolean} [useMutationObserver] Watch DOM for new PDF targets (used by `start` only).
+ * @property {string} [version] npm tag for `@embedpdf/snippet` (alias of `snippetVersion`).
+ * @property {string} [snippetVersion] Same as `version`.
+ * @property {number} [minZoom]
+ * @property {number} [maxZoom]
+ * @property {number} [scrollPageGap] Pixels between pages in scroll mode.
+ * @property {string[]} [disabledCategories] Toolbar category ids to turn off (replaces whole list).
+ * @property {boolean} [fullscreenProxy] Hook custom fullscreen behavior for the built-in toolbar.
  */
 
 class EmbedPdfLoader {
@@ -35,42 +28,38 @@ class EmbedPdfLoader {
 
     #importPromise = null;
 
+    /** @type {number | null} Schedules `#mountAllIfNeeded` on the next frame. */
+    #mountRaf = null;
+
     #autoMountSeq = 0;
 
     static #loader = null;
 
     /**
-     * Return values from `EmbedPDF.init()`, in mount order (public; not private fields).
+     * Return values from `EmbedPDF.init`, one per mount, in order.
      * @type {unknown[]}
      */
     viewers = [];
 
     /**
-     * Plugin registries from `await viewer.registry`, same indices as {@link EmbedPdfLoader#viewers};
-     * `null` until that viewer’s registry promise settles (public).
+     * Registry from each viewer’s `.registry` promise; same index as `viewers`, `null` until settled.
      * @type {unknown[]}
      */
     registries = [];
 
     /**
-     * Lookup by loader-assigned `data-pdf-id`. Values are plain objects; `registry` is null until ready.
+     * By assigned `data-pdf-id` (`embed-pdf-1`, …). Value: `{ id, container, viewer, registry }`.
      * @type {Map<string, { id: string, container: HTMLElement, viewer: unknown, registry: unknown | null }>}
      */
     mountsById = new Map();
 
     /**
-     * @param {{
-     *   snippetVersion?: string,
-     *   minZoom?: number,
-     *   maxZoom?: number,
-     *   scrollPageGap?: number,
-     *   disabledCategories?: string[],
-     *   fullscreenProxy?: boolean
-     * }} [options]
+     * @param {Omit<EmbedPdfLoaderOptions, 'useMutationObserver'>} [options]
+     *   Snippet options only; `useMutationObserver` belongs on `start`.
      */
     constructor(options = {}) {
         this.config = {
-            snippetVersion: '2',
+            snippetVersion: 'latest',
             minZoom: 0.5,
             maxZoom: 3,
             scrollPageGap: 12,
@@ -89,49 +78,49 @@ class EmbedPdfLoader {
     }
 
     /**
-     * @param {{
-     *   snippetVersion?: string,
-     *   minZoom?: number,
-     *   maxZoom?: number,
-     *   scrollPageGap?: number,
-     *   disabledCategories?: string[],
-     *   fullscreenProxy?: boolean
-     * }} [options]
+     * @param {EmbedPdfLoaderOptions} [options]
+     */
+    static start(options = {}) {
+        const loader = EmbedPdfLoader.#getLoader();
+        const useMutationObserver = options.useMutationObserver !== false;
+        /** @type {Record<string, unknown>} */
+        const cfg = { ...options };
+        delete cfg.useMutationObserver;
+        loader.configure(cfg);
+        loader.#registerBoot(useMutationObserver);
+    }
+
+    /**
+     * @param {Omit<EmbedPdfLoaderOptions, 'useMutationObserver'>} [options]
      */
     static autoInitialize(options) {
         const loader = EmbedPdfLoader.#getLoader();
         if (options) {
             loader.configure(options);
         }
-        loader.autoInitialize();
+        loader.#registerBoot(true);
     }
 
     /**
-     * @param {{
-     *   snippetVersion?: string,
-     *   minZoom?: number,
-     *   maxZoom?: number,
-     *   scrollPageGap?: number,
-     *   disabledCategories?: string[],
-     *   fullscreenProxy?: boolean
-     * }} options
+     * @param {Omit<EmbedPdfLoaderOptions, 'useMutationObserver'>} options
      */
     static configure(options) {
         EmbedPdfLoader.#getLoader().configure(options);
     }
 
-    /**
-     * Singleton used by `autoInitialize` / `configure`. Prefer `shared.mountsById.get(id)`; also
-     * `shared.viewers` / `shared.registries` and per-container `embedPdfId`, `embedPdfViewer`,
-     * `embedPdfRegistry` for `commands`, `ui.mergeSchema`, etc.
-     *
-     * @returns {EmbedPdfLoader}
-     */
+    /** Shared loader instance. */
     static get shared() {
         return EmbedPdfLoader.#getLoader();
     }
 
     autoInitialize() {
+        this.#registerBoot(true);
+    }
+
+    /**
+     * @param {boolean} useMutationObserver Whether to register `DomWatcher` for new PDF nodes.
+     */
+    #registerBoot(useMutationObserver) {
         if (this.#started) {
             return;
         }
@@ -141,31 +130,45 @@ class EmbedPdfLoader {
         this.#started = true;
 
         const run = () => {
-            return this.#mountAllIfNeeded();
+            this.#scheduleMount();
         };
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', run, { once: true });
         } else {
             run();
         }
+
+        const w = window.DomWatcher;
+        if (useMutationObserver && w && typeof MutationObserver !== 'undefined') {
+            w.watch('[data-pdf]:not(.embed-pdf-container)', run, false);
+            w.watch('embed[src*=".pdf"]', run, false);
+        }
+    }
+
+    #scheduleMount() {
+        if (this.#mountRaf != null) {
+            cancelAnimationFrame(this.#mountRaf);
+        }
+        this.#mountRaf = requestAnimationFrame(() => {
+            this.#mountRaf = null;
+            void this.#mountAllIfNeeded();
+        });
     }
 
     /**
-     * @param {{
-     *   snippetVersion?: string,
-     *   minZoom?: number,
-     *   maxZoom?: number,
-     *   scrollPageGap?: number,
-     *   disabledCategories?: string[],
-     *   fullscreenProxy?: boolean
-     * }} options
+     * @param {Omit<EmbedPdfLoaderOptions, 'useMutationObserver'>} options
      */
     configure(options) {
         if (!options) {
             return;
         }
+        if (typeof options.version === 'string' && options.version.trim()) {
+            this.config.snippetVersion = options.version.trim();
+        }
         if (typeof options.snippetVersion === 'string') {
-            this.config.snippetVersion = options.snippetVersion;
+            this.config.snippetVersion = options.snippetVersion.trim() ?
+                options.snippetVersion.trim() :
+                'latest';
         }
         if (typeof options.minZoom === 'number') {
             this.config.minZoom = options.minZoom;
@@ -191,29 +194,38 @@ class EmbedPdfLoader {
         return EmbedPdfLoader.#loader;
     }
 
-    /**
-     * @returns {string}
-     */
+    /** @returns {string} Unique id such as `embed-pdf-1`. */
     #nextMountId() {
         this.#autoMountSeq += 1;
         return `embed-pdf-${this.#autoMountSeq}`;
     }
 
     /**
+     * Loads the snippet ESM from jsDelivr; falls back to tag `latest` if the first import fails.
+     *
      * @returns {Promise<{ default: function, ZoomMode?: Record<string, unknown> }>}
      */
     #loadSnippetModule() {
         if (this.#importPromise) {
             return this.#importPromise;
         }
-        const url = `https://cdn.jsdelivr.net/npm/@embedpdf/snippet@${this.config.snippetVersion}/dist/embedpdf.js`;
-        this.#importPromise = import(/* webpackIgnore: true */ url);
+        const makeUrl = (v) => {
+            return `https://cdn.jsdelivr.net/npm/@embedpdf/snippet@${v}/dist/embedpdf.js`;
+        };
+        const rawTag = String(this.config.snippetVersion ?? '').trim();
+        const primary = rawTag || 'latest';
+        this.#importPromise = import(/* webpackIgnore: true */ makeUrl(primary)).catch((err) => {
+            console.warn('[jamsedu/embed-pdf] Failed to load @embedpdf/snippet:', primary, err);
+            if (primary === 'latest') {
+                throw err;
+            }
+            this.config.snippetVersion = 'latest';
+            return import(/* webpackIgnore: true */ makeUrl('latest'));
+        });
         return this.#importPromise;
     }
 
-    /**
-     * Sets `type="application/pdf"` on PDF `<embed>` elements so native viewers can take over if the snippet fails.
-     */
+    /** Ensures pdf `<embed>` has `type="application/pdf"` for native fallback. */
     #ensurePdfEmbedsTyped() {
         document.querySelectorAll('embed').forEach((el) => {
             const src = el.getAttribute('src')?.trim();
@@ -228,10 +240,10 @@ class EmbedPdfLoader {
     }
 
     /**
-     * @returns {Array<{ node: Element, src: string, kind: 'data-pdf' | 'embed' }>}
+     * @returns {Array<{ node: Element, src: string }>}
      */
     #collectMounts() {
-        /** @type {Array<{ node: Element, src: string, kind: 'data-pdf' | 'embed' }>} */
+        /** @type {Array<{ node: Element, src: string }>} */
         const mounts = [];
 
         document.querySelectorAll('[data-pdf]').forEach((el) => {
@@ -245,7 +257,7 @@ class EmbedPdfLoader {
             if (!raw) {
                 return;
             }
-            mounts.push({ node: el, src: raw, kind: 'data-pdf' });
+            mounts.push({ node: el, src: raw });
         });
 
         document.querySelectorAll('embed').forEach((el) => {
@@ -257,7 +269,7 @@ class EmbedPdfLoader {
             if (type && type !== 'application/pdf') {
                 return;
             }
-            mounts.push({ node: el, src, kind: 'embed' });
+            mounts.push({ node: el, src });
         });
 
         return mounts;
@@ -300,55 +312,55 @@ class EmbedPdfLoader {
     }
 
     /**
-     * Reads semantic `--_*` tokens from a mounted `.embed-pdf-container` for EmbedPDF `theme`.
+     * Builds an EmbedPDF `theme` fragment from `--pdf-*` CSS vars on `el`.
      *
-     * @param {Element} el
+     * @param {Element} el Usually `.embed-pdf-container`.
      * @returns {Record<string, unknown>}
      */
     #themeFragmentFromElement(el) {
         const style = getComputedStyle(el);
         const accent = {
-            primary: this.#var(style, '--_accent-primary'),
-            primaryHover: this.#var(style, '--_accent-primary-hover'),
-            primaryActive: this.#var(style, '--_accent-primary-active'),
-            primaryLight: this.#var(style, '--_accent-primary-light'),
-            primaryForeground: this.#var(style, '--_accent-primary-foreground')
+            primary: this.#var(style, '--pdf-accent-primary'),
+            primaryHover: this.#var(style, '--pdf-accent-primary-hover'),
+            primaryActive: this.#var(style, '--pdf-accent-primary-active'),
+            primaryLight: this.#var(style, '--pdf-accent-primary-light'),
+            primaryForeground: this.#var(style, '--pdf-accent-primary-foreground')
         };
         const background = {
-            app: this.#var(style, '--_background-app'),
-            surface: this.#var(style, '--_background-surface'),
-            surfaceAlt: this.#var(style, '--_background-surface-alt'),
-            elevated: this.#var(style, '--_background-elevated'),
-            overlay: this.#var(style, '--_background-overlay'),
-            input: this.#var(style, '--_background-input')
+            app: this.#var(style, '--pdf-background-app'),
+            surface: this.#var(style, '--pdf-background-surface'),
+            surfaceAlt: this.#var(style, '--pdf-background-surface-alt'),
+            elevated: this.#var(style, '--pdf-background-elevated'),
+            overlay: this.#var(style, '--pdf-background-overlay'),
+            input: this.#var(style, '--pdf-background-input')
         };
         const foreground = {
-            primary: this.#var(style, '--_foreground-primary'),
-            secondary: this.#var(style, '--_foreground-secondary'),
-            muted: this.#var(style, '--_foreground-muted'),
-            disabled: this.#var(style, '--_foreground-disabled'),
-            onAccent: this.#var(style, '--_foreground-on-accent')
+            primary: this.#var(style, '--pdf-foreground-primary'),
+            secondary: this.#var(style, '--pdf-foreground-secondary'),
+            muted: this.#var(style, '--pdf-foreground-muted'),
+            disabled: this.#var(style, '--pdf-foreground-disabled'),
+            onAccent: this.#var(style, '--pdf-foreground-on-accent')
         };
         const interactive = {
-            hover: this.#var(style, '--_interactive-hover'),
-            active: this.#var(style, '--_interactive-active'),
-            selected: this.#var(style, '--_interactive-selected'),
-            focus: this.#var(style, '--_interactive-focus')
+            hover: this.#var(style, '--pdf-interactive-hover'),
+            active: this.#var(style, '--pdf-interactive-active'),
+            selected: this.#var(style, '--pdf-interactive-selected'),
+            focus: this.#var(style, '--pdf-interactive-focus')
         };
         const border = {
-            default: this.#var(style, '--_border-default'),
-            subtle: this.#var(style, '--_border-subtle'),
-            strong: this.#var(style, '--_border-strong')
+            default: this.#var(style, '--pdf-border-default'),
+            subtle: this.#var(style, '--pdf-border-subtle'),
+            strong: this.#var(style, '--pdf-border-strong')
         };
         const state = {
-            error: this.#var(style, '--_state-error'),
-            errorLight: this.#var(style, '--_state-error-light'),
-            warning: this.#var(style, '--_state-warning'),
-            warningLight: this.#var(style, '--_state-warning-light'),
-            success: this.#var(style, '--_state-success'),
-            successLight: this.#var(style, '--_state-success-light'),
-            info: this.#var(style, '--_state-info'),
-            infoLight: this.#var(style, '--_state-info-light')
+            error: this.#var(style, '--pdf-state-error'),
+            errorLight: this.#var(style, '--pdf-state-error-light'),
+            warning: this.#var(style, '--pdf-state-warning'),
+            warningLight: this.#var(style, '--pdf-state-warning-light'),
+            success: this.#var(style, '--pdf-state-success'),
+            successLight: this.#var(style, '--pdf-state-success-light'),
+            info: this.#var(style, '--pdf-state-info'),
+            infoLight: this.#var(style, '--pdf-state-info-light')
         };
         return this.#pruneDeep({
             accent,
@@ -405,7 +417,7 @@ class EmbedPdfLoader {
     }
 
     /**
-     * Restores a native PDF `<embed>` after a failed snippet init (same `src` as authored).
+     * Restores a native PDF `<embed>` after `EmbedPDF.init` fails (`[data-pdf]` div or `<embed>`).
      *
      * @param {HTMLElement} container
      * @param {string} src
@@ -423,26 +435,6 @@ class EmbedPdfLoader {
             }
         });
         container.replaceWith(embed);
-    }
-
-    /**
-     * Restores a `div[data-pdf]` placeholder after a failed snippet init.
-     *
-     * @param {HTMLElement} container
-     * @param {string} src
-     */
-    #restoreDataPdfPlaceholder(container, src) {
-        const div = document.createElement('div');
-        div.setAttribute('data-pdf', src);
-        if (container.id) {
-            div.id = container.id;
-        }
-        container.classList.forEach((c) => {
-            if (c && c !== 'embed-pdf-container') {
-                div.classList.add(c);
-            }
-        });
-        container.replaceWith(div);
     }
 
     /**
@@ -706,7 +698,7 @@ class EmbedPdfLoader {
 
         const disabled = this.config.disabledCategories;
 
-        for (const { node, src, kind } of mounts) {
+        for (const { node, src } of mounts) {
             const absolute = this.#resolveUrl(src);
             const mountId = this.#nextMountId();
             const container = this.#wrapMountTarget(node, mountId);
@@ -768,11 +760,7 @@ class EmbedPdfLoader {
                 void this.#attachFullscreenProxy(container);
             } catch (err) {
                 console.error('[jamsedu/embed-pdf] EmbedPDF.init failed:', err);
-                if (kind === 'embed') {
-                    this.#restoreNativePdfEmbed(container, src);
-                } else {
-                    this.#restoreDataPdfPlaceholder(container, src);
-                }
+                this.#restoreNativePdfEmbed(container, src);
             }
         }
     }

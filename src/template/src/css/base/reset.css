@@ -1,0 +1,14 @@
+/* @jamsedu-version: 1.1.0 */
+/* @jamsedu-component: reset-css */
+@layer base {
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    html {
+        font-size: 16px;
+        scroll-behavior: smooth;
+    }
+}

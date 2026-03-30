@@ -1,133 +1,208 @@
-// @jamsedu-version: 1.0.0
+// @jamsedu-version: 2.2.0
 // @jamsedu-component: mermaid
 
-/**
- * Mermaid loader: loads Mermaid from CDN on demand and renders `.mermaid` blocks when ready.
- * Diagram definition text is the element's text content (standard `.mermaid` blocks).
- * Caches which pages need Mermaid so repeat visits load the script earlier.
- */
-class MermaidLoader {
+import './dom-watcher.js';
 
-    #loaded = false;
+/**
+ * Loads Mermaid from jsDelivr and renders `.mermaid` blocks.
+ *
+ * @typedef {object} MermaidLoaderConfig
+ * @property {string} mermaidVersion npm tag.
+ * @property {string} theme Passed to `mermaid.initialize`.
+ */
+
+class MermaidLoader {
 
     static #loader = null;
 
-    /** Ensures `mermaid.initialize` runs only once per page load. */
+    /** Set after first successful `start()`. */
+    #bootStarted = false;
+
+    /** @type {number | null} */
+    #renderFrame = null;
+
+    /** True after `mermaid.initialize` runs once. */
     #apiInitialized = false;
 
-    /** Max age for cache entries (14 days); stale entries are pruned in requestIdleCallback. */
-    #maxAgeMs = 14 * 24 * 60 * 60 * 1000;
-
-    #storageKey = 'mermaid-needed-cache';
-
     /**
-     * @param {{ mermaidVersion?: string, maxCachedPages?: number, theme?: string }} [options]
+     * @param {Partial<MermaidLoaderConfig>} [options]
      */
     constructor(options = {}) {
+        /** @type {MermaidLoaderConfig} */
         this.config = {
-            mermaidVersion: '11',
-            maxCachedPages: 30,
+            mermaidVersion: 'latest',
             theme: 'default',
             ...options
         };
-        this.currentPage = typeof location !== 'undefined' ? location.pathname : '';
-        this.cdnBase = '';
     }
 
     /**
-     * Start the loader (load Mermaid when needed, render `.mermaid` elements).
-     * Optionally pass options to apply before running; same shape as configure().
-     * @param {{ mermaidVersion?: string, maxCachedPages?: number, theme?: string }} [options]
+     * @param {{
+     *   useMutationObserver?: boolean,
+     *   mermaidVersion?: string,
+     *   version?: string,
+     *   theme?: string
+     * }} [options]
      */
-    static autoInitialize(options) {
+    static start(options = {}) {
         const loader = MermaidLoader.#getLoader();
-        if (options) {
-            loader.configure(options);
-        }
-        loader.autoInitialize();
+        loader.configure(options);
+        loader.#boot(options);
     }
 
-    autoInitialize() {
-        if (this.#loaded) {
+    /**
+     * @param {{ mermaidVersion?: string, version?: string, theme?: string }} [options]
+     */
+    static autoInitialize(options) {
+        MermaidLoader.start(options || {});
+    }
+
+    /**
+     * @param {{ useMutationObserver?: boolean }} options
+     */
+    #boot(options) {
+        if (this.#bootStarted) {
             return;
         }
+        this.#bootStarted = true;
 
-        if (typeof document === 'undefined') {
-            return;
-        }
-
-        this.cdnBase = `https://cdn.jsdelivr.net/npm/mermaid@${this.config.mermaidVersion}/dist/`;
+        const useMutationObserver = options.useMutationObserver !== false;
 
         document.addEventListener('mermaid-ready', () => {
             this.#renderDiagramElements();
         });
 
-        const cache = this.#getCache();
-        const overLimit = Object.keys(cache.pages).length > this.config.maxCachedPages;
-        if (this.#pageIsCached() || overLimit) {
-            this.#loadMermaid(() => {
-                this.#dispatchMermaidReady();
+        void this.#loadWithVersionFallback()
+            .then(() => {
+                this.#signalReady();
+            })
+            .catch((err) => {
+                console.error('[jamsedu/mermaid] Failed to load Mermaid:', err);
             });
+
+        const bump = () => {
+            this.#scheduleRender();
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', bump, { once: true });
+        } else {
+            bump();
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (this.#pageNeedsMermaid()) {
-                this.#savePageToCache();
-                this.#loadMermaid(() => {
-                    this.#dispatchMermaidReady();
-                });
-            }
-        });
-
-        const whenIdle = typeof requestIdleCallback !== 'undefined' ? requestIdleCallback : (cb) => {
-            setTimeout(cb, 1);
-        };
-        whenIdle(() => {
-            this.#pruneStaleEntries();
-        });
+        const w = window.DomWatcher;
+        if (useMutationObserver && w && typeof MutationObserver !== 'undefined') {
+            w.watch('.mermaid', bump, false);
+        }
     }
 
     /**
-     * Set options. Call before autoInitialize() to apply.
-     * @param {{ mermaidVersion?: string, maxCachedPages?: number, theme?: string }} options
+     * @param {{ mermaidVersion?: string, version?: string, theme?: string }} [options]
      */
     static configure(options) {
         MermaidLoader.#getLoader().configure(options);
     }
 
     /**
-     * Set options. Call synchronously after import to apply before auto-run.
-     * @param {{ mermaidVersion?: string, maxCachedPages?: number, theme?: string }} options
+     * @param {{ mermaidVersion?: string, version?: string, theme?: string }} [options]
      */
     configure(options) {
-        if (options) {
-            if (typeof options.mermaidVersion === 'string') {
-                this.config.mermaidVersion = options.mermaidVersion;
-            }
-            if (typeof options.maxCachedPages === 'number') {
-                this.config.maxCachedPages = options.maxCachedPages;
-            }
-            if (typeof options.theme === 'string') {
-                this.config.theme = options.theme;
-            }
+        if (!options) {
+            return;
+        }
+        if (typeof options.version === 'string' && options.version.trim()) {
+            this.config.mermaidVersion = options.version.trim();
+        }
+        if (typeof options.mermaidVersion === 'string' && options.mermaidVersion.trim()) {
+            this.config.mermaidVersion = options.mermaidVersion.trim();
+        }
+        if (typeof options.theme === 'string') {
+            this.config.theme = options.theme;
         }
     }
 
-    #dispatchMermaidReady() {
-        this.#loaded = true;
-        document.dispatchEvent(new Event('mermaid-ready'));
+    /** @param {string} v */
+    #normalizeVersion(v) {
+        if (typeof v !== 'string' || !v.trim()) {
+            return 'latest';
+        }
+        return v.trim();
     }
 
     /**
-     * Returns cache for the current Mermaid version; resets if version mismatch. Sync read only; no prune.
-     * @returns {object} Cache with version and pages (each value is a timestamp).
+     * @returns {Promise<void>}
      */
-    #getCache() {
-        const cache = this.#safeReadCache();
-        if (!cache || cache.version !== this.config.mermaidVersion) {
-            return { version: this.config.mermaidVersion, pages: {} };
+    #loadWithVersionFallback() {
+        const primary = this.#normalizeVersion(this.config.mermaidVersion);
+        return new Promise((resolve, reject) => {
+            const attempt = (version) => {
+                this.#injectMermaid(
+                    version,
+                    () => {
+                        if (typeof window.mermaid?.run === 'function') {
+                            resolve();
+                            return;
+                        }
+                        if (version === 'latest') {
+                            reject(new Error('Mermaid API missing after load'));
+                            return;
+                        }
+                        attempt('latest');
+                    },
+                    () => {
+                        if (version === 'latest') {
+                            reject(new Error('Mermaid script failed'));
+                            return;
+                        }
+                        attempt('latest');
+                    }
+                );
+            };
+            attempt(primary);
+        });
+    }
+
+    /**
+     * @param {string} version
+     * @param {() => void} onSuccess
+     * @param {() => void} onError
+     */
+    #injectMermaid(version, onSuccess, onError) {
+        if (typeof window !== 'undefined' && typeof window.mermaid?.run === 'function') {
+            onSuccess();
+            return;
         }
-        return cache;
+
+        document.querySelectorAll('script[data-jamsedu-mermaid]').forEach((el) => {
+            el.remove();
+        });
+
+        const base = `https://cdn.jsdelivr.net/npm/mermaid@${version}/dist/`;
+        const script = document.createElement('script');
+        script.src = `${base}mermaid.min.js`;
+        script.async = true;
+        script.dataset.jamseduMermaid = version;
+        script.onload = () => {
+            onSuccess();
+        };
+        script.onerror = () => {
+            onError();
+        };
+        document.head.appendChild(script);
+    }
+
+    #scheduleRender() {
+        if (this.#renderFrame != null) {
+            return;
+        }
+        this.#renderFrame = requestAnimationFrame(() => {
+            this.#renderFrame = null;
+            this.#renderDiagramElements();
+        });
+    }
+
+    #signalReady() {
+        document.dispatchEvent(new Event('mermaid-ready'));
     }
 
     static #getLoader() {
@@ -137,73 +212,7 @@ class MermaidLoader {
         return MermaidLoader.#loader;
     }
 
-    /**
-     * Loads Mermaid JS from CDN if not already loaded, then invokes callback.
-     * @param {() => void} callback Runs when Mermaid is ready to run.
-     */
-    #loadMermaid(callback) {
-        if (typeof window !== 'undefined' && typeof window.mermaid?.run === 'function') {
-            callback();
-            return;
-        }
-        const existing = document.querySelector('script[data-jamsedu-mermaid]');
-        if (existing) {
-            if (typeof window.mermaid?.run === 'function') {
-                callback();
-            } else {
-                existing.addEventListener('load', () => { return callback(); }, { once: true });
-            }
-            return;
-        }
-        const script = document.createElement('script');
-        script.src = `${this.cdnBase}mermaid.min.js`;
-        script.async = true;
-        script.dataset.jamseduMermaid = 'true';
-        script.onload = () => { return callback(); };
-        document.head.appendChild(script);
-    }
-
-    /**
-     * Whether this page was previously marked as needing Mermaid.
-     * @returns {boolean}
-     */
-    #pageIsCached() {
-        const cache = this.#getCache();
-        return Boolean(cache.pages[this.currentPage]);
-    }
-
-    /**
-     * Whether the page has `.mermaid` elements that need rendering.
-     * @returns {boolean}
-     */
-    #pageNeedsMermaid() {
-        return document.querySelector('.mermaid') !== null;
-    }
-
-    /**
-     * Removes cache entries not used or updated in over 14 days and persists. Run when idle to avoid blocking.
-     */
-    #pruneStaleEntries() {
-        const cache = this.#safeReadCache();
-        if (!cache || cache.version !== this.config.mermaidVersion || !cache.pages) {
-            return;
-        }
-        const now = Date.now();
-        let pruned = false;
-        for (const path in cache.pages) {
-            if (now - (cache.pages[path] || 0) > this.#maxAgeMs) {
-                delete cache.pages[path];
-                pruned = true;
-            }
-        }
-        if (pruned) {
-            this.#safeWriteCache(cache);
-        }
-    }
-
-    /**
-     * Initializes Mermaid once and runs all unprocessed `.mermaid` blocks.
-     */
+    /** Runs `mermaid.run` on `.mermaid` nodes. */
     #renderDiagramElements() {
         if (typeof window.mermaid?.run !== 'function') {
             return;
@@ -220,40 +229,9 @@ class MermaidLoader {
         });
         if (result != null && typeof result.then === 'function') {
             result.catch(() => {
-                /* ignore render errors; invalid diagrams stay as text */
+                /* bad diagram source stays plain text */
             });
         }
-    }
-
-    /**
-     * Reads and parses the page cache from localStorage.
-     * @returns {object | null} Parsed cache or null on error or missing.
-     */
-    #safeReadCache() {
-        try {
-            return JSON.parse(localStorage.getItem(this.#storageKey)) || null;
-        } catch {
-            return null;
-        }
-    }
-
-    /**
-     * Persists the cache object to localStorage.
-     * @param {object} data Cache object to store.
-     */
-    #safeWriteCache(data) {
-        try {
-            localStorage.setItem(this.#storageKey, JSON.stringify(data));
-        } catch {
-            /* ignore */
-        }
-    }
-
-    /** Records the current page as needing Mermaid in the cache. */
-    #savePageToCache() {
-        const cache = this.#getCache();
-        cache.pages[this.currentPage] = Date.now();
-        this.#safeWriteCache(cache);
     }
 
 }

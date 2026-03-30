@@ -1,0 +1,7 @@
+/* @jamsedu-version: 1.1.0 */
+/* @jamsedu-component: layout-footer */
+@layer layout {
+    :where(footer) {
+        margin-top: auto;
+    }
+}

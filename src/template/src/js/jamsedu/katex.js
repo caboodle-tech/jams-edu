@@ -1,126 +1,206 @@
-// @jamsedu-version: 1.1.0
+// @jamsedu-version: 2.2.0
 // @jamsedu-component: katex
 
-/**
- * KaTeX loader: loads KaTeX from CDN on demand and renders .math elements when ready.
- *
- * Formula can be in a data-formula attribute or typed inline as the element's text.
- * Caches which pages need KaTeX so repeat visits load instantly.
- */
-class KatexLoader {
+import './dom-watcher.js';
 
-    #loaded = false;
+/**
+ * Loads KaTeX from jsDelivr and renders `.math` blocks. Also handles `.math.macro` definitions.
+ *
+ * @typedef {object} KatexLoaderConfig
+ * @property {string} [katexVersion] npm tag, default `latest`.
+ */
+
+class KatexLoader {
 
     static #loader = null;
 
-    /** Macros built from .math.macro elements, passed to every .math render. */
+    /** Set after first successful `start()`. */
+    #bootStarted = false;
+
+    /** @type {number | null} */
+    #renderFrame = null;
+
+    /** Macros gathered from `.math.macro` elements before normal `.math` runs. */
     #macros = {};
 
-    /** Max age for cache entries (14 days); stale entries are pruned in requestIdleCallback. */
-    #maxAgeMs = 14 * 24 * 60 * 60 * 1000;
-
-    #storageKey = 'katex-needed-cache';
-
     /**
-     * @param {{ katexVersion?: string, maxCachedPages?: number }} [options]
+     * @param {Partial<KatexLoaderConfig>} [options]
      */
     constructor(options = {}) {
-        this.config = { katexVersion: 'latest', maxCachedPages: 30, ...options };
-        this.currentPage = typeof location !== 'undefined' ? location.pathname : '';
-        this.cdnBase = '';
+        /** @type {KatexLoaderConfig} */
+        this.config = { katexVersion: 'latest', ...options };
     }
 
     /**
-     * Start the loader (load KaTeX when needed, render .math elements).
-     * Optionally pass options to apply before running; same shape as configure().
-     * @param {{ katexVersion?: string, maxCachedPages?: number }} [options]
+     * @param {{
+     *   useMutationObserver?: boolean,
+     *   katexVersion?: string,
+     *   version?: string
+     * }} [options]
      */
-    static autoInitialize(options) {
+    static start(options = {}) {
         const loader = KatexLoader.#getLoader();
-        if (options) {
-            loader.configure(options);
-        }
-        loader.autoInitialize();
+        loader.configure(options);
+        loader.#boot(options);
     }
 
-    autoInitialize() {
-        if (this.#loaded) {
+    /**
+     * @param {{ katexVersion?: string, version?: string }} [options]
+     */
+    static autoInitialize(options) {
+        KatexLoader.start(options || {});
+    }
+
+    /**
+     * @param {{ useMutationObserver?: boolean }} options
+     */
+    #boot(options) {
+        if (this.#bootStarted) {
             return;
         }
+        this.#bootStarted = true;
 
-        if (typeof document === 'undefined') {
-            return;
-        }
-
-        this.cdnBase = `https://cdn.jsdelivr.net/npm/katex@${this.config.katexVersion}/dist/`;
+        const useMutationObserver = options.useMutationObserver !== false;
 
         document.addEventListener('katex-ready', () => {
             this.#renderMathElements();
         });
 
-        const cache = this.#getCache();
-        const overLimit = Object.keys(cache.pages).length > this.config.maxCachedPages;
-        if (this.#pageIsCached() || overLimit) {
-            this.#loadKatex(() => {
-                this.#dispatchKatexReady();
+        void this.#loadWithVersionFallback()
+            .then(() => {
+                this.#signalReady();
+            })
+            .catch((err) => {
+                console.error('[jamsedu/katex] Failed to load KaTeX:', err);
             });
+
+        const onDomOrLateMath = () => {
+            this.#scheduleRender();
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', onDomOrLateMath, { once: true });
+        } else {
+            onDomOrLateMath();
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            if (this.#pageNeedsKatex()) {
-                this.#savePageToCache();
-                this.#loadKatex(() => {
-                    this.#dispatchKatexReady();
-                });
-            }
-        });
-
-        const whenIdle = typeof requestIdleCallback !== 'undefined' ? requestIdleCallback : (cb) => {
-            setTimeout(cb, 1);
-        };
-        whenIdle(() => {
-            this.#pruneStaleEntries();
-        });
+        const w = window.DomWatcher;
+        if (useMutationObserver && w && typeof MutationObserver !== 'undefined') {
+            w.watch('.math', onDomOrLateMath, false);
+        }
     }
 
     /**
-     * Set options. Call before autoInitialize() to apply.
-     * @param {{ katexVersion?: string, maxCachedPages?: number }} options
+     * @param {Partial<KatexLoaderConfig & { version?: string }>} [options]
      */
     static configure(options) {
         KatexLoader.#getLoader().configure(options);
     }
 
     /**
-     * Set options. Call synchronously after import to apply before auto-run.
-     * @param {{ katexVersion?: string, maxCachedPages?: number }} options
+     * @param {Partial<KatexLoaderConfig & { version?: string }>} [options]
      */
     configure(options) {
-        if (options) {
-            if (typeof options.katexVersion === 'string') {
-                this.config.katexVersion = options.katexVersion;
-            }
-            if (typeof options.maxCachedPages === 'number') {
-                this.config.maxCachedPages = options.maxCachedPages;
-            }
+        if (!options) {
+            return;
+        }
+        if (typeof options.version === 'string' && options.version.trim()) {
+            this.config.katexVersion = options.version.trim();
+        }
+        if (typeof options.katexVersion === 'string' && options.katexVersion.trim()) {
+            this.config.katexVersion = options.katexVersion.trim();
         }
     }
 
-    #dispatchKatexReady() {
-        this.#loaded = true;
-        document.dispatchEvent(new Event('katex-ready'));
+    /** @param {string} v */
+    #normalizeVersion(v) {
+        if (typeof v !== 'string' || !v.trim()) {
+            return 'latest';
+        }
+        return v.trim();
     }
 
     /**
-     * Returns cache for the current KaTeX version; resets if version mismatch. Sync read only; no prune.
-     * @returns {object} Cache with version and pages (each value is a timestamp).
+     * @returns {Promise<void>}
      */
-    #getCache() {
-        const cache = this.#safeReadCache();
-        if (!cache || cache.version !== this.config.katexVersion) {
-            return { version: this.config.katexVersion, pages: {} };
+    #loadWithVersionFallback() {
+        const primary = this.#normalizeVersion(this.config.katexVersion);
+        return new Promise((resolve, reject) => {
+            const attempt = (version) => {
+                this.#injectKatex(
+                    version,
+                    () => {
+                        if (typeof window.katex?.render === 'function') {
+                            resolve();
+                            return;
+                        }
+                        if (version === 'latest') {
+                            reject(new Error('KaTeX API missing after load'));
+                            return;
+                        }
+                        attempt('latest');
+                    },
+                    () => {
+                        if (version === 'latest') {
+                            reject(new Error('KaTeX script failed'));
+                            return;
+                        }
+                        attempt('latest');
+                    }
+                );
+            };
+            attempt(primary);
+        });
+    }
+
+    /**
+     * @param {string} version
+     * @param {() => void} onSuccess
+     * @param {() => void} onError
+     */
+    #injectKatex(version, onSuccess, onError) {
+        if (typeof window !== 'undefined' && typeof window.katex?.render === 'function') {
+            onSuccess();
+            return;
         }
-        return cache;
+
+        document.querySelectorAll('[data-jamsedu-katex]').forEach((el) => {
+            el.remove();
+        });
+
+        const base = `https://cdn.jsdelivr.net/npm/katex@${version}/dist/`;
+
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = `${base}katex.min.css`;
+        link.dataset.jamseduKatex = version;
+        document.head.appendChild(link);
+
+        const script = document.createElement('script');
+        script.src = `${base}katex.min.js`;
+        script.async = true;
+        script.dataset.jamseduKatex = version;
+        script.onload = () => {
+            onSuccess();
+        };
+        script.onerror = () => {
+            onError();
+        };
+        document.head.appendChild(script);
+    }
+
+    #scheduleRender() {
+        if (this.#renderFrame != null) {
+            return;
+        }
+        this.#renderFrame = requestAnimationFrame(() => {
+            this.#renderFrame = null;
+            this.#renderMathElements();
+        });
+    }
+
+    #signalReady() {
+        document.dispatchEvent(new Event('katex-ready'));
     }
 
     static #getLoader() {
@@ -130,87 +210,7 @@ class KatexLoader {
         return KatexLoader.#loader;
     }
 
-    /**
-     * Loads KaTeX CSS/JS from CDN if not already loaded, then invokes callback.
-     * @param {() => void} callback Runs when KaTeX is ready.
-     */
-    #loadKatex(callback) {
-        if (typeof window !== 'undefined' && window.katex?.render) {
-            callback();
-            return;
-        }
-        if (!document.querySelector('link[data-katex]')) {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = `${this.cdnBase}katex.min.css`;
-            link.dataset.katex = 'true';
-            document.head.appendChild(link);
-        }
-        const script = document.createElement('script');
-        script.src = `${this.cdnBase}katex.min.js`;
-        script.onload = callback;
-        document.head.appendChild(script);
-    }
-
-    /**
-     * Parses .math.macro content: lines like \f = #1f(#2) become {"\\f": "#1f(#2)"} and merge into macros.
-     * @param {string} raw
-     * @param {Record<string, string>} macros
-     */
-    #mergeMacrosFromContent(raw, macros) {
-        const lines = (raw || '').split(/\r?\n/);
-        const macroLine = /^\s*\\([a-zA-Z]+)\s*=\s*(.*)$/;
-        for (const line of lines) {
-            const withoutComment = line.replace(/%[^\n]*$/, '').trim();
-            const m = withoutComment.match(macroLine);
-            if (m) {
-                const value = m[2].trim().replace(/;\s*$/, '');
-                macros[`\\${m[1]}`] = value;
-            }
-        }
-    }
-
-    /**
-     * Whether this page was previously marked as needing KaTeX.
-     * @returns {boolean}
-     */
-    #pageIsCached() {
-        const cache = this.#getCache();
-        return Boolean(cache.pages[this.currentPage]);
-    }
-
-    /**
-     * Whether the page has .math elements that need KaTeX.
-     * @returns {boolean}
-     */
-    #pageNeedsKatex() {
-        return document.querySelector('.math') !== null;
-    }
-
-    /**
-     * Removes cache entries not used or updated in over 14 days and persists. Run when idle to avoid blocking.
-     */
-    #pruneStaleEntries() {
-        const cache = this.#safeReadCache();
-        if (!cache || cache.version !== this.config.katexVersion || !cache.pages) {
-            return;
-        }
-        const now = Date.now();
-        let pruned = false;
-        for (const path in cache.pages) {
-            if (now - (cache.pages[path] || 0) > this.#maxAgeMs) {
-                delete cache.pages[path];
-                pruned = true;
-            }
-        }
-        if (pruned) {
-            this.#safeWriteCache(cache);
-        }
-    }
-
-    /**
-     * Renders all .math with KaTeX. .math.macro: parse lines like \f = #1f(#2), pass as macros, remove element.
-     */
+    /** Renders every `.math` that is not yet marked rendered. */
     #renderMathElements() {
         if (typeof window.katex?.render !== 'function') {
             return;
@@ -239,31 +239,23 @@ class KatexLoader {
     }
 
     /**
-     * Reads and parses the page cache from localStorage.
-     * @returns {object | null} Parsed cache or null on error or missing.
+     * @param {string} raw
+     * @param {Record<string, string>} macros
      */
-    #safeReadCache() {
-        try {
-            return JSON.parse(localStorage.getItem(this.#storageKey)) || null;
-        } catch {
-            return null;
+    #mergeMacrosFromContent(raw, macros) {
+        const lines = (raw || '').split(/\r?\n/);
+        const macroLine = /^\s*\\([a-zA-Z]+)\s*=\s*(.*)$/;
+        for (const line of lines) {
+            const withoutComment = line.replace(/%[^\n]*$/, '').trim();
+            const m = withoutComment.match(macroLine);
+            if (m) {
+                const value = m[2].trim().replace(/;\s*$/, '');
+                macros[`\\${m[1]}`] = value;
+            }
         }
     }
 
     /**
-     * Persists the cache object to localStorage.
-     * @param {object} data Cache object to store.
-     */
-    #safeWriteCache(data) {
-        try {
-            localStorage.setItem(this.#storageKey, JSON.stringify(data));
-        } catch {
-            /* ignore */
-        }
-    }
-
-    /**
-     * Strips Unicode that KaTeX does not accept: zero-width chars removed, thin space (U+2009) → \,
      * @param {string} s
      * @returns {string}
      */
@@ -271,13 +263,6 @@ class KatexLoader {
         return s
             .replace(/\u2009/g, '\\,')
             .replace(/[\u200B\u200C\u200D\uFEFF]/g, '');
-    }
-
-    /** Records the current page as needing KaTeX in the cache. */
-    #savePageToCache() {
-        const cache = this.#getCache();
-        cache.pages[this.currentPage] = Date.now();
-        this.#safeWriteCache(cache);
     }
 
 }

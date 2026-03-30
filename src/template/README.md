@@ -34,7 +34,8 @@ This template includes:
 ├── src/                    # Your source files
 │   ├── templates/         # Template partials (header, footer, etc.)
 │   ├── css/               # Stylesheets
-│   │   ├── jamsedu/       # JamsEdu CSS components (don't modify)
+│   │   ├── vendor/        # Third-party bundles
+│   │   │   └── jamsedu/   # JamsEdu CSS (don't modify)
 │   │   └── main.css       # Your custom styles
 │   ├── js/                # JavaScript files
 │   │   ├── jamsedu/       # JamsEdu JS components (don't modify)
@@ -92,8 +93,8 @@ Override JamsEdu components using CSS variables:
 
 ```css
 :root {
-    --td-text-color: #333333;
-    --td-link-color: #0066cc;
+    --doc-text-color: #333333;
+    --doc-link-color: #0066cc;
 }
 ```
 

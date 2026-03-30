@@ -1,5 +1,16 @@
-// @jamsedu-version: 1.1.0
+// @jamsedu-version: 1.4.0
 // @jamsedu-component: tiny-wysiwyg
+
+import './dom-watcher.js';
+
+/**
+ * Rich editor for `textarea.rich`: toolbar, contenteditable, sync back to the textarea.
+ *
+ * @property {HTMLTextAreaElement} textarea Serialized storage (value / form submit).
+ * @property {HTMLElement|null} container Outer wrapper (toolbar + editor).
+ * @property {HTMLElement|null} toolbar Button row.
+ * @property {HTMLElement|null} editor `.tw-content` editable region.
+ */
 class TinyWysiwyg {
 
     #blocks = ['PRE', 'BLOCKQUOTE'];
@@ -19,6 +30,9 @@ class TinyWysiwyg {
     };
     /* eslint-enable max-len */
 
+    /**
+     * @param {HTMLTextAreaElement} textarea Must have class `rich`.
+     */
     constructor(textarea) {
         this.textarea = textarea;
         this.container = null;
@@ -47,13 +61,42 @@ class TinyWysiwyg {
         this.init();
     }
 
+    /**
+     * DOM ready pass + `window.DomWatcher` for late `textarea.rich` nodes.
+     *
+     * @param {{ useMutationObserver?: boolean }} [options]
+     */
+    static start(options = {}) {
+        const useMutationObserver = options.useMutationObserver !== false;
+        const attach = (el) => {
+            if (!(el instanceof HTMLTextAreaElement) || !el.classList.contains('rich')) {
+                return;
+            }
+            if (el.dataset.jamseduTw === '1') {
+                return;
+            }
+            new TinyWysiwyg(el);
+        };
+
+        const scan = () => {
+            document.querySelectorAll('textarea.rich').forEach(attach);
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', scan, { once: true });
+        } else {
+            scan();
+        }
+
+        const w = window.DomWatcher;
+        if (useMutationObserver && w && typeof MutationObserver !== 'undefined') {
+            w.watch('textarea.rich', attach, false);
+        }
+    }
+
+    /** Same as `start({})` for older call sites. */
     static autoInitialize() {
-        document.addEventListener('DOMContentLoaded', () => {
-            const textareas = document.querySelectorAll('textarea.rich');
-            textareas.forEach((textarea) => {
-                new TinyWysiwyg(textarea);
-            });
-        });
+        TinyWysiwyg.start({});
     }
 
     // Unified cleanup method for both pasted content and regular formatting
@@ -290,8 +333,9 @@ class TinyWysiwyg {
         if (blocks.length === 0) return;
 
         // Check if all blocks are already the target format
-        const allSameFormat = blocks.every((block) => { return block.tagName && block.tagName.toLowerCase() === tag.toLowerCase(); }
-        );
+        const allSameFormat = blocks.every((block) => {
+            return block.tagName && block.tagName.toLowerCase() === tag.toLowerCase();
+        });
 
         const modifiedBlocks = [];
         const cursorWasCollapsed = range.collapsed;
@@ -475,7 +519,7 @@ class TinyWysiwyg {
         if (start.nodeType === 3) { // Text node
             const text = start.textContent;
             while (startOffset < text.length && /\s/.test(text[startOffset])) {
-                startOffset++;
+                startOffset += 1;
             }
             range.setStart(start, startOffset);
         }
@@ -487,7 +531,7 @@ class TinyWysiwyg {
         if (end.nodeType === 3) { // Text node
             const text = end.textContent;
             while (endOffset > 0 && /\s/.test(text[endOffset - 1])) {
-                endOffset--;
+                endOffset -= 1;
             }
             range.setEnd(end, endOffset);
         }
@@ -505,12 +549,12 @@ class TinyWysiwyg {
 
         // Expand start to beginning of word
         while (startOffset > 0 && /\S/.test(text[startOffset - 1])) {
-            startOffset--;
+            startOffset -= 1;
         }
 
         // Expand end to end of word
         while (endOffset < text.length && /\S/.test(text[endOffset])) {
-            endOffset++;
+            endOffset += 1;
         }
 
         range.setStart(start, startOffset);
@@ -636,7 +680,7 @@ class TinyWysiwyg {
         }
     }
 
-    splitSpecificTag(range, element, tagName) {
+    splitSpecificTag(range, element, _tagName) {
         const parent = element.parentNode;
         if (!parent) return;
 
@@ -676,7 +720,7 @@ class TinyWysiwyg {
         parent.removeChild(element);
     }
 
-    splitSpecificTagAtBoundary(range, element, tagName) {
+    splitSpecificTagAtBoundary(range, element, _tagName) {
         const parent = element.parentNode;
         if (!parent) return;
 
@@ -854,11 +898,12 @@ class TinyWysiwyg {
     getBlockElement(node) {
         const blockTags = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'PRE', 'DIV', 'LI'];
 
-        while (node && node !== this.editor) {
-            if (node.nodeType === 1 && blockTags.includes(node.tagName)) {
-                return node;
+        let el = node;
+        while (el && el !== this.editor) {
+            if (el.nodeType === 1 && blockTags.includes(el.tagName)) {
+                return el;
             }
-            node = node.parentNode;
+            el = el.parentNode;
         }
 
         return null;
@@ -1249,6 +1294,9 @@ class TinyWysiwyg {
     }
 
     init() {
+        if (this.textarea.dataset.jamseduTw === '1') {
+            return;
+        }
         // Create the editor structure
         this.createEditorStructure();
 
@@ -1260,6 +1308,8 @@ class TinyWysiwyg {
 
         // Record initial state
         this.recordHistory();
+
+        this.textarea.dataset.jamseduTw = '1';
     }
 
     insertLink(url, isExistingLink) {
@@ -1443,11 +1493,11 @@ class TinyWysiwyg {
 
     sanitizeUrl(url) {
         // Remove leading/trailing whitespace
-        url = url.trim();
+        let s = url.trim();
 
         // Block dangerous protocols
         const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:'];
-        const lowerUrl = url.toLowerCase();
+        const lowerUrl = s.toLowerCase();
 
         for (const protocol of dangerousProtocols) {
             if (lowerUrl.startsWith(protocol)) {
@@ -1456,27 +1506,26 @@ class TinyWysiwyg {
         }
 
         // Add https:// if no protocol specified
-        if (!url.match(/^[a-z][a-z0-9+.-]*:/i)) {
-            url = `https://${url}`;
+        if (!s.match(/^[a-z][a-z0-9+.-]*:/i)) {
+            s = `https://${s}`;
         }
 
         // Limit overall URL length
-        if (url.length > 2048) {
+        if (s.length > 2048) {
             return null;
         }
 
         // Basic URL validation
         try {
-            const urlObj = new URL(url);
+            const urlObj = new URL(s);
 
             // Limit query string length
             if (urlObj.search.length > 500) {
                 return null;
             }
 
-            return url;
-        // eslint-disable-next-line no-unused-vars
-        } catch (e) {
+            return s;
+        } catch {
             return null;
         }
     }

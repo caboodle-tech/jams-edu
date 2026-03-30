@@ -1,0 +1,63 @@
+/* @jamsedu-version: 1.1.0 */
+/* @jamsedu-component: site-chrome-css */
+@layer components {
+    :where(.site-header) {
+        background-color: var(--header-bg);
+        color: var(--header-text);
+        box-shadow: var(--shadow-elevated);
+        max-width: none;
+        width: 100%;
+        margin-inline: 0;
+    }
+
+    :where(.site-header h1) {
+        margin: 0 0 0.25rem 0;
+        font-size: var(--font-size-2xl);
+        line-height: var(--line-height-2xl);
+    }
+
+    :where(.site-header p) {
+        margin: 0;
+        color: color-mix(in srgb, var(--header-text) 82%, transparent);
+        font-size: var(--font-size-sm);
+    }
+
+    :where(.site-header__nav-list) {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    :where(.site-header__nav-list a) {
+        display: inline-block;
+        color: color-mix(in srgb, var(--header-text) 95%, transparent);
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-sm);
+        transition:
+            background-color var(--transition-base),
+            color var(--transition-base);
+    }
+
+    :where(.site-header__nav-list a:hover) {
+        background-color: var(--header-link-bg-hover);
+        color: #fff;
+    }
+
+    :where(.site-header__nav-list a:active) {
+        transform: translateY(1px);
+    }
+
+    :where(footer) {
+        background-color: var(--header-bg);
+        color: color-mix(in srgb, var(--header-text) 90%, transparent);
+        text-align: center;
+        padding-block: 1rem;
+        max-width: none;
+        width: 100%;
+        margin-inline: 0;
+    }
+}

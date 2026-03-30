@@ -1,21 +1,27 @@
-// @jamsedu-version: 2.0.0
+// @jamsedu-version: 3.2.0
 // @jamsedu-component: main-js
-/**
- * Import the JamsEdu library to initialize components and make classes available.
- * This will automatically initialize TinyDocument and TinyWysiwyg editors.
- */
-import { DomWatcher } from './jamsedu/index.js';
+
+import { DomWatcher, initJamsEdu } from './jamsedu/index.js';
 
 /**
- * Add your custom code below.
+ * Change settings here. Only add keys you care about; everything else uses `defaultJamsEduConfig`
+ * from `jamsedu/index.js`. Use `false` to turn a loader off (e.g. `katex: false`).
  *
- * You can use the exported classes:
- * - DomWatcher: Watch for DOM elements matching selectors
- * - TinyDocument: Create and manage document editors
- * - TinyWysiwyg: Create rich text editors
+ * @type {import('./jamsedu/index.js').JamsEduConfig}
+ */
+const jamsEduConfig = {
+    // katex: false,
+    // katex: { version: '0.16.11' },
+    // mermaid: { version: '11.4.0', theme: 'dark' },
+    // embedPdf: { minZoom: 0.5, maxZoom: 4, fullscreenProxy: false }
+};
+
+initJamsEdu(jamsEduConfig);
+
+/**
+ * `DomWatcher` is also on `window` (see `dom-watcher.js`).
  *
  * Example:
- *   DomWatcher.watch('.my-element', (element) => {
- *       console.log('Found element:', element);
- *   });
+ *   DomWatcher.watch('.my-element', (element) => { console.log(element); });
  */
+export { DomWatcher };

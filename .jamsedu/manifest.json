@@ -2,8 +2,8 @@
   "jamseduPackageVersion": "5.0.0",
   "templateVersion": "5.0.0",
   "installed": "2026-03-28T22:28:45.053Z",
-  "lastUpdated": "2026-03-29T16:54:06.826Z",
-  "srcDir": "www/src",
+  "lastUpdated": "2026-03-29T19:21:37.435Z",
+  "srcDir": "www/private",
   "components": {
     "vscode-settings": {
       "file": ".vscode/settings.json",
@@ -69,79 +69,79 @@
       "userCustomized": true
     },
     "jamsedu-css": {
-      "file": "www/src/assets/css/jamsedu/jamsedu.css",
+      "file": "www/private/assets/css/jamsedu/jamsedu.css",
       "version": "1.0.2",
       "hash": "81b1f5a2d696e30e7524fbfde54b221f01502152fdcf447c7f438070252ee39d",
       "modified": false,
       "userCustomized": true
     },
     "tiny-document": {
-      "file": "www/src/assets/css/jamsedu/tiny-wysiwyg.css",
+      "file": "www/private/assets/css/jamsedu/tiny-wysiwyg.css",
       "version": "1.1.0",
       "hash": "fcf0b029b947ffbae08bb3c34047d879272bd90840c124b881975d27989e2922",
       "modified": false,
       "userCustomized": true
     },
     "main-css": {
-      "file": "www/src/assets/css/main.css",
+      "file": "www/private/assets/css/main.css",
       "version": "1.1.0",
       "hash": "68d457c81455521e4f1c240830d91d8d959b6ae1989569d6ee491ac6565a0246",
       "modified": false,
       "userCustomized": true
     },
     "dom-watcher": {
-      "file": "www/src/assets/js/jamsedu/dom-watcher.js",
-      "version": "1.0.0",
-      "hash": "c03c3ead433919c44aadb9f257563791c7239641020331b05a23261d92f33fb9",
+      "file": "www/private/assets/js/jamsedu/dom-watcher.js",
+      "version": "1.2.0",
+      "hash": "b9b10386a950d0bcd10855bfc492bf21faa044f9caefc6de10f6a5d774635239",
       "modified": false,
       "userCustomized": true
     },
     "jamsedu-index": {
-      "file": "www/src/assets/js/jamsedu/index.js",
-      "version": "2.0.2",
-      "hash": "b9894e78ec9163c680e1a66e5b43734d5b845407929eb13c1f75bdc5e71babe7",
+      "file": "www/private/assets/js/jamsedu/index.js",
+      "version": "3.3.0",
+      "hash": "e0b246b57c8667a6ca052fe888c19cc6cc93aeb339d7be14e3c5cdf70028f27d",
       "modified": false,
       "userCustomized": true
     },
     "katex": {
-      "file": "www/src/assets/js/jamsedu/katex.js",
-      "version": "1.1.0",
-      "hash": "2a5b5e76f05f60c0dfcdfe67085db14cb545caa0df2bd5ab2124423f11d8ea8c",
+      "file": "www/private/assets/js/jamsedu/katex.js",
+      "version": "2.2.0",
+      "hash": "584015ad4c1cde794074587436315ee1eb27f0dde9a88f809e9ad724b07190e7",
       "modified": false,
       "userCustomized": true
     },
     "mermaid": {
-      "file": "www/src/assets/js/jamsedu/mermaid.js",
-      "version": "1.0.0",
-      "hash": "7e5213c5338948e1f1f536e7a540ba9d582b325911d0d5df0f8c9f20b0afaf58",
+      "file": "www/private/assets/js/jamsedu/mermaid.js",
+      "version": "2.2.0",
+      "hash": "fe67086c166814b819c26dbb9ecc2e6adaac4a3a7f817df445a0f52f116adb61",
       "modified": false,
       "userCustomized": true
     },
     "embed-pdf-js": {
-      "file": "www/src/assets/js/jamsedu/embed-pdf.js",
-      "version": "1.2.4",
-      "hash": "9d6ec094b703439c04ae638193860fe408db215eb0317f98dc29ebe08ba27205",
+      "file": "www/private/assets/js/jamsedu/embed-pdf.js",
+      "version": "1.5.1",
+      "hash": "3d43f45c66a33aa7ae314bbc2ce124eb18d96be2f21741b366a257678e9fb346",
       "modified": false,
       "userCustomized": false
     },
     "tiny-doc": {
-      "file": "www/src/assets/js/jamsedu/tiny-doc.js",
-      "version": "1.1.0",
-      "hash": "9e180e678b2511cf723ce63a5307e7719ca60d68713c2ae892db4bc36dcd6b0e",
+      "file": "www/private/assets/js/jamsedu/tiny-doc.js",
+      "version": "1.4.0",
+      "hash": "b8857af5dd4a7625d149d56457447a03b151c42fc4db97978700711aa0d1b18f",
       "modified": false,
       "userCustomized": true
     },
     "tiny-wysiwyg": {
-      "file": "www/src/assets/js/jamsedu/tiny-wysiwyg.js",
-      "version": "1.1.0",
-      "hash": "16530cb939bc29b97ca4609ead15bf3d2a27aeb621e242a244d2bed86c593414",
+      "file": "www/private/assets/js/jamsedu/tiny-wysiwyg.js",
+      "version": "1.4.0",
+      "hash": "0cc7465f1ea7d77416f3539722162b8116554da0cabac82b964d45ee3bfac389",
       "modified": false,
       "userCustomized": true
     },
     "main-js": {
-      "file": "www/src/assets/js/main.js",
-      "version": "2.0.0",
-      "hash": "56cf94fc2ed7d81bc35c82b1a65e1a7d47739cbab13bb6f246c6b52a43be4f16",
+      "file": "www/private/assets/js/main.js",
+      "version": "3.2.0",
+      "hash": "e62df3a1bb0b649f024f8513d6c7863ad044705b89e7232ace62df685db9aae4",
       "modified": false,
       "userCustomized": true
     },
@@ -160,7 +160,7 @@
       "userCustomized": true
     },
     "embed-pdf": {
-      "file": "www/src/assets/css/jamsedu/embed-pdf.css",
+      "file": "www/private/assets/css/jamsedu/embed-pdf.css",
       "version": "1.0.7",
       "hash": "c4277865993458faec761f5dfc8643573f5a02b7b19274942fe9580f06a54c4f",
       "modified": false,

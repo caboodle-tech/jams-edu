@@ -2,11 +2,32 @@
     $include('./templates/head.html');
 </script>
 
-<header>
-    <nav>
-        <h1>Welcome to JamsEdu</h1>
-        <p>A simple static site generator</p>
-    </nav>
+<header class="site-header">
+    <div class="site-header__row">
+        <div class="site-header__intro">
+            <nav>
+                <h1>Welcome to JamsEdu</h1>
+                <p>A simple static site generator</p>
+            </nav>
+        </div>
+        <fieldset class="color-mode-toggle" aria-label="Color scheme">
+            <legend>Color scheme</legend>
+            <input id="theme-light" name="theme-preference" type="radio" value="light">
+            <label for="theme-light">
+                <span aria-hidden="true">☀️</span>
+                <span class="visually-hidden">Light</span>
+            </label>
+            <input id="theme-dark" name="theme-preference" type="radio" value="dark">
+            <label for="theme-dark">
+                <span aria-hidden="true">🌙</span>
+                <span class="visually-hidden">Dark</span>
+            </label>
+            <input checked id="theme-system" name="theme-preference" type="radio" value="system">
+            <label for="theme-system">
+                <span aria-hidden="true">⚙️</span>
+                <span class="visually-hidden">System default</span>
+            </label>
+        </fieldset>
+    </div>
 </header>
 <main>
-

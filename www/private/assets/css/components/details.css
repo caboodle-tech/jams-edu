@@ -1,0 +1,14 @@
+/* @jamsedu-version: 1.1.0 */
+/* @jamsedu-component: details-css */
+@layer components {
+    :where(details) {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: var(--space-gutter-tight);
+        background: var(--color-surface);
+    }
+
+    :where(details + details) {
+        margin-top: var(--space-gutter-tight);
+    }
+}

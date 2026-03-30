@@ -7,47 +7,47 @@ JamsEdu provides a powerful CSS custom property system that allows you to custom
 JamsEdu uses CSS custom properties (CSS variables) with a fallback chain system:
 
 ```css
---_text-color: var(--td-text-color, var(--text-color, #000000));
+--doc-text-color: var(--doc-text-color, var(--color-text, #000000));
 ```
 
 This means:
-1. First, try `--td-text-color` (component-specific)
-2. If not found, try `--text-color` (global)
-3. If not found, use default `#000000`
+1. First, try `--doc-text-color` (component-specific)
+2. If not set, fall back to site tokens such as `--color-text`
+3. If still unset, use the hard-coded default in the stylesheet
 
 ## TinyDocument Variables
 
-TinyDocument uses variables prefixed with `--td-*`:
+TinyDocument uses variables prefixed with `--doc-*`:
 
 ### Color Variables
 
 ```css
 :root {
     /* Text and Background */
-    --td-text-color: #000000;
-    --td-bg-color: #ffffff;
+    --doc-text-color: #000000;
+    --doc-bg-color: #ffffff;
     
     /* Borders */
-    --td-border-color: #bdbdbd;
-    --td-border-color-light: #e0e0e0;
+    --doc-border-color: #bdbdbd;
+    --doc-border-color-light: #e0e0e0;
     
     /* Links and Focus */
-    --td-link-color: #1976d2;
-    --td-focus-color: #2196F3;
-    --td-focus-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+    --doc-link-color: #1976d2;
+    --doc-focus-color: #2196F3;
+    --doc-focus-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
     
     /* Primary Colors */
-    --td-primary-bg-color: #2196F3;
-    --td-primary-text-color: #ffffff;
-    --td-primary-hover-bg-color: #1976D2;
-    --td-primary-active-bg-color: #1565C0;
+    --doc-primary-bg-color: #2196F3;
+    --doc-primary-text-color: #ffffff;
+    --doc-primary-hover-bg-color: #1976D2;
+    --doc-primary-active-bg-color: #1565C0;
     
     /* Danger Colors */
-    --td-danger-color: #d32f2f;
-    --td-danger-hover-color: #b71c1c;
+    --doc-danger-color: #d32f2f;
+    --doc-danger-hover-color: #b71c1c;
     
     /* Placeholder */
-    --td-placeholder-color: #9e9e9e;
+    --doc-placeholder-color: #9e9e9e;
 }
 ```
 
@@ -55,10 +55,10 @@ TinyDocument uses variables prefixed with `--td-*`:
 
 ```css
 :root {
-    --td-spacing: 14pt;
-    --td-margin: 14pt;
-    --td-padding: 14pt;
-    --td-border-radius: 4px;
+    --doc-spacing: 14pt;
+    --doc-margin: 14pt;
+    --doc-padding: 14pt;
+    --doc-border-radius: 4px;
 }
 ```
 
@@ -66,8 +66,8 @@ TinyDocument uses variables prefixed with `--td-*`:
 
 ```css
 :root {
-    --td-font-size: 14pt;
-    --td-line-height: 1.5;
+    --doc-font-size: 14pt;
+    --doc-line-height: 1.5;
 }
 ```
 
@@ -75,55 +75,55 @@ TinyDocument uses variables prefixed with `--td-*`:
 
 ```css
 :root {
-    --td-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    --doc-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 ```
 
 ## TinyWysiwyg Variables
 
-TinyWysiwyg uses variables prefixed with `--tw-*`:
+TinyWysiwyg uses variables prefixed with `--richtext-*`:
 
 ### Color Variables
 
 ```css
 :root {
     /* Text and Background */
-    --tw-text-color: #000000;
-    --tw-bg-color: #ffffff;
-    --tw-container-bg-color: #ffffff;
-    --tw-toolbar-bg-color: #f8f9fa;
+    --richtext-text-color: #000000;
+    --richtext-content-bg-color: #ffffff;
+    --richtext-container-bg-color: #ffffff;
+    --richtext-toolbar-bg-color: #f8f9fa;
     
     /* Borders */
-    --tw-border-color: #dddddd;
+    --richtext-border-color: #dddddd;
     
     /* Links */
-    --tw-link-color: #3498db;
+    --richtext-link-color: #3498db;
     
     /* Code and Blockquotes */
-    --tw-code-bg-color: #f4f4f4;
-    --tw-blockquote-bg-color: #f9f9f9;
+    --richtext-code-bg-color: #f4f4f4;
+    --richtext-blockquote-bg-color: #f9f9f9;
     
     /* Buttons */
-    --tw-button-text-color: #000000;
-    --tw-button-hover-bg-color: #e8e8e8;
+    --richtext-button-text-color: #000000;
+    --richtext-button-hover-bg-color: #e8e8e8;
     
     /* Primary Colors */
-    --tw-primary-bg-color: #2196F3;
-    --tw-primary-text-color: #ffffff;
-    --tw-primary-hover-bg-color: #1976D2;
+    --richtext-primary-bg-color: #2196F3;
+    --richtext-primary-text-color: #ffffff;
+    --richtext-primary-hover-bg-color: #1976D2;
     
     /* Danger Colors */
-    --tw-danger-bg-color: #dc3545;
-    --tw-danger-text-color: #ffffff;
-    --tw-danger-hover-bg-color: #bb2d3b;
+    --richtext-danger-bg-color: #dc3545;
+    --richtext-danger-text-color: #ffffff;
+    --richtext-danger-hover-bg-color: #bb2d3b;
     
     /* Modal */
-    --tw-modal-backdrop-color: rgba(0, 0, 0, 0.5);
-    --tw-modal-button-bg-color: #f8f9fa;
+    --richtext-modal-backdrop-color: rgba(0, 0, 0, 0.5);
+    --richtext-modal-button-bg-color: #f8f9fa;
     
     /* Focus */
-    --tw-focus-color: #1976d2;
-    --tw-focus-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+    --richtext-focus-color: #1976d2;
+    --richtext-focus-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
 }
 ```
 
@@ -131,11 +131,11 @@ TinyWysiwyg uses variables prefixed with `--tw-*`:
 
 ```css
 :root {
-    --tw-spacing: 16px;
-    --tw-margin: 16px;
-    --tw-padding: 16px;
-    --tw-gap: 7px;
-    --tw-border-radius: 4px;
+    --richtext-spacing: 16px;
+    --richtext-margin: 16px;
+    --richtext-padding: 16px;
+    --richtext-gap: 7px;
+    --richtext-border-radius: 4px;
 }
 ```
 
@@ -143,8 +143,8 @@ TinyWysiwyg uses variables prefixed with `--tw-*`:
 
 ```css
 :root {
-    --tw-font-size: 18px;
-    --tw-line-height: 1.6;
+    --richtext-font-size: 18px;
+    --richtext-line-height: 1.6;
 }
 ```
 
@@ -152,7 +152,7 @@ TinyWysiwyg uses variables prefixed with `--tw-*`:
 
 ```css
 :root {
-    --tw-transition-duration: 0.2s;
+    --richtext-transition-duration: 0.2s;
 }
 ```
 
@@ -165,13 +165,13 @@ Add custom properties to your `src/css/main.css`:
 ```css
 :root {
     /* Override TinyDocument colors */
-    --td-text-color: #333333;
-    --td-bg-color: #f5f5f5;
-    --td-link-color: #0066cc;
+    --doc-text-color: #333333;
+    --doc-bg-color: #f5f5f5;
+    --doc-link-color: #0066cc;
     
     /* Override TinyWysiwyg colors */
-    --tw-text-color: #333333;
-    --tw-toolbar-bg-color: #ffffff;
+    --richtext-text-color: #333333;
+    --richtext-toolbar-bg-color: #ffffff;
 }
 ```
 
@@ -198,35 +198,31 @@ Override only for specific components:
 ```css
 :root {
     /* Only affects TinyDocument */
-    --td-text-color: #000000;
+    --doc-text-color: #000000;
     
     /* Only affects TinyWysiwyg */
-    --tw-text-color: #333333;
+    --richtext-text-color: #333333;
 }
 ```
 
 ## Dark Mode Support
 
-Both components support dark mode automatically via `prefers-color-scheme: dark` or by adding `.dark` or `.dark-mode` class to `<html>`:
+Vendor chrome follows the same theme as `tokens/colors.css`: `#theme-system` with `prefers-color-scheme: dark`, or `#theme-dark` on the header theme radios.
 
-```html
-<html class="dark">
-```
-
-You can customize dark mode colors:
+You can customize dark mode colors (for example):
 
 ```css
 :root {
     /* Light mode colors */
-    --td-text-color: #000000;
-    --td-bg-color: #ffffff;
+    --doc-text-color: #000000;
+    --doc-bg-color: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
         /* Dark mode colors */
-        --td-text-color: #e0e0e0;
-        --td-bg-color: #2a2a2a;
+        --doc-text-color: #e0e0e0;
+        --doc-bg-color: #2a2a2a;
     }
 }
 ```
@@ -242,18 +238,18 @@ You can customize dark mode colors:
     --accent: #e74c3c;
     
     /* TinyDocument customization */
-    --td-text-color: var(--secondary);
-    --td-link-color: var(--primary);
-    --td-primary-bg-color: var(--primary);
+    --doc-text-color: var(--secondary);
+    --doc-link-color: var(--primary);
+    --doc-primary-bg-color: var(--primary);
     
     /* TinyWysiwyg customization */
-    --tw-text-color: var(--secondary);
-    --tw-link-color: var(--primary);
-    --tw-toolbar-bg-color: #f8f9fa;
+    --richtext-text-color: var(--secondary);
+    --richtext-link-color: var(--primary);
+    --richtext-toolbar-bg-color: #f8f9fa;
     
     /* Spacing */
-    --td-spacing: 16pt;
-    --tw-spacing: 20px;
+    --doc-spacing: 16pt;
+    --richtext-spacing: 20px;
 }
 ```
 
@@ -267,6 +263,7 @@ You can customize dark mode colors:
 ## Full Variable Reference
 
 For a complete list of all available variables, check the source files:
-- `src/css/jamsedu/tiny-document.css` - All `--td-*` variables
-- `src/css/jamsedu/tiny-wysiwyg.css` - All `--tw-*` variables
+- `src/css/vendor/jamsedu/embed-pdf.css` — all `--pdf-*` variables (Embed PDF viewer)
+- `src/css/vendor/jamsedu/tiny-document.css` — all `--doc-*` variables
+- `src/css/vendor/jamsedu/tiny-wysiwyg.css` — all `--richtext-*` variables
 

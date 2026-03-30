@@ -1,0 +1,61 @@
+/**
+ * Color tokens: seeds + one `light-dark()` pair per surface (see
+ * `www/public/css-architecture-and-folder-structure.md`). Dark side uses `oklch(from var(--seed-…) …)`.
+ *
+ * How it works: `light-dark(A, B)` picks A or B from the element’s used `color-scheme`. We only flip
+ * `color-scheme` on `html` for the three radios — no `not(:has())`, no duplicated dark blocks.
+ * Needs a browser with `light-dark()` (Chrome 123+, Firefox 131+, Safari 17.5+).
+ */
+@layer tokens {
+    :root {
+        color-scheme: light;
+
+        --seed-bg: #f4f6f8;
+        --seed-surface: #ffffff;
+        --seed-text: #1e293b;
+        --seed-text-muted: #64748b;
+        --seed-accent: #2563eb;
+        --seed-accent-hover: #1d4ed8;
+        --seed-border: #e2e8f0;
+        --seed-header-bg: #1e293b;
+        --seed-header-text: #f8fafc;
+    }
+
+    /* ⚙️ and the OS is dark → dark scheme (otherwise :root stays light). */
+    @media (prefers-color-scheme: dark) {
+        html:has(#theme-system:checked) {
+            color-scheme: dark;
+        }
+    }
+
+    /* 🌖 → dark no matter what the OS says. */
+    html:has(#theme-dark:checked) {
+        color-scheme: dark;
+    }
+
+    /* ☀️ → light even on a dark OS. */
+    html:has(#theme-light:checked) {
+        color-scheme: light;
+    }
+
+    :root,
+    html {
+        --color-bg: light-dark(var(--seed-bg), oklch(from var(--seed-bg) calc(l * 0.22) calc(c * 0.95) h));
+        --color-surface: light-dark(var(--seed-surface), oklch(from var(--seed-surface) calc(l * 0.26) calc(c * 0.5 + 0.02) h));
+        --color-text: light-dark(var(--seed-text), oklch(from var(--seed-text) calc(l + 0.52) calc(c * 0.35) h));
+        --color-text-muted: light-dark(var(--seed-text-muted), oklch(from var(--seed-text-muted) calc(l + 0.28) calc(c * 0.45) h));
+        --color-accent: light-dark(var(--seed-accent), oklch(from var(--seed-accent) calc(l + 0.12) calc(c * 1.08) h));
+        --color-accent-hover: light-dark(var(--seed-accent-hover), oklch(from var(--seed-accent-hover) calc(l + 0.14) calc(c * 1.08) h));
+        --color-border: light-dark(var(--seed-border), oklch(from var(--seed-border) calc(l * 0.32) calc(c * 0.85) h));
+        --color-link: var(--color-accent);
+        --color-link-hover: var(--color-accent-hover);
+        --header-bg: light-dark(var(--seed-header-bg), oklch(from var(--seed-header-bg) calc(l * 0.38) calc(c * 1.02) h));
+        --header-text: var(--seed-header-text);
+        --header-link-bg-hover: var(--color-accent);
+        --shadow-elevated: 0 2px 10px light-dark(rgb(0 0 0 / 0.08), rgb(0 0 0 / 0.35));
+        --theme-toggle-bg: color-mix(in srgb, var(--header-text) 22%, var(--header-bg));
+        --theme-toggle-border: color-mix(in srgb, var(--header-text) 42%, var(--header-bg));
+        --theme-toggle-bg-hover: color-mix(in srgb, var(--header-text) 30%, var(--header-bg));
+        --theme-toggle-border-hover: color-mix(in srgb, var(--header-text) 55%, var(--header-bg));
+    }
+}

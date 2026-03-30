@@ -1,0 +1,107 @@
+/* @jamsedu-version: 1.1.0 */
+/* @jamsedu-component: elements-css */
+@layer base {
+    :where(body) {
+        margin: 0;
+        font-family: var(--font-family-sans);
+        font-size: var(--font-size-md);
+        line-height: var(--line-height-lg);
+        color: var(--color-text);
+        background-color: var(--color-bg);
+    }
+
+    :where(a) {
+        color: var(--color-link);
+        text-decoration: none;
+        transition: color var(--transition-base);
+    }
+
+    :where(a:hover) {
+        color: var(--color-link-hover);
+    }
+
+    :where(h1) {
+        font-size: var(--font-size-4xl);
+        line-height: var(--line-height-4xl);
+    }
+
+    :where(h2) {
+        font-size: var(--font-size-3xl);
+        line-height: var(--line-height-3xl);
+    }
+
+    :where(h3) {
+        font-size: var(--font-size-2xl);
+        line-height: var(--line-height-2xl);
+    }
+
+    :where(h4) {
+        font-size: var(--font-size-xl);
+        line-height: var(--line-height-xl);
+    }
+
+    :where(h5) {
+        font-size: var(--font-size-lg);
+        line-height: var(--line-height-lg);
+    }
+
+    :where(h6) {
+        font-size: var(--font-size-md);
+        line-height: var(--line-height-md);
+    }
+
+    :where(kbd) {
+        background-color: var(--color-surface);
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--color-border);
+        box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
+        font-family: var(--font-family-mono);
+        font-size: var(--font-size-md);
+        font-weight: bold;
+        margin: 0 2px;
+        padding: 2px 5px;
+    }
+
+    :where(.table-container) {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    :where(table) {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    :where(thead th) {
+        font-weight: bold;
+        padding: var(--table-cell-padding-y) var(--table-cell-padding-x)
+            var(--table-cell-padding-y) var(--font-size-xs);
+        text-align: left;
+    }
+
+    :where(tbody) {
+        border-top: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    :where(tbody tr:nth-child(odd)) {
+        background-color: color-mix(in srgb, var(--color-surface) 88%, var(--color-border));
+    }
+
+    :where(td) {
+        min-width: 125px;
+        padding: var(--table-cell-padding-y) var(--table-cell-padding-x)
+            var(--table-cell-padding-y) var(--font-size-xs);
+        vertical-align: top;
+        white-space: nowrap;
+    }
+
+    :where(code) {
+        background-color: color-mix(in srgb, var(--color-surface) 92%, var(--color-border));
+        padding: 0.2rem 0.4rem;
+        border-radius: var(--radius-sm);
+        color: var(--color-accent-hover);
+        font-family: var(--font-family-mono);
+        font-size: 0.9em;
+    }
+}

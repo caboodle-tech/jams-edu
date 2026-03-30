@@ -24,7 +24,7 @@ TinyDocument **replaces** short author classes with stable `doc-*` classes on th
 
 Enhanced controls receive classes including `doc-input`, `doc-text`, `doc-date`, `doc-select`, `doc-textarea`, `doc-link`, `doc-file-wrapper`, `doc-preview`, `doc-template-button`, and `doc-download-button`. Link fields are wrapped in `doc-link-wrapper`; after a link is saved, the input also has `filled`.
 
-For colors, spacing, and typography, JamsEdu provides **CSS custom properties** (`--td-*` on `:root`, `.document`, or an ancestor). TinyWysiwyg honors related variables. See the [CSS customization guide](css-customization.jamsedu.md) for the full list and fallback behavior.
+For colors, spacing, and typography, JamsEdu provides **CSS custom properties** (`--doc-*` on `:root`, `.document`, or an ancestor). TinyWysiwyg honors `--richtext-*` variables. See the [CSS customization guide](css-customization.jamsedu.md) for the full list and fallback behavior.
 
 **Layout Class Mapping**
 

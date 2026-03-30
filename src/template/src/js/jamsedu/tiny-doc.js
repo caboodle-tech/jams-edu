@@ -1,9 +1,15 @@
-// @jamsedu-version: 1.1.0
+// @jamsedu-version: 1.4.0
 // @jamsedu-component: tiny-doc
+
+import './dom-watcher.js';
 import TinyWysiwyg from './tiny-wysiwyg.js';
 
+/**
+ * One interactive `.document` form (fields, rich areas, templates, “download as PDF”).
+ */
 class TinyDocument {
 
+    /** Root element with class `document`. */
     #document;
 
     #elements = {
@@ -32,6 +38,9 @@ class TinyDocument {
     };
     /* eslint-enable max-len */
 
+    /**
+     * @param {HTMLElement} documentElement Root `.document` node.
+     */
     constructor(documentElement) {
         this.#document = documentElement;
         this.initialize();
@@ -45,19 +54,55 @@ class TinyDocument {
         elem.classList.add('doc-input', 'doc-text');
     }
 
+    /**
+     * @param {HTMLElement} documentElement New root `.document`.
+     */
     setDocumentElement(documentElement) {
         this.#document = documentElement;
     }
 
-    static autoInitialize() {
-        document.addEventListener('DOMContentLoaded', () => {
-            const docs = document.querySelectorAll('.document');
-            docs.forEach((doc) => {
-                new TinyDocument(doc);
-            });
-        });
+    /**
+     * Finds all `.document` on DOM ready, then watches for more via `window.DomWatcher` (unless disabled).
+     *
+     * @param {{ useMutationObserver?: boolean }} [options]
+     */
+    static start(options = {}) {
+        const useMutationObserver = options.useMutationObserver !== false;
+        /** @type {WeakSet<Element>} */
+        const attached = new WeakSet();
+        const attach = (el) => {
+            if (!(el instanceof HTMLElement) || !el.classList.contains('document')) {
+                return;
+            }
+            if (attached.has(el)) {
+                return;
+            }
+            attached.add(el);
+            new TinyDocument(el);
+        };
+
+        const scan = () => {
+            document.querySelectorAll('.document').forEach(attach);
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', scan, { once: true });
+        } else {
+            scan();
+        }
+
+        const w = window.DomWatcher;
+        if (useMutationObserver && w && typeof MutationObserver !== 'undefined') {
+            w.watch('.document', attach, false);
+        }
     }
 
+    /** Same as `start({})` for older call sites. */
+    static autoInitialize() {
+        TinyDocument.start({});
+    }
+
+    /** Wires inputs, textareas, templates, download button. */
     initialize() {
         if (!this.#document) {
             console.error('No document element set for TinyDocument.');
@@ -307,9 +352,8 @@ class TinyDocument {
     }
 
     /**
-     * Normalizes link popover heading: appends ":" if the text does not end with . ? ! or :.
-     * @param {string} text
-     * @returns {string}
+     * @param {string} text Label text for the link dialog.
+     * @returns {string} Adds trailing `:` when missing sentence punctuation.
      */
     #formatLinkPopoverHeading(text) {
         const trimmed = String(text).trim();
@@ -324,10 +368,10 @@ class TinyDocument {
     }
 
     /**
-     * @param {HTMLInputElement} elem
-     * @param {boolean} isRaw
-     * @param {string} originalPlaceholder
-     * @param {string} prompt
+     * @param {HTMLInputElement} elem URL field using `data-prompt` / `data-url` / `data-text`.
+     * @param {boolean} isRaw If true, only store a single value (no separate label).
+     * @param {string} originalPlaceholder Input placeholder before dialog.
+     * @param {string} prompt Optional copy for the dialog title.
      */
     #openLinkPopover(elem, isRaw, originalPlaceholder, prompt) {
         // Don't open multiple

@@ -1,0 +1,23 @@
+/* @jamsedu-version: 1.1.0 */
+/* @jamsedu-component: layout-header */
+@layer layout {
+    :where(.site-header__row) {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-gutter-tight);
+    }
+
+    :where(.site-header__intro) {
+        flex: 1 1 12rem;
+        min-width: 0;
+    }
+
+    @media (max-width: 768px) {
+        :where(.site-header__nav-list) {
+            flex-direction: column;
+            width: 100%;
+        }
+    }
+}

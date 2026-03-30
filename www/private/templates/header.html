@@ -1,0 +1,37 @@
+<script>
+    $include('./templates/head.html');
+</script>
+
+<header class="site-header">
+    <div class="site-header__row">
+        <div class="site-header__intro">
+            <nav>
+                <h1>Welcome to JamsEdu</h1>
+                <p>A simple static site generator</p>
+            </nav>
+        </div>
+        <details class="theme-menu">
+            <summary class="theme-hit">
+                <span class="visually-hidden">Color scheme</span>
+            </summary>
+            <div class="theme-extra" role="group" aria-label="Choose color scheme">
+                <label class="theme-hit theme-pick" data-theme-pick="light">
+                    <input id="theme-light" name="theme-preference" type="radio" value="light">
+                    <span aria-hidden="true">☀️</span>
+                    <span class="visually-hidden">Light</span>
+                </label>
+                <label class="theme-hit theme-pick" data-theme-pick="system">
+                    <input checked id="theme-system" name="theme-preference" type="radio" value="system">
+                    <span aria-hidden="true">⚙️</span>
+                    <span class="visually-hidden">System default</span>
+                </label>
+                <label class="theme-hit theme-pick" data-theme-pick="dark">
+                    <input id="theme-dark" name="theme-preference" type="radio" value="dark">
+                    <span aria-hidden="true">🌖</span>
+                    <span class="visually-hidden">Dark</span>
+                </label>
+            </div>
+        </details>
+    </div>
+</header>
+<main>

@@ -1,0 +1,16 @@
+/* @jamsedu-version: 1.1.0 */
+/* @jamsedu-component: layout-content-grid */
+@layer layout {
+    :where(header, main, footer) {
+        width: 100%;
+        max-width: 1200px;
+        margin-inline: auto;
+        padding: var(--space-gutter);
+    }
+
+    @media (max-width: 768px) {
+        :where(header, main) {
+            padding: var(--space-gutter-tight);
+        }
+    }
+}
