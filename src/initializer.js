@@ -63,6 +63,43 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
     }
 
     /**
+     * Detect if init is running in the JamsEdu source repository itself.
+     * This enables extra safety guards so maintainer files are not overwritten.
+     *
+     * @param {string} cwd Project root where init is being run.
+     * @returns {boolean}
+     */
+    static isSourceRepoMode(cwd) {
+        try {
+            const packageJsonPath = Path.join(cwd, 'package.json');
+            const packageJson = Fs.existsSync(packageJsonPath) ?
+                JSON.parse(Fs.readFileSync(packageJsonPath, 'utf-8')) :
+                null;
+            const hasExpectedName = packageJson && packageJson.name === '@caboodle-tech/jamsedu';
+            const hasCli = Fs.existsSync(Path.join(cwd, 'bin', 'cli.js'));
+            const hasTemplate = Fs.existsSync(Path.join(cwd, 'src', 'template'));
+            const hasInitializer = Fs.existsSync(Path.join(cwd, 'src', 'initializer.js'));
+            return Boolean(hasExpectedName && hasCli && hasTemplate && hasInitializer);
+        } catch (err) {
+            return false;
+        }
+    }
+
+    /**
+     * In source-repo mode, only allow writing generated project files under these roots.
+     * This prevents init from clobbering maintainer files in the repository root.
+     *
+     * @param {string} relPath Path relative to cwd, forward slashes.
+     * @returns {boolean}
+     */
+    static isAllowedSourceRepoWritePath(relPath) {
+        const normalized = String(relPath || '').replace(/\\/g, '/').replace(/^\/+/, '');
+        return normalized.startsWith('www/')
+            || normalized.startsWith('TEST/')
+            || normalized.startsWith('.jamsedu/');
+    }
+
+    /**
      * Prefer `.jamsedu/config.js`, then legacy `jamsedu.config.js` at project root.
      * @param {string} cwd Project root
      * @returns {{ absPath: string, label: string } | null}
@@ -107,6 +144,12 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         Print.notice(`${this.#header.replace('{{VERSION}}', packageVersion)}`);
         await promptLine('');
         this.clearScreen();
+
+        const sourceRepoMode = this.isSourceRepoMode(cwd);
+        if (sourceRepoMode) {
+            Print.warn('Source repo mode detected.');
+            Print.info('Safety guards are enabled so init only writes inside allowed project paths (for example under www/).');
+        }
 
         let srcDir;
         let destDir;
@@ -195,14 +238,14 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
             return;
         }
 
-        const conflictResolution = await this.handleFileConflicts(cwd, jamseduTemplateDir, srcDir, layoutConfig);
+        const conflictResolution = await this.handleFileConflicts(cwd, jamseduTemplateDir, srcDir, layoutConfig, { sourceRepoMode });
         if (!conflictResolution) {
             Print.warn('Initialization cancelled by user.');
             return;
         }
 
         // Copy template files recursively (structure matches user choice so updates and build respect it)
-        const skippedFiles = this.copyTemplateFiles(jamseduTemplateDir, cwd, conflictResolution, srcDir, layoutConfig);
+        const skippedFiles = this.copyTemplateFiles(jamseduTemplateDir, cwd, conflictResolution, srcDir, layoutConfig, { sourceRepoMode });
 
         // When using assets layout, remove old css/js/images under srcDir so only assets/ layout remains; ensure assets/images exists
         if (assetsDir) {
@@ -213,7 +256,9 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
         }
 
         // Ensure .gitignore includes destDir
-        this.ensureGitignore(cwd, destDir);
+        if (!sourceRepoMode) {
+            this.ensureGitignore(cwd, destDir);
+        }
 
         // Write out the configuration file AFTER copying (so it doesn't conflict)
         // Store config in .jamsedu/config.js
@@ -291,8 +336,8 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
     /**
      * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null }} userConfig Same layout keys as .jamsedu/config.js
      */
-    static async handleFileConflicts(cwd, templateDir, userSrcDir, userConfig = {}) {
-        const filesToCopy = this.scanTemplateFilesForConflictCheck(templateDir, userSrcDir, userConfig);
+    static async handleFileConflicts(cwd, templateDir, userSrcDir, userConfig = {}, options = {}) {
+        const filesToCopy = this.scanTemplateFilesForConflictCheck(templateDir, userSrcDir, userConfig, options);
 
         // Check which of these files actually exist in the project root
         const conflictingFiles = [];
@@ -310,15 +355,18 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
         Print.warn(`\n⚠️  Found ${conflictingFiles.length} existing file(s) or directory(ies) that would conflict with template files.`);
         Print.out(`Conflicting files/directories: ${conflictingFiles.slice(0, 5).join(', ')}${conflictingFiles.length > 5 ? '...' : ''}`);
 
-        const response = await this.getResponse('\nHow would you like to proceed?\n\n1) Overwrite - Replace existing files with template files\n2) Skip - Don\'t copy files that already exist, only copy new ones\n3) Fresh Install - Delete conflicting files first, then copy (⚠️  DESTRUCTIVE!)\n4) Cancel - Abort initialization\n\nEnter your choice (1-4)', '1');
+        const conflictPrompt = options.sourceRepoMode ?
+            '\nHow would you like to proceed?\n\n1) Overwrite - Replace existing files with template files\n2) Skip - Don\'t copy files that already exist, only copy new ones\n3) Cancel - Abort initialization\n\nEnter your choice (1-3)' :
+            '\nHow would you like to proceed?\n\n1) Overwrite - Replace existing files with template files\n2) Skip - Don\'t copy files that already exist, only copy new ones\n3) Fresh Install - Delete conflicting files first, then copy (⚠️  DESTRUCTIVE!)\n4) Cancel - Abort initialization\n\nEnter your choice (1-4)';
+        const response = await this.getResponse(conflictPrompt, '1');
 
         const choice = response.trim();
 
-        if (choice === '4' || choice.toLowerCase() === 'cancel') {
+        if ((options.sourceRepoMode && choice === '3') || choice === '4' || choice.toLowerCase() === 'cancel') {
             return null;
         }
 
-        if (choice === '3' || choice.toLowerCase() === 'fresh install' || choice.toLowerCase() === 'fresh') {
+        if (!options.sourceRepoMode && (choice === '3' || choice.toLowerCase() === 'fresh install' || choice.toLowerCase() === 'fresh')) {
             const confirm = await this.getResponse('\n⚠️  WARNING: This will DELETE the conflicting files!\n\nAre you absolutely sure? Type "yes" to confirm, or anything else to cancel.', '');
             if (confirm.toLowerCase() !== 'yes') {
                 Print.warn('Fresh install cancelled.');
@@ -353,7 +401,7 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
     /**
      * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null, templateDir?: string }} userConfig
      */
-    static scanTemplateFilesForConflictCheck(templateDir, userSrcDir, userConfig = {}) {
+    static scanTemplateFilesForConflictCheck(templateDir, userSrcDir, userConfig = {}, options = {}) {
         const files = [];
         const normalizedSrcDir = userSrcDir.replace(/\\/g, '/');
 
@@ -372,12 +420,18 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
                 if (entry.isDirectory()) {
                     scanDir(fullPath);
                 } else if (entry.isFile()) {
+                    if (options.sourceRepoMode && !relativePath.startsWith('src/')) {
+                        continue;
+                    }
                     let destPath;
                     if (relativePath.startsWith('src/')) {
                         const pathAfterSrc = relativePath.replace(/^src\//, '');
                         destPath = templateSrcPathToUserPath(normalizedSrcDir, pathAfterSrc, userConfig);
                     } else {
                         destPath = relativePath;
+                    }
+                    if (options.sourceRepoMode && !this.isAllowedSourceRepoWritePath(destPath)) {
+                        continue;
                     }
                     files.push(destPath);
                 }
@@ -391,7 +445,7 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
     /**
      * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null, templateDir?: string }} userConfig
      */
-    static copyTemplateFiles(templateDir, cwd, conflictMode, userSrcDir, userConfig = {}) {
+    static copyTemplateFiles(templateDir, cwd, conflictMode, userSrcDir, userConfig = {}, options = {}) {
         Print.info('Copying template files...');
         const skippedFiles = [];
 
@@ -408,6 +462,9 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
                     if (entry.name === 'config.js' || entry.name === 'jamsedu.config.js') {
                         continue;
                     }
+                    if (options.sourceRepoMode && entry.isFile() && !relativePath.startsWith('src/')) {
+                        continue;
+                    }
 
                     let destPath;
                     if (relativePath.startsWith('src/')) {
@@ -419,6 +476,10 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
                             return p;
                         });
                         destPath = Path.join(cwd, ...pathParts);
+                    }
+                    const destPathRel = Path.relative(cwd, destPath).replace(/\\/g, '/');
+                    if (options.sourceRepoMode && !this.isAllowedSourceRepoWritePath(destPathRel)) {
+                        continue;
                     }
 
                     if (entry.isDirectory()) {
