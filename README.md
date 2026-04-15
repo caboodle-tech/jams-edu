@@ -52,7 +52,7 @@ You should have node `v22+` installed on your machine along with a node package 
 # Install with PNPM
 pnpm install -g @caboodle-tech/jamsedu
 
-# OR install with NPM
+# or install with NPM
 npm install -g @caboodle-tech/jamsedu
 ```
 
@@ -176,3 +176,6 @@ export default {
     websiteUrl: 'https://example.com'
 };
 ```
+
+> [!NOTE]
+> This feature is not yet implemented. In the future, the website URL will be used to generate the sitemap.
