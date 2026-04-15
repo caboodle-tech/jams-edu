@@ -1,5 +1,6 @@
-/* @jamsedu-version: 1.0.4 */
-/* @jamsedu-component: video-embed-css */
+
+
+
 /**
  * Hook output from `video[src]` → `figure.video` + iframe (+ optional `figcaption`); see `jamsedu-hooks/videos.js`.
  * Borders and shadows use `css/tokens/colors.css` (`--border-prose-card`, `--shadow-elevated`, semantic colors);

@@ -101,11 +101,18 @@
         </p>
         <textarea rows="3" placeholder="Plain text summary (multiple lines)"></textarea>
 
-        <div class="subsection">Primary reference (label plus URL)</div>
-        <input type="url" placeholder="Source title" prompt="Paste a stable https URL">
-
-        <div class="subsection">Canonical link (URL only)</div>
-        <input type="url" data-raw placeholder="https://…">
+        <div class="subsection">References in sentence form</div>
+        <p class="instructions">
+            Use the first inline field for a labeled citation; the second uses
+            <code>data-raw</code> to print the raw URL as link text.
+        </p>
+        <p>
+            This summary follows
+            <input type="url" placeholder="Labeled source title" prompt="Paste a stable https URL">
+            and aligns with the canonical method at
+            <input type="url" data-raw placeholder="https://example.com/specification">
+            for final verification.
+        </p>
 
         <div class="section">Team members</div>
         <ul>
@@ -117,7 +124,7 @@
         </ul>
 
         <div class="section">Notes (rich text)</div>
-        <textarea class="rich" rows="3" name="tiny_doc_demo_notes" aria-label="Rich text notes" placeholder="Use the toolbar for basic formatting.">&lt;p&gt;&lt;strong&gt;Finding:&lt;/strong&gt; one sentence.&lt;/p&gt;</textarea>
+        <textarea class="rich" rows="3" name="tiny_doc_demo_notes" aria-label="Rich text notes" placeholder="Use the toolbar for basic formatting."></textarea>
 
         <div class="section">Optional photo</div>
         <input type="file" accept="image/*" aria-label="Optional image attachment">

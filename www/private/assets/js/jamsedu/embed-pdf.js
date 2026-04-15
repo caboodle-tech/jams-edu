@@ -1,6 +1,3 @@
-// @jamsedu-version: 1.6.1
-// @jamsedu-component: embed-pdf-js
-
 import './dom-watcher.js';
 
 /**

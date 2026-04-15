@@ -4,6 +4,8 @@
 
 JamsEdu provides three main JavaScript components that you can use in your projects.
 
+Path examples in this guide are illustrative. Use the JavaScript location defined by your project layout and config.
+
 ## Components Overview
 
 - **TinyDocument**: Interactive document editor with form inputs, file uploads, and PDF export
@@ -15,7 +17,7 @@ JamsEdu provides three main JavaScript components that you can use in your proje
 By default, TinyDocument and TinyWysiwyg are automatically initialized when you import the JamsEdu module:
 
 ```javascript
-// src/js/main.js
+// <your-js-path>/main.js
 import { DomWatcher, TinyDocument, TinyWysiwyg } from './jamsedu/index.js';
 
 // TinyDocument and TinyWysiwyg are already initialized!

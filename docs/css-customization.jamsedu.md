@@ -1,6 +1,6 @@
 # CSS Customization Guide
 
-JamsEdu provides a powerful CSS custom property system that allows you to customize the appearance of TinyDocument and TinyWysiwyg components without modifying the core CSS files.
+JamsEdu provides a powerful CSS custom property system that allows you to customize built-in features and shared site styling without modifying core CSS files.
 
 ## How It Works
 
@@ -177,17 +177,17 @@ Add custom properties to your `src/css/main.css`:
 
 ### Option 2: Use Global Variables
 
-Set global variables that both components will use:
+Set shared site tokens that built-in features can inherit through their fallback chains:
 
 ```css
 :root {
-    /* Global variables (used by both components) */
-    --text-color: #333333;
-    --bg-color: #f5f5f5;
-    --link-color: #0066cc;
-    --border-color: #cccccc;
+    /* Shared site tokens */
+    --color-text: #333333;
+    --color-bg-page: #f5f5f5;
+    --color-link: #0066cc;
+    --color-border: #cccccc;
     
-    /* Both TinyDocument and TinyWysiwyg will use these */
+    /* Built-in features inherit these when feature-specific tokens are not set */
 }
 ```
 

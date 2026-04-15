@@ -1,5 +1,5 @@
-/* @jamsedu-version: 1.0.7 */
-/* @jamsedu-component: blockquotes-css */
+
+
 
 /* main prose only; editor quotes live in `vendor/jamsedu/tiny-wysiwyg.css` */
 /* `cite` uses inline-flex so `::before` (em dash) is the first flex item and follows `direction` (RTL/LTR). */

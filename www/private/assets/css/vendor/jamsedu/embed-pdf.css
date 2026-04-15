@@ -1,5 +1,6 @@
-/* @jamsedu-version: 1.6.3 */
-/* @jamsedu-component: embed-pdf */
+
+
+
 /*
  * Snippet shell (`tokens.css` / `--pdf-*` + `embed-pdf.js`). Toolbar rem fix targets the first viewer
  * shadow host only (`--spacing` + `--text-*`, not `--container-sm`).

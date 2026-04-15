@@ -92,11 +92,29 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
      * @param {string} relPath Path relative to cwd, forward slashes.
      * @returns {boolean}
      */
-    static isAllowedSourceRepoWritePath(relPath) {
+    static isAllowedSourceRepoWritePath(relPath, allowedRoots = []) {
         const normalized = String(relPath || '').replace(/\\/g, '/').replace(/^\/+/, '');
-        return normalized.startsWith('www/')
-            || normalized.startsWith('TEST/')
-            || normalized.startsWith('.jamsedu/');
+        for (const root of allowedRoots) {
+            const rootNormalized = String(root || '').replace(/\\/g, '/').replace(/^\/+/, '').replace(/\/+$/, '');
+            if (!rootNormalized) {
+                continue;
+            }
+            if (normalized === rootNormalized || normalized.startsWith(`${rootNormalized}/`)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * In source-repo mode, writes are restricted to the configured srcDir and .jamsedu metadata.
+     *
+     * @param {string} srcDir User selected source dir (relative path).
+     * @returns {string[]}
+     */
+    static getSourceRepoAllowedWriteRoots(srcDir) {
+        const normalizedSrc = String(srcDir || 'src').replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
+        return [normalizedSrc, 'docs', '.jamsedu'];
     }
 
     /**
@@ -229,6 +247,7 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
         }
 
         const layoutConfig = { assetsDir, assetPaths, templateDir: userTemplateDir };
+        const sourceRepoAllowedRoots = sourceRepoMode ? this.getSourceRepoAllowedWriteRoots(srcDir) : [];
 
         // Check for existing files and handle conflicts (before generating config)
         const jamseduTemplateDir = Path.join(jamseduWd, 'src', 'template');
@@ -238,14 +257,20 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
             return;
         }
 
-        const conflictResolution = await this.handleFileConflicts(cwd, jamseduTemplateDir, srcDir, layoutConfig, { sourceRepoMode });
+        const conflictResolution = await this.handleFileConflicts(cwd, jamseduTemplateDir, srcDir, layoutConfig, {
+            sourceRepoMode,
+            allowedWriteRoots: sourceRepoAllowedRoots
+        });
         if (!conflictResolution) {
             Print.warn('Initialization cancelled by user.');
             return;
         }
 
         // Copy template files recursively (structure matches user choice so updates and build respect it)
-        const skippedFiles = this.copyTemplateFiles(jamseduTemplateDir, cwd, conflictResolution, srcDir, layoutConfig, { sourceRepoMode });
+        const skippedFiles = this.copyTemplateFiles(jamseduTemplateDir, cwd, conflictResolution, srcDir, layoutConfig, {
+            sourceRepoMode,
+            allowedWriteRoots: sourceRepoAllowedRoots
+        });
 
         // When using assets layout, remove old css/js/images under srcDir so only assets/ layout remains; ensure assets/images exists
         if (assetsDir) {
@@ -420,7 +445,7 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
                 if (entry.isDirectory()) {
                     scanDir(fullPath);
                 } else if (entry.isFile()) {
-                    if (options.sourceRepoMode && !relativePath.startsWith('src/')) {
+                    if (options.sourceRepoMode && !relativePath.startsWith('src/') && !relativePath.startsWith('docs/')) {
                         continue;
                     }
                     let destPath;
@@ -430,7 +455,7 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
                     } else {
                         destPath = relativePath;
                     }
-                    if (options.sourceRepoMode && !this.isAllowedSourceRepoWritePath(destPath)) {
+                    if (options.sourceRepoMode && !this.isAllowedSourceRepoWritePath(destPath, options.allowedWriteRoots || [])) {
                         continue;
                     }
                     files.push(destPath);
@@ -462,9 +487,6 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
                     if (entry.name === 'config.js' || entry.name === 'jamsedu.config.js') {
                         continue;
                     }
-                    if (options.sourceRepoMode && entry.isFile() && !relativePath.startsWith('src/')) {
-                        continue;
-                    }
 
                     let destPath;
                     if (relativePath.startsWith('src/')) {
@@ -477,12 +499,11 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
                         });
                         destPath = Path.join(cwd, ...pathParts);
                     }
-                    const destPathRel = Path.relative(cwd, destPath).replace(/\\/g, '/');
-                    if (options.sourceRepoMode && !this.isAllowedSourceRepoWritePath(destPathRel)) {
-                        continue;
-                    }
 
                     if (entry.isDirectory()) {
+                        if (options.sourceRepoMode && relativePath !== 'src' && relativePath !== 'docs' && !relativePath.startsWith('src/') && !relativePath.startsWith('docs/')) {
+                            continue;
+                        }
                         // Create directory if it doesn't exist
                         if (!Fs.existsSync(destPath)) {
                             Fs.mkdirSync(destPath, { recursive: true });
@@ -491,6 +512,13 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
                         // This ensures files inside existing directories still get copied
                         copyRecursive(srcPath, templateBasePath);
                     } else if (entry.isFile()) {
+                        if (options.sourceRepoMode && !relativePath.startsWith('src/') && !relativePath.startsWith('docs/')) {
+                            continue;
+                        }
+                        const destPathRel = Path.relative(cwd, destPath).replace(/\\/g, '/');
+                        if (options.sourceRepoMode && !this.isAllowedSourceRepoWritePath(destPathRel, options.allowedWriteRoots || [])) {
+                            continue;
+                        }
                         // Handle file conflicts
                         if (Fs.existsSync(destPath)) {
                             if (conflictMode === 'skip') {

@@ -1,5 +1,6 @@
-/* @jamsedu-version: 3.5.6 */
-/* @jamsedu-component: site-chrome-css */
+
+
+
 /** Masthead: `<header>` only. `.site-logo` marks: `mobile` or `desktop`, plus `dark` or `light`. Viewport uses `width < 768px` / `width >= 768px` so only one slot shows at the breakpoint. Theme radios flip `dark` vs `light` via `html:has(…)` and nested `prefers-color-scheme` for system. */
 .content-grid > header {
     background-color: var(--header-bg);

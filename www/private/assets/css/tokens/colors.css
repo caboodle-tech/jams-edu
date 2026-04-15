@@ -1,5 +1,6 @@
-/* @jamsedu-version: 2.2.11 */
-/* @jamsedu-component: colors-css */
+
+
+
 /**
  * Color tokens: seeds + one `light-dark()` pair per surface (see
  * `www/public/css-architecture-and-folder-structure.md`). Dark side uses `oklch(from var(--seed-…) …)`.

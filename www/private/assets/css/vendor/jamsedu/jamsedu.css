@@ -1,5 +1,6 @@
-/* @jamsedu-version: 1.6.3 */
-/* @jamsedu-component: jamsedu-css */
+
+
+
 @import './tokens.css' layer(vendor);
 @import './tiny-document.css' layer(vendor);
 @import './embed-pdf.css' layer(vendor);

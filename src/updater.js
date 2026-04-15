@@ -32,6 +32,54 @@ class Updater {
     }
 
     /**
+     * Detect if update is running in the JamsEdu source repository itself.
+     * In that mode, only files under the configured srcDir should be managed.
+     *
+     * @param {string} cwd Project root.
+     * @returns {boolean}
+     */
+    static isSourceRepoMode(cwd) {
+        try {
+            const packageJsonPath = Path.join(cwd, 'package.json');
+            const packageJson = Fs.existsSync(packageJsonPath) ?
+                JSON.parse(Fs.readFileSync(packageJsonPath, 'utf-8')) :
+                null;
+            const hasExpectedName = packageJson && packageJson.name === '@caboodle-tech/jamsedu';
+            const hasCli = Fs.existsSync(Path.join(cwd, 'bin', 'cli.js'));
+            const hasTemplate = Fs.existsSync(Path.join(cwd, 'src', 'template'));
+            const hasUpdater = Fs.existsSync(Path.join(cwd, 'src', 'updater.js'));
+            return Boolean(hasExpectedName && hasCli && hasTemplate && hasUpdater);
+        } catch (err) {
+            return false;
+        }
+    }
+
+    /**
+     * Whether a relative project path is inside srcDir.
+     *
+     * @param {string} filePath Relative path from project root.
+     * @param {string} srcDir Relative srcDir from config.
+     * @returns {boolean}
+     */
+    static isPathUnderSrcDir(filePath, srcDir) {
+        const normalizedFile = String(filePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
+        const normalizedSrc = String(srcDir || 'src').replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
+        return normalizedFile === normalizedSrc || normalizedFile.startsWith(`${normalizedSrc}/`);
+    }
+
+    /**
+     * In source-repo mode, allow updates only under srcDir and docs/.
+     *
+     * @param {string} filePath Relative path from project root.
+     * @param {string} srcDir Relative srcDir from config.
+     * @returns {boolean}
+     */
+    static isAllowedSourceRepoUpdatePath(filePath, srcDir) {
+        const normalizedFile = String(filePath || '').replace(/\\/g, '/').replace(/^\/+/, '');
+        return this.isPathUnderSrcDir(normalizedFile, srcDir) || normalizedFile === 'docs' || normalizedFile.startsWith('docs/');
+    }
+
+    /**
      * Run interactive template update against the user project.
      *
      * @param {string} cwd Project root (usersRoot).
@@ -66,6 +114,10 @@ class Updater {
             assetPaths: userConfig.assetPaths,
             ...(templateDirMap ? { templateDir: templateDirMap } : {})
         };
+        const sourceRepoMode = this.isSourceRepoMode(cwd);
+        if (sourceRepoMode) {
+            Print.info(`Source repo mode: limiting updates to ${srcDir}/`);
+        }
 
         const packageJsonPath = Path.join(jamseduWd, 'package.json');
         const packageJson = JSON.parse(Fs.readFileSync(packageJsonPath, 'utf-8'));
@@ -137,11 +189,11 @@ class Updater {
             return;
         }
 
-        const templateFiles = this.scanTemplateFiles(templateDir, srcDir, templatePathLayout);
+        const templateFiles = this.scanTemplateFiles(templateDir, srcDir, templatePathLayout, { sourceRepoMode });
         
         // Clean up and correct manifest (remove stale entries, add missing entries, fix component names)
         // This runs before scanning user files so we have a clean manifest to work with
-        const removedFromTemplate = this.correctManifest(manifest, templateFiles, cwd, srcDir);
+        const removedFromTemplate = this.correctManifest(manifest, templateFiles, cwd, srcDir, { sourceRepoMode });
 
         // Save corrected manifest immediately
         Fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
@@ -166,7 +218,7 @@ class Updater {
             }
         }
 
-        const userFiles = this.scanUserFiles(cwd, srcDir, manifest, userConfig);
+        const userFiles = this.scanUserFiles(cwd, srcDir, manifest, userConfig, { sourceRepoMode });
 
         // Compare files
         const updates = this.compareFiles(templateFiles, userFiles, manifest, cwd, force);
@@ -371,7 +423,7 @@ class Updater {
 
         // Apply updates if any were selected
         if (selectedUpdates.length > 0) {
-            await this.applyUpdates(selectedUpdates, templateDir, cwd, srcDir, manifest, currentPackageVersion, backupPath, userConfig, force);
+            await this.applyUpdates(selectedUpdates, templateDir, cwd, srcDir, manifest, currentPackageVersion, backupPath, userConfig, force, { sourceRepoMode });
             Print.success('\n✅ Update complete!');
         } else {
             Print.info('\nNo updates selected.');
@@ -381,7 +433,7 @@ class Updater {
         Fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
     }
 
-    static scanTemplateFiles(templateDir, userSrcDir, userConfig = {}) {
+    static scanTemplateFiles(templateDir, userSrcDir, userConfig = {}, options = {}) {
         const files = [];
         const scanDir = (dir) => {
             if (!Fs.existsSync(dir)) return;
@@ -397,6 +449,9 @@ class Updater {
                 if (entry.isDirectory()) {
                     scanDir(fullPath);
                 } else if (entry.isFile()) {
+                    if (options.sourceRepoMode && !relativePath.startsWith('src/') && !relativePath.startsWith('docs/')) {
+                        continue;
+                    }
                     const content = Fs.readFileSync(fullPath, 'utf-8');
                     const version = parseVersionFromFile(content);
                     
@@ -429,17 +484,19 @@ class Updater {
         return files;
     }
 
-    static scanUserFiles(cwd, srcDir, manifest, userConfig = {}) {
+    static scanUserFiles(cwd, srcDir, manifest, userConfig = {}, options = {}) {
         const files = [];
         // Scan all directories that might contain tracked files (default layout)
-        const jamseduDirs = [
-            Path.join(cwd, srcDir, 'js', 'jamsedu'),
-            Path.join(cwd, srcDir, 'css', 'jamsedu'),
-            Path.join(cwd, 'eslint'),
-            Path.join(cwd, 'docs'),
-            Path.join(cwd, '.vscode'),
-            Path.join(cwd, srcDir, 'css') // For main.css
-        ];
+        const jamseduDirs = options.sourceRepoMode ?
+            [Path.join(cwd, srcDir), Path.join(cwd, 'docs')] :
+            [
+                Path.join(cwd, srcDir, 'js', 'jamsedu'),
+                Path.join(cwd, srcDir, 'css', 'jamsedu'),
+                Path.join(cwd, 'eslint'),
+                Path.join(cwd, 'docs'),
+                Path.join(cwd, '.vscode'),
+                Path.join(cwd, srcDir, 'css') // For main.css
+            ];
         // If user moved assets (assetsDir or assetPaths), also scan those locations under srcDir
         if (typeof userConfig.assetsDir === 'string' && userConfig.assetsDir) {
             jamseduDirs.push(Path.join(cwd, srcDir, userConfig.assetsDir));
@@ -452,25 +509,27 @@ class Updater {
             }
         }
         
-        // Also check root-level files that might be tracked (like eslint.config.js)
-        const rootFiles = ['eslint.config.js'];
-        for (const rootFile of rootFiles) {
-            const fullPath = Path.join(cwd, rootFile);
-            if (Fs.existsSync(fullPath)) {
-                const content = Fs.readFileSync(fullPath, 'utf-8');
-                const hash = Crypto.createHash('sha256').update(normalizeContentForHash(content)).digest('hex');
-                const version = parseVersionFromFile(content);
-                const component = parseComponentFromFile(content);
-                const componentName = component || Path.basename(rootFile, Path.extname(rootFile));
-                const manifestEntry = manifest.components[componentName];
-                
-                files.push({
-                    file: rootFile,
-                    hash: hash,
-                    version: version,
-                    component: componentName,
-                    manifestEntry: manifestEntry
-                });
+        // Also check root-level files that might be tracked (like eslint.config.js), unless source repo mode.
+        if (!options.sourceRepoMode) {
+            const rootFiles = ['eslint.config.js'];
+            for (const rootFile of rootFiles) {
+                const fullPath = Path.join(cwd, rootFile);
+                if (Fs.existsSync(fullPath)) {
+                    const content = Fs.readFileSync(fullPath, 'utf-8');
+                    const hash = Crypto.createHash('sha256').update(normalizeContentForHash(content)).digest('hex');
+                    const version = parseVersionFromFile(content);
+                    const component = parseComponentFromFile(content);
+                    const componentName = component || Path.basename(rootFile, Path.extname(rootFile));
+                    const manifestEntry = manifest.components[componentName];
+                    
+                    files.push({
+                        file: rootFile,
+                        hash: hash,
+                        version: version,
+                        component: componentName,
+                        manifestEntry: manifestEntry
+                    });
+                }
             }
         }
 
@@ -725,7 +784,7 @@ class Updater {
         return matches;
     }
 
-    static correctManifest(manifest, templateFiles, cwd, srcDir) {
+    static correctManifest(manifest, templateFiles, cwd, srcDir, options = {}) {
         // Build a map of component name -> template file for quick lookup
         const templateMap = new Map();
         for (const templateFile of templateFiles) {
@@ -758,6 +817,10 @@ class Updater {
 
             // Component no longer in template: remove from manifest and optionally offer to delete file
             if (!templateFile) {
+                if (options.sourceRepoMode && !this.isAllowedSourceRepoUpdatePath(filePath, srcDir)) {
+                    seenComponents.add(componentName);
+                    continue;
+                }
                 if (Fs.existsSync(fullPath)) {
                     removedFromTemplate.push({ componentName, filePath });
                 }
@@ -899,7 +962,7 @@ class Updater {
         return selected;
     }
 
-    static async applyUpdates(selectedUpdates, templateDir, cwd, srcDir, manifest, packageVersion, initialBackupPath = null, userConfig = {}, force = false) {
+    static async applyUpdates(selectedUpdates, templateDir, cwd, srcDir, manifest, packageVersion, initialBackupPath = null, userConfig = {}, force = false, options = {}) {
         let backupPath = initialBackupPath;
 
         // When using assets layout, move old css/js/images into assets/ first so user content is kept; then overwrites below apply fresh template
@@ -917,6 +980,10 @@ class Updater {
             }
             // Normalize to forward slashes for consistency
             filePath = filePath.replace(/\\/g, '/');
+            if (options.sourceRepoMode && !this.isAllowedSourceRepoUpdatePath(filePath, srcDir)) {
+                Print.warn(`Skipping non-srcDir file in source repo mode: ${filePath}`);
+                continue;
+            }
             
             const destPath = Path.resolve(cwd, filePath);
             const templatePath = update.templateFile?.fullTemplatePath || 

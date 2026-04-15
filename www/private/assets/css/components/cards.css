@@ -1,5 +1,6 @@
-/* @jamsedu-version: 1.2.1 */
-/* @jamsedu-component: link-cards-css */
+
+
+
 /**
  * Docs-style grid: `<div class="card-grid">` plus either `<a class="link-card">` (whole tile links) or
  * `<article class="content-card">` (title + paragraph; links only inside copy).

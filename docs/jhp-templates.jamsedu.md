@@ -14,10 +14,10 @@ JHP (JavaScript HTML Processor) is the template engine that powers JamsEdu. It p
 
 ### Creating a JHP File
 
-Create a file with `.jhp` extension in your `srcDir`:
+Create a file with `.jhp` extension in your configured `srcDir`:
 
 ```html
-<!-- src/index.jhp -->
+<!-- <your-src-dir>/index.jhp -->
 <script>
     $include('./templates/header.html');
 </script>
@@ -48,9 +48,9 @@ Use `$include()` to include partial files (header, footer, etc.):
 
 ### Creating Partials
 
-Create reusable template files in your `templateDir` (default: `src/templates/`):
+Create reusable template files in your configured `templateDir` (commonly `<your-src-dir>/templates`):
 
-**src/templates/header.html**:
+**<your-templateDir>/header.html**:
 ```html
 <header>
     <nav>
@@ -60,7 +60,7 @@ Create reusable template files in your `templateDir` (default: `src/templates/`)
 </header>
 ```
 
-**src/templates/footer.html**:
+**<your-templateDir>/footer.html**:
 ```html
 <footer>
     <p>&copy; 2024 My Site</p>
@@ -100,21 +100,20 @@ Use `$echo()` to output variable values:
 
 ## Template Directory Structure
 
-Your templates should be organized in your `templateDir` (configured in `jamsedu.config.js`):
+Your templates should be organized in your `templateDir` (configured in `.jamsedu/config.js`):
 
 ```
-src/
-  templates/          # Your templateDir
-    header.html
-    footer.html
-    nav.html
-  index.jhp          # Your pages
-  about.jhp
+<your-src-dir>/
+  ... pages and content
+<your-templateDir>/   # Reusable includes
+  header.html
+  footer.html
+  nav.html
 ```
 
 ## Best Practices
 
-1. **Organize Partials**: Keep reusable components in `src/templates/`
+1. **Organize Partials**: Keep reusable components in your configured `templateDir`
 2. **Use Variables**: Define variables at the top of your `.jhp` files
 3. **Relative Paths**: Use relative paths for `$include()` based on file location
 4. **Naming**: Use `.jhp` extension for all template files
@@ -122,7 +121,7 @@ src/
 ## Example: Complete Page
 
 ```html
-<!-- src/index.jhp -->
+<!-- <your-src-dir>/index.jhp -->
 <script>
     const title = 'Home Page';
     const description = 'Welcome to my site';

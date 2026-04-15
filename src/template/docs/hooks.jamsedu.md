@@ -79,7 +79,7 @@ For more details and CSS-related APIs (e.g. for `<style>` nodes), see the [simpl
 
 ## Configuration
 
-Register hooks in `jamsedu.config.js` with `pre` and/or `post` arrays:
+Register hooks in `.jamsedu/config.js` with `pre` and/or `post` arrays:
 
 ```js
 import myPreHook from './hooks/myPreHook.js';
@@ -88,9 +88,9 @@ import myPostHook from './hooks/myPostHook.js';
 export default {
     pre: [myPreHook],
     post: [myPostHook],
-    destDir: 'www',
-    srcDir: 'src',
-    templateDir: 'src/templates'
+    destDir: '<your-output-dir>',
+    srcDir: '<your-source-dir>',
+    templateDir: '<your-template-partials-dir>'
 };
 ```
 

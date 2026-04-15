@@ -6,6 +6,8 @@
 
 **You MUST use `type="module"` when linking JavaScript files that use ES6 imports!**
 
+Path examples below are illustrative only. Always match your configured `srcDir`, `assetsDir`, and `assetPaths`.
+
 ### Correct Usage
 
 ```html
@@ -24,7 +26,7 @@ If you forget `type="module"`:
 JamsEdu's JavaScript components use ES6 module syntax:
 
 ```javascript
-// src/js/main.js
+// <your-js-path>/main.js
 import { DomWatcher, TinyDocument, TinyWysiwyg } from './jamsedu/index.js';
 ```
 
@@ -37,7 +39,7 @@ Modern browsers require `type="module"` to process `import` and `export` stateme
 Add the script tag in your template files:
 
 ```html
-<!-- src/templates/head.html -->
+<!-- <your-templateDir>/head.html -->
 <head>
     <meta charset="UTF-8">
     <title>My Site</title>
