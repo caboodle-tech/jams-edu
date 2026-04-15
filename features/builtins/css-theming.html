@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="../../assets/css/main.css" rel="stylesheet">
+        <title>CSS and Theming · JamsEDU</title>
+        <meta name="description" content="Built-in starter styles for JamsEDU projects including colors, typography, light and dark mode, and default content element styling.">
+        <script type="module" src="../../assets/js/main.js"></script>
+        <script src="../../assets/js/theme-preference.js"></script>
+    </head>
+    <body>
+<div class="content-grid">
+<header class="full-width">
+    <input class="visually-hidden" type="checkbox" id="site-nav-toggle" aria-controls="site-primary-nav">
+    <label class="site-nav-backdrop" for="site-nav-toggle" aria-hidden="true"></label>
+    <div class="inner">
+        <div class="site-brand">
+            <a class="brand-link" href="../../index.html" aria-label="JamsEdu home">
+                <img class="site-logo mobile dark" src="../../assets/images/logos/icon-dark.svg" alt decoding="async">
+                <img class="site-logo mobile light" src="../../assets/images/logos/icon-light.svg" alt decoding="async">
+                <img class="site-logo desktop dark" src="../../assets/images/logos/full-dark.svg" alt decoding="async">
+                <img class="site-logo desktop light" src="../../assets/images/logos/full-light.svg" alt decoding="async">
+            </a>
+        </div>
+        <nav aria-label="Primary" class="site-primary-nav" id="site-primary-nav">
+            <ul class="nav-list">
+                <li><a href="../../index.html">Home</a></li>
+                <li><a href="../../features/getting-started.html">Get Started</a></li>
+                <li><a href="../../features/index.html">Docs</a></li>
+                <li><a href="../../features/built-in-features.html">Features</a></li>
+            </ul>
+        </nav>
+        <div class="site-header-tools">
+            <label class="site-nav-menu-btn" for="site-nav-toggle">
+                <span class="visually-hidden">Menu</span>
+                <svg class="site-nav-icon site-nav-icon-open" aria-hidden="true" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" fill="currentColor"></svg>
+                <svg class="site-nav-icon site-nav-icon-close" aria-hidden="true" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"></svg>
+            </label>
+            <details class="theme-menu">
+                <summary class="theme-control">
+                    <span class="visually-hidden">Color scheme</span>
+                </summary>
+                <div class="theme-extra" role="group" aria-label="Choose color scheme">
+                    <label class="theme-control theme-pick" data-theme-pick="light">
+                        <input name="theme-preference" type="radio" value="light">
+                        <span aria-hidden="true">☀️</span>
+                        <span class="visually-hidden">Light</span>
+                    </label>
+                    <label class="theme-control theme-pick" data-theme-pick="system">
+                        <input name="theme-preference" type="radio" value="system">
+                        <span aria-hidden="true">⚙️</span>
+                        <span class="visually-hidden">System default</span>
+                    </label>
+                    <label class="theme-control theme-pick" data-theme-pick="dark">
+                        <input name="theme-preference" type="radio" value="dark">
+                        <span aria-hidden="true">🌖</span>
+                        <span class="visually-hidden">Dark</span>
+                    </label>
+                </div>
+            </details>
+        </div>
+    </div>
+</header>
+<main>
+<p class="breadcrumb">
+    <a href="../../index.html">Home</a> · <a href="../../features/index.html">Docs</a> · <a href="../../features/built-in-features.html">Built-In Features</a> · CSS and Theming
+</p>
+<h1>CSS and Theming</h1>
+<p>
+    Every new JamsEDU project comes with a clean set of default styles for common page elements. These give you a readable, consistent look right away so you can start publishing immediately. When you are ready to match your own brand, everything is controlled through a small set of CSS custom properties that you can override in a few files.
+</p>
+<nav aria-labelledby="theming-toc-heading">
+    <h2 id="theming-toc-heading">On This Page</h2>
+    <ul>
+        <li><a href="#built-in-elements">Built-In Element Examples</a></li>
+        <li><a href="#definition-lists">Definition lists</a></li>
+        <li><a href="#color-and-theming">Color and Theming</a></li>
+        <li><a href="#light-and-dark-mode">Light and Dark Mode</a></li>
+    </ul>
+</nav>
+<section id="built-in-elements" aria-labelledby="built-in-elements-heading">
+    <h2 id="built-in-elements-heading">Built-In Element Examples</h2>
+    <p>
+        Below are examples of the styled elements available in every JamsEDU project.
+    </p>
+    <details>
+        <summary>Headings and Collapsible Sections</summary>
+        <p>
+            JamsEDU styles all six heading levels for you. This is also an example of a collapsible section using the <code>details</code> element.
+        </p>
+        <h1>Heading 1</h1>
+        <h2>Heading 2</h2>
+        <h3>Heading 3</h3>
+        <h4>Heading 4</h4>
+        <h5>Heading 5</h5>
+        <h6>Heading 6</h6>
+    </details>
+    <h3>Highlighted Text</h3>
+    <p>
+        Use the <code>mark</code> element when a term needs <mark>extra attention</mark> on the page.
+    </p>
+    <pre><code class="html">
+        &lt;mark&gt;extra attention&lt;/mark&gt;
+    </code></pre>
+    <h3>Keyboard Input</h3>
+    <p>
+        Show keyboard shortcuts with the <code>kbd</code> element. For example, press <kbd>Ctrl</kbd> + <kbd>P</kbd> to print this page.
+    </p>
+    <pre><code class="html">
+        &lt;kbd&gt;Ctrl&lt;/kbd&gt; + &lt;kbd&gt;P&lt;/kbd&gt;
+    </code></pre>
+    <h3>Code Blocks</h3>
+    <p>
+        Wrap terminal commands or code references with the <code>code</code> element and it will render like the inline code block in this paragraph. If you wrap the <code>code</code> element in a <code>pre</code> element, it will render as a code block with a border, padding, and line numbers like the following example:
+    </p>
+    <pre><code class="html">
+        &lt;code&gt;npm run build&lt;/code&gt;
+    </code></pre>
+    <h3>Horizontal Rule</h3>
+    <p>
+        Use a horizontal rule (<code>&lt;hr&gt;</code>) to visually separate sections of content on a page. By default it will render like the following example:
+    </p>
+    <hr>
+    <h3 id="definition-lists">Definition lists</h3>
+    <p>
+        In page prose, a <code>dl</code> defaults to a glossary style: each <code>div</code> that wraps a <code>dt</code> and <code>dd</code> is spaced from the next pair with vertical margin only (no rules or hairlines), and definitions are indented so long lists of terms stay readable. For a few highlighted entries, add <code>class="card"</code> or <code>class="cards"</code> on the <code>dl</code> to use the same inset card treatment as blockquotes (surface, border, and start accent).
+    </p>
+    <dl class="cards">
+        <div>
+            <dt>Card row</dt>
+            <dd>Uses the opt-in <code>dl.cards</code> (or <code>dl.card</code>) layout.</dd>
+        </div>
+        <div>
+            <dt>Second row</dt>
+            <dd>Each pair sits in its own card.</dd>
+        </div>
+    </dl>
+    <pre><code class="html">
+        &lt;dl&gt;
+            &lt;div&gt;&lt;dt&gt;Term&lt;/dt&gt;&lt;dd&gt;Glossary style (default).&lt;/dd&gt;&lt;/div&gt;
+        &lt;/dl&gt;
+        &lt;dl class="cards"&gt;
+            &lt;div&gt;&lt;dt&gt;Term&lt;/dt&gt;&lt;dd&gt;Inset card row.&lt;/dd&gt;&lt;/div&gt;
+        &lt;/dl&gt;
+    </code></pre>
+    <h3 id="blockquotes">Blockquotes</h3>
+    <p>
+        Use a <code>blockquote</code> for quotations. You can optionally add a <code>cite</code> attribute with a URL on the <code>blockquote</code> element and the JamsEDU engine will automatically turn the attribution line into a link to that source.
+    </p>
+    <blockquote cite="https://example.com">
+        <p>
+            If future generations are to remember us more with gratitude than sorrow, we must achieve more than just the miracles of technology. We must also leave them a glimpse of the world as it was created, not just as it looked when we got through with it.
+        </p>
+        <cite><a href="https://example.com" target="_blank" rel="noreferrer"> Lyndon B. Johnson</a></cite>
+    </blockquote>
+    <pre><code class="html">
+        &lt;blockquote cite="https://example.com/source-url"&gt;
+            &lt;p&gt;
+                Your quote here.
+            &lt;/p&gt;
+            &lt;cite&gt;
+                Author Name (Optional)
+            &lt;/cite&gt;
+        &lt;/blockquote&gt;
+    </code></pre>
+    <h3>Callouts</h3>
+    <p>
+        Callouts are styled alert panels that draw attention to important information. Add <code>class="callout"</code> to any <code>div</code> for the default tone, then add a type class to change its appearance. Adding the <code>icon</code> class will display a leading glyph that matches the callout type. The <code>title</code> row is optional on all types.
+    </p>
+    <p>
+        Available type classes are <code>notice</code> (also <code>info</code>), <code>success</code>, <code>warning</code> (also <code>warn</code> and <code>construction</code>), and <code>danger</code> (also <code>error</code>). The same type classes also work on <code>details</code> elements for collapsible callouts, with an additional <code>spoiler</code> class that uses the warning style.
+    </p>
+    <div class="callout icon">
+        <p>
+            Default callout with no type class and no title row.
+        </p>
+    </div>
+    <div class="callout notice icon">
+        <div class="title">Notice</div>
+        <p>
+            Highlights something readers should be aware of.
+        </p>
+    </div>
+    <div class="callout success icon">
+        <div class="title">Success</div>
+        <p>
+            Confirms that something completed or is valid.
+        </p>
+    </div>
+    <div class="callout warning icon">
+        <div class="title">Warning</div>
+        <p>
+            Signals caution or a potential risk.
+        </p>
+    </div>
+    <div class="callout error icon">
+        <p>
+            Indicates a serious error or destructive action. This example has no title row.
+        </p>
+    </div>
+    <pre><code class="html">
+        &lt;div class="callout success icon"&gt;
+            &lt;div class="title"&gt;Saved&lt;/div&gt;
+            &lt;p&gt;Your changes were stored.&lt;/p&gt;
+        &lt;/div&gt;
+        &lt;div class="callout danger icon"&gt;
+            &lt;p&gt;No title row is still valid.&lt;/p&gt;
+        &lt;/div&gt;
+    </code></pre>
+</section>
+<section id="color-and-theming" aria-labelledby="color-and-theming-heading">
+    <h2 id="color-and-theming-heading">Color and Theming</h2>
+    <p>
+        JamsEDU theming is token based. Every built-in feature reads its colors and spacing from CSS custom properties using a three level fallback system. The feature's own token is checked first, then your site-wide shared token, and finally a sensible default value.
+    </p>
+    <pre><code class="css">
+        --doc-text-color: var(--doc-text-color, var(--color-text, #000000));
+    </code></pre>
+    <p>
+        This means your custom value always wins. If you have not set one, the shared site token is used. If neither exists, the built-in default takes over. In a new JamsEDU project the following files control your site's visual appearance. All of them are meant to be edited.
+    </p>
+    <dl>
+        <div>
+            <dt><code>css/tokens/colors.css</code></dt>
+            <dd>Site color tokens and light or dark palettes.</dd>
+        </div>
+        <div>
+            <dt><code>css/tokens/variables.css</code></dt>
+            <dd>Typography, spacing, border radius, motion, and layout tokens.</dd>
+        </div>
+        <div>
+            <dt><code>css/vendor/jamsedu/tokens.css</code></dt>
+            <dd>Token bridge for built-in features like Tiny Doc, Rich Text, and the PDF viewer.</dd>
+        </div>
+        <div>
+            <dt><code>css/main.css</code></dt>
+            <dd>Your project's main stylesheet. It defines import order and is the usual place to add site-wide rules after the defaults.</dd>
+        </div>
+    </dl>
+    <h3>Common Token Prefixes</h3>
+    <p>
+        When overriding built-in styles, these prefixes will help you find the right tokens.
+    </p>
+    <dl>
+        <div>
+            <dt><code>--jamsedu-seed-*</code></dt>
+            <dd>Base seed values in the vendor token bridge. These feed the shared feature tokens below.</dd>
+        </div>
+        <div>
+            <dt><code>--jamsedu-*</code></dt>
+            <dd>Shared built-in feature tokens used across forms, Rich Text, and PDF UI.</dd>
+        </div>
+        <div>
+            <dt><code>--doc-*</code></dt>
+            <dd>Interactive form surfaces and text.</dd>
+        </div>
+        <div>
+            <dt><code>--richtext-*</code></dt>
+            <dd>Rich Text editor chrome.</dd>
+        </div>
+        <div>
+            <dt><code>--pdf-*</code></dt>
+            <dd>Embedded PDF viewer chrome.</dd>
+        </div>
+    </dl>
+</section>
+<section id="light-and-dark-mode" aria-labelledby="light-dark-heading">
+    <h2 id="light-dark-heading">Light and Dark Mode</h2>
+    <p>
+        JamsEDU supports light, dark, and system color modes out of the box. The default project includes a theme picker in the header and footer that lets visitors choose their preference. Their choice is saved to <code>localStorage</code> and applied before the first paint so there is no flash of the wrong theme on page load.
+    </p>
+    <p>
+        All of the color mode logic lives in the same token files described above. <code>css/tokens/colors.css</code> uses <code>html:has(...)</code> selectors to detect the active choice and sets <code>color-scheme</code> accordingly. When system mode is selected it defers to the browser's <code>prefers-color-scheme</code> setting. Because every built-in feature reads from the same token system, switching between light and dark mode updates everything on the page automatically.
+    </p>
+    <p>
+        To customize colors for either mode, start with the shared tokens in <code>css/tokens/colors.css</code>. If a specific built-in feature needs a different value in one mode, override its feature token using the prefixes listed above.
+    </p>
+    <pre><code class="css">
+        :root {
+            --doc-link-color: #0b57d0;
+            --richtext-link-color: #0b57d0;
+        }
+    </code></pre>
+    <p>
+        If you replace the default theme picker with your own UI, make sure your implementation still sets <code>color-scheme</code> on the document root so the token system and CSS <code>light-dark()</code> functions continue to resolve correctly.
+    </p>
+</section>
+</main>
+<footer class="full-width">
+    <div class="columns two">
+        <nav aria-label="Footer">
+            <a href="https://www.npmjs.com/package/@caboodle-tech/jamsedu" rel="noopener noreferrer" target="_blank">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24">
+                    <path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z">
+                </svg>
+                App
+            </a>
+            <a href="../../features/index.html">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill-rule="evenodd" clip-rule="evenodd">
+                    <path d="M22 24h-17c-1.657 0-3-1.343-3-3v-18c0-1.657 1.343-3 3-3h17v24zm-2-4h-14.505c-1.375 0-1.375 2 0 2h14.505v-2zm0-18h-15v16h15v-16zm-3 3v3h-9v-3h9z">
+                </svg>
+                Docs
+            </a>
+            <a href="https://github.com/caboodle-tech/jams-edu" rel="noopener noreferrer" target="_blank">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24">
+                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12">
+                </svg>
+                Source
+            </a>
+        </nav>
+        <div>
+            Built with
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Love">
+                <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5">
+            </svg>
+            by <a href="https://github.com/caboodle-tech" rel="noopener noreferrer" target="_blank">Caboodle Tech</a>
+        </div>
+    </div>
+</footer>
+</div>
+</body>
+</html>

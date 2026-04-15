@@ -1,0 +1,18 @@
+
+
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/**
+ * 62.5% rule: 1rem ≈ 10px when the UA default is 16px, so typography tokens in rem are easy to read.
+ */
+html {
+    font-size: 62.5%;
+    scroll-behavior: smooth;
+    font-optical-sizing: auto;
+    text-size-adjust: 100%;
+}

@@ -1,0 +1,54 @@
+
+
+
+/*
+ * Snippet shell (`tokens.css` / `--pdf-*` + `embed-pdf.js`). Toolbar rem fix targets the first viewer
+ * shadow host only (`--spacing` + `--text-*`, not `--container-sm`).
+ */
+div[data-pdf]:not(.embed-pdf-container) {
+    box-sizing: border-box;
+    display: block;
+    width: var(--pdf-width);
+    min-height: var(--pdf-min-height);
+}
+
+embed[src$=".pdf" i] {
+    box-sizing: border-box;
+    display: block;
+    width: var(--pdf-width);
+    height: var(--pdf-height);
+    border: 0;
+}
+
+.embed-pdf-container {
+    position: relative;
+    box-sizing: border-box;
+    width: var(--pdf-width);
+    max-width: 100%;
+    min-width: 0;
+    height: var(--pdf-height);
+    min-height: var(--pdf-min-height);
+    margin: var(--pdf-margin);
+    border-radius: var(--pdf-border-radius);
+    border: 1px solid var(--pdf-card-border-color);
+    box-shadow: var(--pdf-shadow);
+    overflow: hidden;
+    background: var(--pdf-background-app);
+    display: flex;
+    flex-direction: column;
+
+    & > * {
+        flex: 1 1 auto;
+        min-height: 0;
+        min-width: 0;
+        width: 100%;
+        max-width: 100%;
+        background: var(--pdf-snippet-host-fill);
+    }
+
+    & *,
+    & *::before,
+    & *::after {
+        box-sizing: border-box;
+    }
+}

@@ -1,0 +1,348 @@
+
+
+
+/** Masthead: `<header>` only. `.site-logo` marks: `mobile` or `desktop`, plus `dark` or `light`. Viewport uses `width < 768px` / `width >= 768px` so only one slot shows at the breakpoint. Theme radios flip `dark` vs `light` via `html:has(…)` and nested `prefers-color-scheme` for system. */
+.content-grid > header {
+    background-color: var(--header-bg);
+    color: var(--header-text);
+    box-shadow: var(--header-shadow);
+    position: relative;
+    z-index: 50;
+
+    .site-nav-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        background-color: var(--header-drawer-scrim);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition:
+            opacity var(--transition-base),
+            visibility 0s linear var(--transition-drawer);
+    }
+
+    #site-nav-toggle:checked ~ .site-nav-backdrop {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transition:
+            opacity var(--transition-base),
+            visibility 0s linear 0s;
+    }
+
+    > .inner {
+        position: relative;
+        z-index: 50;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacing-md);
+        padding-block-start: calc(var(--spacing-md) + env(safe-area-inset-top, 0px));
+        padding-block-end: var(--spacing-md);
+        padding-inline: var(--spacing-md);
+    }
+
+    #site-nav-toggle:focus-visible ~ .inner .site-nav-menu-btn {
+        outline: var(--padding-xxs) solid var(--color-accent);
+        outline-offset: var(--padding-xxs);
+    }
+
+    .site-brand {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: visible;
+    }
+
+    .site-brand,
+    .site-header-tools {
+        position: relative;
+        z-index: 55;
+    }
+
+    .site-primary-nav {
+        position: fixed;
+        top: var(--site-header-bar-height);
+        right: 0;
+        bottom: 0;
+        width: min(20rem, 100%);
+        max-width: 100%;
+        margin: 0;
+        padding: var(--spacing-md) var(--spacing-lg);
+        padding-bottom: calc(var(--spacing-lg) + env(safe-area-inset-bottom, 0px));
+        background-color: var(--header-bg);
+        box-shadow: var(--shadow-lg);
+        z-index: 45;
+        overflow-y: auto;
+        transform: translateX(100%);
+        visibility: hidden;
+        transition:
+            transform var(--transition-drawer),
+            visibility 0s linear var(--transition-drawer);
+    }
+
+    #site-nav-toggle:checked ~ .inner .site-primary-nav {
+        transform: translateX(0);
+        visibility: visible;
+        transition:
+            transform var(--transition-drawer),
+            visibility 0s linear 0s;
+    }
+
+    .nav-list {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: var(--spacing-md);
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .nav-list a {
+        display: block;
+        padding: var(--spacing-sm) var(--spacing-sm);
+        border-radius: var(--radius-md);
+        font-size: var(--font-size-md);
+        line-height: var(--line-height-md);
+        color: var(--header-link);
+        text-decoration: none;
+        cursor: pointer;
+        transition:
+            background-color var(--transition-base),
+            color var(--transition-base);
+    }
+
+    .nav-list a:hover {
+        color: var(--header-link-hover);
+        background-color: color-mix(in srgb, var(--header-link) 22%, var(--header-bg));
+    }
+
+    .nav-list a:active {
+        transform: translateY(1px);
+    }
+
+    .site-header-tools {
+        display: flex;
+        flex-shrink: 0;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .site-nav-menu-btn {
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: calc(var(--icon-size-md) + var(--spacing-md));
+        min-height: calc(var(--icon-size-md) + var(--spacing-md));
+        margin: 0;
+        padding: 0;
+        color: var(--header-text);
+        background-color: var(--theme-toggle-bg);
+        border: 1px solid var(--theme-toggle-border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition:
+            background-color var(--transition-base),
+            border-color var(--transition-base);
+    }
+
+    .site-nav-menu-btn:hover {
+        background-color: var(--theme-toggle-bg-hover);
+        border-color: var(--theme-toggle-border-hover);
+    }
+
+    .site-nav-icon {
+        display: block;
+        width: var(--icon-size-md);
+        height: var(--icon-size-md);
+        flex-shrink: 0;
+    }
+
+    .site-nav-icon-close {
+        display: none;
+    }
+
+    #site-nav-toggle:checked ~ .inner .site-nav-menu-btn .site-nav-icon-open {
+        display: none;
+    }
+
+    #site-nav-toggle:checked ~ .inner .site-nav-menu-btn .site-nav-icon-close {
+        display: block;
+    }
+
+    @media (min-width: 768px) {
+        .site-nav-backdrop {
+            display: none;
+        }
+
+        > .inner {
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: var(--spacing-lg);
+            padding-block: var(--spacing-md);
+        }
+
+        .site-brand {
+            flex: 1 1 12rem;
+        }
+
+        .site-primary-nav {
+            position: static;
+            flex: 1 1 auto;
+            display: flex;
+            justify-content: flex-end;
+            min-width: 0;
+            padding: 0;
+            width: auto;
+            height: auto;
+            max-width: none;
+            overflow: visible;
+            transform: none;
+            visibility: visible;
+            box-shadow: none;
+            background: transparent;
+            transition: none;
+        }
+
+        .nav-list {
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .nav-list a {
+            display: inline-block;
+        }
+
+        .site-nav-menu-btn {
+            display: none;
+        }
+    }
+
+    .brand-link {
+        display: block;
+        position: relative;
+        line-height: 0;
+        block-size: max(var(--line-height-2xl), calc(var(--icon-size-md) + var(--spacing-md)));
+        color: var(--header-link);
+        text-decoration: none;
+        cursor: pointer;
+
+        .site-logo {
+            position: absolute;
+            inset-block-start: 50%;
+            inset-inline-start: 0;
+            transform: translateY(-50%) scale(1.3);
+            transform-origin: left center;
+            block-size: auto;
+            max-block-size: 100%;
+            max-inline-size: min(100%, 14rem);
+            object-fit: contain;
+            object-position: left center;
+        }
+
+        .site-logo.dark {
+            display: block;
+        }
+
+        .site-logo.light {
+            display: none;
+        }
+
+        /* Range queries so exactly one branch applies at the md boundary (`< 768` vs `>= 768`). */
+        @media (width < 768px) {
+            .site-logo.desktop.dark,
+            .site-logo.desktop.light {
+                display: none !important;
+            }
+        }
+
+        @media (width >= 768px) {
+            .site-logo.mobile.dark,
+            .site-logo.mobile.light {
+                display: none !important;
+            }
+        }
+
+        &:hover .site-logo,
+        &:focus-visible .site-logo {
+            filter: brightness(1.14);
+        }
+    }
+}
+
+html:has(input[name='theme-preference'][value='light']:checked) .content-grid > header .brand-link .site-logo.dark {
+    display: none;
+}
+
+html:has(input[name='theme-preference'][value='light']:checked) .content-grid > header .brand-link .site-logo.light {
+    display: block;
+}
+
+html:has(input[name='theme-preference'][value='dark']:checked) .content-grid > header .brand-link .site-logo.dark {
+    display: block;
+}
+
+html:has(input[name='theme-preference'][value='dark']:checked) .content-grid > header .brand-link .site-logo.light {
+    display: none;
+}
+
+html:has(input[name='theme-preference'][value='system']:checked) .content-grid > header .brand-link {
+    @media (prefers-color-scheme: light) {
+        .site-logo.dark {
+            display: none;
+        }
+
+        .site-logo.light {
+            display: block;
+        }
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .site-logo.dark {
+            display: block;
+        }
+
+        .site-logo.light {
+            display: none;
+        }
+    }
+}
+
+html:has(#site-nav-toggle:checked) {
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    html:has(#site-nav-toggle:checked) {
+        overflow: visible;
+    }
+}
+
+.content-grid > footer {
+    background-color: var(--header-bg);
+    color: color-mix(in srgb, var(--header-text) 90%, transparent);
+    padding-block: var(--spacing-xl);
+    padding-inline: var(--spacing-md);
+
+    a {
+        color: var(--header-link);
+        text-decoration: none;
+        cursor: pointer;
+        transition: color var(--transition-base);
+    }
+
+    a:hover {
+        color: var(--header-link-hover);
+    }
+
+    @media (max-width: 768px) {
+        .columns > * {
+            text-align: center;
+        }
+    }
+}

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="../../assets/css/main.css" rel="stylesheet">
+        <title>Tiny Doc · JamsEDU</title>
+        <meta name="description" content="Author structured worksheets in .document: layout classes, one live example, PDF export, and a concise field reference.">
+        <script type="module" src="../../assets/js/main.js"></script>
+        <script src="../../assets/js/theme-preference.js"></script>
+    </head>
+    <body>
+<div class="content-grid">
+<header class="full-width">
+    <input class="visually-hidden" type="checkbox" id="site-nav-toggle" aria-controls="site-primary-nav">
+    <label class="site-nav-backdrop" for="site-nav-toggle" aria-hidden="true"></label>
+    <div class="inner">
+        <div class="site-brand">
+            <a class="brand-link" href="../../index.html" aria-label="JamsEdu home">
+                <img class="site-logo mobile dark" src="../../assets/images/logos/icon-dark.svg" alt decoding="async">
+                <img class="site-logo mobile light" src="../../assets/images/logos/icon-light.svg" alt decoding="async">
+                <img class="site-logo desktop dark" src="../../assets/images/logos/full-dark.svg" alt decoding="async">
+                <img class="site-logo desktop light" src="../../assets/images/logos/full-light.svg" alt decoding="async">
+            </a>
+        </div>
+        <nav aria-label="Primary" class="site-primary-nav" id="site-primary-nav">
+            <ul class="nav-list">
+                <li><a href="../../index.html">Home</a></li>
+                <li><a href="../../features/getting-started.html">Get Started</a></li>
+                <li><a href="../../features/index.html">Docs</a></li>
+                <li><a href="../../features/built-in-features.html">Features</a></li>
+            </ul>
+        </nav>
+        <div class="site-header-tools">
+            <label class="site-nav-menu-btn" for="site-nav-toggle">
+                <span class="visually-hidden">Menu</span>
+                <svg class="site-nav-icon site-nav-icon-open" aria-hidden="true" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" fill="currentColor"></svg>
+                <svg class="site-nav-icon site-nav-icon-close" aria-hidden="true" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"></svg>
+            </label>
+            <details class="theme-menu">
+                <summary class="theme-control">
+                    <span class="visually-hidden">Color scheme</span>
+                </summary>
+                <div class="theme-extra" role="group" aria-label="Choose color scheme">
+                    <label class="theme-control theme-pick" data-theme-pick="light">
+                        <input name="theme-preference" type="radio" value="light">
+                        <span aria-hidden="true">☀️</span>
+                        <span class="visually-hidden">Light</span>
+                    </label>
+                    <label class="theme-control theme-pick" data-theme-pick="system">
+                        <input name="theme-preference" type="radio" value="system">
+                        <span aria-hidden="true">⚙️</span>
+                        <span class="visually-hidden">System default</span>
+                    </label>
+                    <label class="theme-control theme-pick" data-theme-pick="dark">
+                        <input name="theme-preference" type="radio" value="dark">
+                        <span aria-hidden="true">🌖</span>
+                        <span class="visually-hidden">Dark</span>
+                    </label>
+                </div>
+            </details>
+        </div>
+    </div>
+</header>
+<main>
+<p class="breadcrumb">
+    <a href="../../index.html">Home</a> · <a href="../../features/index.html">Docs</a> · <a href="../../features/built-in-features.html">Built-In Features</a> · Tiny Doc
+</p>
+<h1>Tiny Doc</h1>
+<p>
+    Wrap your content in <code>&lt;div class="document"&gt;</code> to create a Tiny Doc. JamsEDU automatically sets up URL field dialogs, repeating template sections, and a Download as PDF button. Content marked with the <code>instructions</code> class is excluded from the PDF export.
+</p>
+<div class="callout notice icon">
+    The PDF export turns the document itself into a downloadable PDF. If you want to embed an existing PDF file on a page for reading, that is a separate feature covered in the <a href="../../features/builtins/embedded-pdf.html">Embedded PDF</a> guide.
+</div>
+<p>
+    You can customize how Tiny Doc behaves by editing <code>jamsEduConfig.tinyDocument</code> in <code>assets/js/main.js</code>. Set only the properties you need and anything you omit will use the default values. To disable Tiny Doc entirely, set the whole key to <code>false</code>. For more on how <code>jamsEduConfig</code> works across all built-ins, see <a href="../../features/built-in-features.html#frontend-feature-options-heading">Optional Settings</a>.
+</p>
+<dl>
+    <div>
+        <dt><code>useMutationObserver</code></dt>
+        <dd>When <code>true</code> (default), new <code>.document</code> elements added to the page after load are automatically initialized through the shared DOM watcher. When <code>false</code>, only documents present in the DOM at load time are set up.</dd>
+    </div>
+</dl>
+<section aria-labelledby="tiny-doc-layout-heading">
+    <h2 id="tiny-doc-layout-heading">Layout classes</h2>
+    <p>
+        These are the structural pieces authors use most often. JamsEDU rewrites them to predictable <code>doc-*</code> classes for styling and print.
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>Your class</th>
+                <th>Live class</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>title</code></td>
+                <td><code>doc-title</code></td>
+                <td>Document heading</td>
+            </tr>
+            <tr>
+                <td><code>section</code></td>
+                <td><code>doc-section</code></td>
+                <td>Major section label</td>
+            </tr>
+            <tr>
+                <td><code>subsection</code></td>
+                <td><code>doc-subsection</code></td>
+                <td>Nested label beside inputs</td>
+            </tr>
+            <tr>
+                <td><code>header</code></td>
+                <td><code>doc-header</code></td>
+                <td>Often a name and date row</td>
+            </tr>
+            <tr>
+                <td><code>instructions</code></td>
+                <td>(preserved)</td>
+                <td>Guidance omitted from PDF</td>
+            </tr>
+            <tr>
+                <td><code>spacer</code> / <code>indent</code></td>
+                <td><code>doc-spacer</code> / <code>doc-indent</code></td>
+                <td>Vertical rhythm and indentation</td>
+            </tr>
+            <tr>
+                <td><code>center</code></td>
+                <td><code>doc-center</code></td>
+                <td>Centered call-to-action text</td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+<section aria-labelledby="tiny-doc-example-heading">
+    <h2 id="tiny-doc-example-heading">Single live example</h2>
+    <p>
+        The block below is one document that mixes plain fields, a URL row, a repeatable list, rich text, and a file input so you can try export and dialogs in one place. For every other pattern (nested repeatables, raw URL-only fields, US-style dates, multiple files), use the <a href="#field-reference">field reference</a>.
+    </p>
+    <div class="document">
+        <div class="title">Short Lab Report</div>
+        <div class="header">
+            <div><input type="text" placeholder="Name" aria-label="Student name"></div>
+            <div><input type="date" aria-label="Lab date"></div>
+        </div>
+        <div class="section">Summary</div>
+        <p class="instructions">
+            Instructions for the student only; this paragraph does not appear in the exported PDF.
+        </p>
+        <textarea rows="3" placeholder="Plain text summary (multiple lines)"></textarea>
+        <div class="subsection">References in sentence form</div>
+        <p class="instructions">
+            Use the first inline field for a labeled citation; the second uses
+            <code>data-raw</code> to print the raw URL as link text.
+        </p>
+        <p>
+            This summary follows
+            <input type="url" placeholder="Labeled source title" prompt="Paste a stable https URL">
+            and aligns with the canonical method at
+            <input type="url" data-raw placeholder="https://example.com/specification">
+            for final verification.
+        </p>
+        <div class="section">Team members</div>
+        <ul>
+            <li><input type="text" placeholder="Name"></li>
+            <template>
+                <li><input type="text" placeholder="Name"></li>
+            </template>
+            <button class="template" type="button">Add member</button>
+        </ul>
+        <div class="section">Notes (rich text)</div>
+        <textarea class="rich" rows="3" name="tiny_doc_demo_notes" aria-label="Rich text notes" placeholder="Use the toolbar for basic formatting."></textarea>
+        <div class="section">Optional photo</div>
+        <input type="file" accept="image/*" aria-label="Optional image attachment">
+        <div class="center">When the worksheet is complete, use <strong>Download Document as PDF</strong>.</div>
+    </div>
+</section>
+<section id="field-reference" aria-labelledby="field-reference-heading">
+    <h2 id="field-reference-heading">Field and option reference</h2>
+    <p>
+        Copy the shapes below into your own <code>.document</code> and adjust labels. URL fields share one element type; attributes choose how the dialog and display behave.
+    </p>
+    <h3>URL inputs</h3>
+    <p><strong>Label plus URL</strong> (default): optional <code>placeholder</code> names the row; <code>prompt</code> is the dialog helper text.</p>
+    <pre><code class="html">&lt;input type="url" placeholder="Issue title" prompt="Link to the ticket"&gt;</code></pre>
+    <p>
+        <strong>URL only</strong> (<code>data-raw</code>): dialog and stored value stay on the bare URL.
+    </p>
+    <pre><code class="html">&lt;input type="url" data-raw placeholder="https://…"&gt;</code></pre>
+    <p>
+        <strong>Prefilled display</strong>: seed the picker with <code>data-url</code> and optional <code>data-text</code> for the visible label.
+    </p>
+    <pre><code class="html">&lt;input type="url" placeholder="Safety office"
+  data-url="https://example.org/safety" data-text="Campus safety"&gt;</code></pre>
+    <h3>Repeatable blocks</h3>
+    <p>
+        Put a <code>&lt;template&gt;</code> first, then the very next sibling must be <code>&lt;button class="template" type="button"&gt;</code>. Cloning re-runs Tiny Doc wiring on the new fragment. Nested repeatables use the same pattern inside a template's markup.
+    </p>
+    <pre><code class="html">&lt;ul&gt;
+  &lt;li&gt;&lt;input type="text" placeholder="Row"&gt;&lt;/li&gt;
+  &lt;template&gt;
+    &lt;li&gt;&lt;input type="text" placeholder="Row"&gt;&lt;/li&gt;
+  &lt;/template&gt;
+  &lt;button class="template" type="button"&gt;Add row&lt;/button&gt;
+&lt;/ul&gt;</code></pre>
+    <h3>Dates, files, rich text</h3>
+    <p>
+        Use normal <code>input type="date"</code>. Add class <code>us</code> when you want US-style presentation where supported.
+    </p>
+    <pre><code class="html">&lt;input type="date" class="us" aria-label="Due date"&gt;</code></pre>
+    <p>
+        <strong>Files:</strong> single file or <code>multiple</code> on the same control type; images in the document can flow into print when the browser allows.
+    </p>
+    <pre><code class="html">&lt;input type="file" accept="image/*"&gt;
+&lt;input type="file" multiple&gt;</code></pre>
+    <p>
+        <strong>Rich text:</strong> same as the site-wide rich text feature: <code>textarea</code> with class <code>rich</code>. See the <a href="../../features/builtins/rich-text.html">Rich Text</a> guide for toolbar options and <a href="../../features/built-in-features.html#frontend-feature-options-heading"><code>jamsEduConfig.tinyWysiwyg</code></a>.
+    </p>
+    <pre><code class="html">&lt;textarea class="rich" rows="4" name="notes"&gt;&lt;p&gt;…&lt;/p&gt;&lt;/textarea&gt;</code></pre>
+</section>
+<section aria-labelledby="tiny-doc-styling-heading">
+    <h2 id="tiny-doc-styling-heading">Styling</h2>
+    <p>
+        In a standard JamsEDU app that keeps the built-in theming stack, Tiny Doc automatically follows the same light and dark palettes as the rest of your site. If you need to customize the worksheet appearance, you can override <code>--doc-*</code> variables like <code>--doc-bg-color</code>, <code>--doc-text-color</code>, and <code>--doc-field-bg-color</code> on <code>:root</code> or a wrapper element. For the full list of available variables and how they connect to the shared token system, see the <a href="../../features/builtins/css-theming.html">CSS and Theming</a> guide.
+    </p>
+</section>
+</main>
+<footer class="full-width">
+    <div class="columns two">
+        <nav aria-label="Footer">
+            <a href="https://www.npmjs.com/package/@caboodle-tech/jamsedu" rel="noopener noreferrer" target="_blank">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24">
+                    <path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z">
+                </svg>
+                App
+            </a>
+            <a href="../../features/index.html">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill-rule="evenodd" clip-rule="evenodd">
+                    <path d="M22 24h-17c-1.657 0-3-1.343-3-3v-18c0-1.657 1.343-3 3-3h17v24zm-2-4h-14.505c-1.375 0-1.375 2 0 2h14.505v-2zm0-18h-15v16h15v-16zm-3 3v3h-9v-3h9z">
+                </svg>
+                Docs
+            </a>
+            <a href="https://github.com/caboodle-tech/jams-edu" rel="noopener noreferrer" target="_blank">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24">
+                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12">
+                </svg>
+                Source
+            </a>
+        </nav>
+        <div>
+            Built with
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Love">
+                <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5">
+            </svg>
+            by <a href="https://github.com/caboodle-tech" rel="noopener noreferrer" target="_blank">Caboodle Tech</a>
+        </div>
+    </div>
+</footer>
+</div>
+</body>
+</html>

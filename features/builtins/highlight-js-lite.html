@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="../../assets/css/main.css" rel="stylesheet">
+        <title>Highlight JS Lite · JamsEDU</title>
+        <meta name="description" content="How to use Highlight JS Lite in JamsEDU for syntax highlighted code blocks with line numbers, copy button, mini editors, and theme-aware styling.">
+        <script type="module" src="../../assets/js/main.js"></script>
+        <script src="../../assets/js/theme-preference.js"></script>
+    </head>
+    <body>
+<div class="content-grid">
+<header class="full-width">
+    <input class="visually-hidden" type="checkbox" id="site-nav-toggle" aria-controls="site-primary-nav">
+    <label class="site-nav-backdrop" for="site-nav-toggle" aria-hidden="true"></label>
+    <div class="inner">
+        <div class="site-brand">
+            <a class="brand-link" href="../../index.html" aria-label="JamsEdu home">
+                <img class="site-logo mobile dark" src="../../assets/images/logos/icon-dark.svg" alt decoding="async">
+                <img class="site-logo mobile light" src="../../assets/images/logos/icon-light.svg" alt decoding="async">
+                <img class="site-logo desktop dark" src="../../assets/images/logos/full-dark.svg" alt decoding="async">
+                <img class="site-logo desktop light" src="../../assets/images/logos/full-light.svg" alt decoding="async">
+            </a>
+        </div>
+        <nav aria-label="Primary" class="site-primary-nav" id="site-primary-nav">
+            <ul class="nav-list">
+                <li><a href="../../index.html">Home</a></li>
+                <li><a href="../../features/getting-started.html">Get Started</a></li>
+                <li><a href="../../features/index.html">Docs</a></li>
+                <li><a href="../../features/built-in-features.html">Features</a></li>
+            </ul>
+        </nav>
+        <div class="site-header-tools">
+            <label class="site-nav-menu-btn" for="site-nav-toggle">
+                <span class="visually-hidden">Menu</span>
+                <svg class="site-nav-icon site-nav-icon-open" aria-hidden="true" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" fill="currentColor"></svg>
+                <svg class="site-nav-icon site-nav-icon-close" aria-hidden="true" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"></svg>
+            </label>
+            <details class="theme-menu">
+                <summary class="theme-control">
+                    <span class="visually-hidden">Color scheme</span>
+                </summary>
+                <div class="theme-extra" role="group" aria-label="Choose color scheme">
+                    <label class="theme-control theme-pick" data-theme-pick="light">
+                        <input name="theme-preference" type="radio" value="light">
+                        <span aria-hidden="true">☀️</span>
+                        <span class="visually-hidden">Light</span>
+                    </label>
+                    <label class="theme-control theme-pick" data-theme-pick="system">
+                        <input name="theme-preference" type="radio" value="system">
+                        <span aria-hidden="true">⚙️</span>
+                        <span class="visually-hidden">System default</span>
+                    </label>
+                    <label class="theme-control theme-pick" data-theme-pick="dark">
+                        <input name="theme-preference" type="radio" value="dark">
+                        <span aria-hidden="true">🌖</span>
+                        <span class="visually-hidden">Dark</span>
+                    </label>
+                </div>
+            </details>
+        </div>
+    </div>
+</header>
+<main>
+<p class="breadcrumb">
+    <a href="../../index.html">Home</a> · <a href="../../features/index.html">Docs</a> · <a href="../../features/built-in-features.html">Built-In Features</a> · Highlight JS Lite
+</p>
+<h1>Highlight JS Lite</h1>
+<p>
+    JamsEDU uses <a href="https://github.com/caboodle-tech/highlight-js-lite" rel="noopener noreferrer" target="_blank">Highlight JS Lite</a> (HLJSL) to provide syntax highlighting for code blocks. Out of the box it gives you automatic language detection, line numbers, a copy to clipboard button, automatic indentation correction, and colors that respect your site's light or dark mode. It is designed to work with zero configuration but can be customized when needed.
+</p>
+<p>
+    You can customize how highlighting behaves by editing <code>jamsEduConfig.highlightJsLite</code> in <code>assets/js/main.js</code>. Set only the properties you need and anything you omit will use the default values. To disable highlighting entirely, set the whole key to <code>false</code>. For more on how <code>jamsEduConfig</code> works across all built-ins, see <a href="../../features/built-in-features.html#frontend-feature-options-heading">Optional Settings</a>.
+</p>
+<dl>
+    <div>
+        <dt><code>useMutationObserver</code></dt>
+        <dd>When <code>true</code> (default), new <code>pre &gt; code</code> blocks added to the page after load are automatically highlighted through the shared DOM watcher. When <code>false</code>, only code blocks present in the DOM at load time are processed.</dd>
+    </div>
+    <div>
+        <dt><code>version</code></dt>
+        <dd>The HLJSL version to load from jsDelivr. Currently defaults to <code>4.3.0</code>.</dd>
+    </div>
+    <div>
+        <dt>Other keys</dt>
+        <dd>Forwarded directly to <code>window.hljslConfig</code>. See the <a href="https://github.com/caboodle-tech/highlight-js-lite" rel="noopener noreferrer" target="_blank">HLJSL project</a> for additional supported keys.</dd>
+    </div>
+</dl>
+<section aria-labelledby="hljsl-usage-heading">
+    <h2 id="hljsl-usage-heading">Basic Markup</h2>
+    <p>
+        Wrap your code in a <code>pre</code> element containing a <code>code</code> element. You can set a language class on the <code>code</code> element to specify the language explicitly, or leave it off and let HLJSL detect the language automatically. Thanks to the built-in indentation correction, you can indent your code blocks just like any other HTML in your source files.
+    </p>
+    <pre><code class="html">
+        &lt;pre&gt;&lt;code class="javascript"&gt;
+            const greeting = 'Hello';
+            console.log(greeting);
+        &lt;/code&gt;&lt;/pre&gt;
+    </code></pre>
+</section>
+<section aria-labelledby="hljsl-line-numbers-heading">
+    <h2 id="hljsl-line-numbers-heading">Line Numbers</h2>
+    <p>
+        Line numbers are shown by default on all code blocks. You can control this per block by adding the class <code>hide-numbers</code> or <code>show-numbers</code> to the <code>pre</code> element. You can also set a minimum line threshold so that short blocks hide their numbers automatically.
+    </p>
+    <pre><code class="html">
+        &lt;!-- Hide line numbers on this block --&gt;
+        &lt;pre class="hide-numbers"&gt;&lt;code class="javascript"&gt;
+            console.log('No line numbers here');
+        &lt;/code&gt;&lt;/pre&gt;
+
+        &lt;!-- Force line numbers even if globally hidden --&gt;
+        &lt;pre class="show-numbers"&gt;&lt;code class="javascript"&gt;
+            console.log('Line numbers shown');
+        &lt;/code&gt;&lt;/pre&gt;
+    </code></pre>
+</section>
+<section aria-labelledby="hljsl-editor-heading">
+    <h2 id="hljsl-editor-heading">Mini Editors</h2>
+    <p>
+        HLJSL can turn any code block into an editable mini editor. Add the class <code>editor</code> to the <code>pre</code> element and the code area becomes editable with live syntax highlighting as you type. By default the language is detected automatically as the user types, but you can lock it to a specific language by adding both a language class and the <code>locked</code> class to the <code>code</code> element. Try editing the code below:
+    </p>
+    <pre class="editor"><code class="python">
+        def greet(name):
+            return f"Hello, {name}!"
+
+        print(greet("World"))
+    </code></pre>
+    <p>
+        This editor is locked to HTML so only HTML syntax is highlighted regardless of what you type:
+    </p>
+    <pre class="editor"><code class="html locked">
+        &lt;div class="callout notice"&gt;
+            &lt;div class="title"&gt;Hello&lt;/div&gt;
+            &lt;p&gt;Try editing this HTML.&lt;/p&gt;
+        &lt;/div&gt;
+    </code></pre>
+    <p>
+        Here is an example of how to add different types of editors to your page:
+    </p>
+    <pre><code class="html">
+        &lt;!-- Editable, language auto-detected --&gt;
+        &lt;pre class="editor"&gt;&lt;code class="python"&gt;
+            def greet(name):
+                return f"Hello, {name}!"
+        &lt;/code&gt;&lt;/pre&gt;
+
+        &lt;!-- Editable, locked to HTML --&gt;
+        &lt;pre class="editor"&gt;&lt;code class="html locked"&gt;
+            &amp;lt;div class="callout notice"&amp;gt;
+                &amp;lt;div class="title"&amp;gt;Hello&amp;lt;/div&amp;gt;
+                &amp;lt;p&amp;gt;Try editing this HTML.&amp;lt;/p&amp;gt;
+            &amp;lt;/div&amp;gt;
+        &lt;/code&gt;&lt;/pre&gt;
+    </code></pre>
+    <div class="callout warn icon">
+        When displaying HTML markup inside a <code>pre code</code> block or editor, you must encode angle brackets as <code>&amp;lt;</code> and <code>&amp;gt;</code> so the browser does not interpret them as actual HTML tags.
+    </div>
+</section>
+<section aria-labelledby="hljsl-copy-heading">
+    <h2 id="hljsl-copy-heading">Copy with Context</h2>
+    <p>
+        The copy button copies the code to the clipboard by default. You can enhance this by placing <code>template</code> elements directly before and after your <code>pre</code> block. Any content inside these templates will be included with the copied code, which is useful for sharing instructions, prompts, or context alongside your code. Try copying the code below and pasting it into a text editor or AI tool to see the full output.
+    </p>
+    <template>Write a Python function that takes a list of room dictionaries like the one below and builds a text adventure game. Requirements: implement a game loop with input validation, add inventory management, and include a win condition when the player finds the treasure.</template>
+    <pre><code class="python">
+        rooms = {
+            'start': {
+                'description': 'You are in a dimly lit entrance hall.',
+                'north': 'hallway',
+                'items': ['torch']
+            },
+            'hallway': {
+                'description': 'A long hallway stretches before you.',
+                'south': 'start',
+                'east': 'treasure_room',
+                'locked': True,
+                'requires': 'key'
+            },
+            'treasure_room': {
+                'description': 'Gold glimmers in the torchlight.',
+                'items': ['treasure']
+            }
+        }
+    </code></pre>
+    <template>The function should print room descriptions, handle movement commands (north, south, east, west), and let the player pick up and use items. End the game when the player picks up the treasure.</template>
+    <pre><code class="html">
+        &lt;template&gt;Your prompt or instructions before the code.&lt;/template&gt;
+        &lt;pre&gt;&lt;code class="python"&gt;
+            your_code_here = True
+        &lt;/code&gt;&lt;/pre&gt;
+        &lt;template&gt;Your prompt or instructions after the code.&lt;/template&gt;
+    </code></pre>
+</section>
+<section aria-labelledby="hljsl-styling-heading">
+    <h2 id="hljsl-styling-heading">Styling</h2>
+    <p>
+        In a standard JamsEDU app that keeps the built-in theming stack, HLJSL automatically follows the same light and dark palettes as the rest of your site. If you need to customize the code block appearance specifically, you can override HLJSL variables like <code>--highlight-bg</code>, <code>--highlight-color</code>, and <code>--editor-control-bar</code> on <code>:root</code> or a wrapper element. Make sure your overrides load after the HLJSL stylesheet or use <code>@layer</code> so they take priority. For the full list of available variables see the <a href="https://github.com/caboodle-tech/highlight-js-lite#styling-css-variables" rel="noopener noreferrer" target="_blank">HLJSL styling documentation</a>. For details on how JamsEDU theming works as a whole, see the <a href="../../features/builtins/css-theming.html">CSS and Theming</a> guide.
+    </p>
+</section>
+</main>
+<footer class="full-width">
+    <div class="columns two">
+        <nav aria-label="Footer">
+            <a href="https://www.npmjs.com/package/@caboodle-tech/jamsedu" rel="noopener noreferrer" target="_blank">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24">
+                    <path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z">
+                </svg>
+                App
+            </a>
+            <a href="../../features/index.html">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill-rule="evenodd" clip-rule="evenodd">
+                    <path d="M22 24h-17c-1.657 0-3-1.343-3-3v-18c0-1.657 1.343-3 3-3h17v24zm-2-4h-14.505c-1.375 0-1.375 2 0 2h14.505v-2zm0-18h-15v16h15v-16zm-3 3v3h-9v-3h9z">
+                </svg>
+                Docs
+            </a>
+            <a href="https://github.com/caboodle-tech/jams-edu" rel="noopener noreferrer" target="_blank">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24">
+                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12">
+                </svg>
+                Source
+            </a>
+        </nav>
+        <div>
+            Built with
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Love">
+                <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5">
+            </svg>
+            by <a href="https://github.com/caboodle-tech" rel="noopener noreferrer" target="_blank">Caboodle Tech</a>
+        </div>
+    </div>
+</footer>
+</div>
+</body>
+</html>

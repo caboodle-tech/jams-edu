@@ -1,0 +1,89 @@
+
+
+
+/**
+ * Hook output from `video[src]` → `figure.video` + iframe (+ optional `figcaption`); see `jamsedu-hooks/videos.js`.
+ * Borders and shadows use `css/tokens/colors.css` (`--border-prose-card`, `--shadow-elevated`, semantic colors);
+ * spacing, radius, and type use `css/tokens/variables.css`. No fixed palette hex on embed chrome.
+ * `figcaption` uses a flex row so `::before` (dash + ℹ) is the first flex item and follows `direction` (RTL/LTR).
+ */
+
+:where(main figure.video) {
+    display: grid;
+    grid-template-rows: auto auto;
+    row-gap: var(--spacing-xs);
+    width: 100%;
+    max-width: 100%;
+    margin-block: var(--margin-md) var(--margin-lg);
+    margin-inline: 0;
+    font-family: inherit;
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-md);
+    color: var(--color-text);
+
+    & > iframe {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        min-height: 0;
+        height: auto;
+        border: var(--border-prose-card);
+        border-radius: var(--radius-sm);
+        aspect-ratio: 16 / 9;
+        background-color: color-mix(in srgb, var(--color-text) 12%, var(--color-surface));
+        box-shadow: var(--shadow-elevated);
+    }
+
+    & > figcaption {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: var(--spacing-xs);
+        min-inline-size: 0;
+        margin: 0;
+        font-size: inherit;
+        line-height: inherit;
+        color: inherit;
+        direction: inherit;
+        unicode-bidi: isolate;
+        text-wrap: pretty;
+
+        &::before {
+            content: '\2014\2009\2139';
+            flex-shrink: 0;
+            color: inherit;
+            white-space: nowrap;
+        }
+
+        & a {
+            font-size: inherit;
+            line-height: inherit;
+            color: var(--color-link);
+            text-decoration: none;
+            transition: color var(--transition-base);
+        }
+
+        & a:hover {
+            color: var(--color-link-hover);
+        }
+    }
+}
+
+:where(main .video-fallback) {
+    margin-block: var(--margin-xs) var(--margin-sm);
+    margin-inline: 0;
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-md);
+    font-style: italic;
+    color: var(--color-text);
+}
+
+:where(main video) {
+    max-width: 100%;
+    height: auto;
+    border: var(--border-prose-card);
+    border-radius: var(--radius-sm);
+    background-color: color-mix(in srgb, var(--color-text) 10%, var(--color-surface));
+    box-shadow: var(--shadow-elevated);
+}

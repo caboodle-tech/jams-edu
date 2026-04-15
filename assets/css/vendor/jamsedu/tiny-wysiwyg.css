@@ -1,0 +1,352 @@
+
+
+
+/**
+ * WYSIWYG chrome + prose. Site tokens (`--font-*`, `--spacing-*`, `--color-*`) plus `--jamsedu-*`.
+ * Never reference `--pdf-*`. Use `variables.css` for sizes and `tokens.css` for `--richtext-*` hooks.
+ */
+.tiny-wysiwyg-container {
+        font-family: var(--font-family-sans);
+        color-scheme: inherit;
+
+        background-color: var(--richtext-container-bg-color);
+        border: 1px solid var(--richtext-card-border-color);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-elevated);
+        margin: var(--margin-sm) 0;
+        /* Not `overflow: hidden`; outside list markers extend past the list box and must not be clipped. */
+        overflow: visible;
+        position: relative;
+        color: var(--color-text);
+
+        & * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .tw-toolbar {
+            display: flex;
+            gap: var(--spacing-md);
+            padding: var(--padding-md);
+            background-color: var(--richtext-toolbar-bg-color);
+            border-bottom: 1px solid var(--richtext-toolbar-border-color);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            flex-wrap: wrap;
+
+            button {
+                padding: calc(var(--padding-xxs) + 2px);
+                border: none;
+                background-color: var(--richtext-toolbar-button-bg);
+                color: var(--richtext-button-text-color);
+                border-radius: var(--radius-xs);
+                cursor: pointer;
+                font-size: var(--font-size-editor);
+                transition: background-color var(--transition-base);
+                display: flex;
+                align-items: center;
+                gap: 0;
+
+                svg {
+                    width: calc(var(--icon-size-xs) + 2px);
+                    height: calc(var(--icon-size-xs) + 2px);
+                    flex-shrink: 0;
+                }
+
+                &:hover, &:focus-visible {
+                    background-color: var(--richtext-toolbar-button-hover-bg);
+                    outline: 2px solid var(--jamsedu-interactive-focus);
+                }
+            }
+
+            .separator {
+                width: 1px;
+                background-color: var(--richtext-separator-color);
+                margin: 0 var(--richtext-toolbar-separator-margin);
+                transform: scale(0.8);
+            }
+        }
+
+        .tw-content {
+            min-height: var(--richtext-content-min-height);
+            padding: var(--padding-md) var(--padding-md) var(--padding-xs);
+            font-size: var(--font-size-editor);
+            line-height: var(--line-height-lg);
+            outline: none;
+            background-color: var(--richtext-content-bg-color);
+            color: var(--color-text);
+            position: relative;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+
+            & > * {
+                margin: 0 0 var(--spacing-md) 0 !important;
+            }
+
+            /* Tighter gap when a block is followed by a list (list has its own vertical rhythm). */
+            & > *:has(+ :is(ul, ol)) {
+                margin-bottom: var(--spacing-sm) !important;
+            }
+
+            & > :first-child {
+                margin-block-start: var(--spacing-xs) !important;
+            }
+
+            & > :last-child {
+                margin-block-end: var(--spacing-sm) !important;
+            }
+
+            a {
+                color: var(--color-link);
+                text-decoration: none;
+                cursor: pointer;
+                transition: color var(--transition-base);
+
+                &:hover {
+                    color: var(--color-link-hover);
+                }
+            }
+
+            blockquote {
+                border-left: 5px solid var(--richtext-blockquote-border-color);
+                padding: var(--padding-xs);
+                background-color: var(--richtext-blockquote-bg-color);
+            }
+
+            blockquote::before {
+                content: none;
+            }
+
+            p {
+                padding: 0;
+            }
+
+            pre {
+                background-color: var(--color-code-bg);
+                color: var(--color-code-fg);
+                padding: var(--padding-xs);
+                border-radius: var(--radius-sm);
+                margin: var(--spacing-md) 0;
+                font-family: var(--font-family-mono);
+                font-size: calc(var(--font-size-editor) * 0.92);
+                line-height: var(--line-height-md);
+                overflow-x: auto;
+                border: 1px solid var(--richtext-code-border-color);
+            }
+
+            pre code {
+                font-family: inherit;
+                font-size: inherit;
+                padding: 0;
+                border: none;
+                background: transparent;
+            }
+
+            :not(pre) > code {
+                font-family: var(--font-family-mono);
+                font-size: calc(var(--font-size-editor) * 0.9);
+                color: var(--color-code-fg);
+                padding: var(--code-padding-y) var(--code-padding-x);
+                border-radius: var(--radius-xs);
+                background-color: var(--color-code-bg);
+                border: 1px solid var(--richtext-code-border-color);
+            }
+
+            h1, h2, h3, h4, h5, h6 {
+                font-weight: bold;
+                font-size: var(--font-size-xl);
+            }
+
+            ul,
+            ol {
+                list-style-position: outside;
+                padding-inline-start: 1.75em;
+            }
+        }
+
+        .tw-content.tw-empty::before {
+            content: attr(data-placeholder);
+            color: var(--richtext-placeholder-color);
+            pointer-events: none;
+            position: absolute;
+            top: var(--padding-md);
+            left: var(--padding-md);
+        }
+
+        .tw-content:focus.tw-empty::before,
+        .tw-content:focus-within.tw-empty::before {
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            .tw-toolbar {
+                button {
+                    gap: var(--spacing-xs);
+                    transform: scale(1);
+                }
+
+                .separator {
+                    transform: scale(1.1);
+                    margin: var(--richtext-toolbar-separator-margin);
+                }
+            }
+        }
+}
+
+/**
+ * WYSIWYG link UI — same surface as `.document dialog.doc-link-popover` (`tiny-document.css`).
+ * Dialog mounts on `document.body` (see `tiny-wysiwyg.js`) so it is not clipped by editor overflow.
+ */
+/*
+ * Do not set `position` on `<dialog>`: UA uses absolute + margin auto for viewport centering.
+ * `position: relative` was shifting the modal to the wrong vertical position.
+ */
+dialog.doc-link-popover.jamsedu-tw-link-dialog {
+    margin: auto;
+    border: 1px solid var(--doc-link-popover-border-color);
+    border-radius: var(--doc-border-radius);
+    padding: 0;
+    box-shadow: var(--doc-link-popover-shadow);
+    min-width: 300px;
+    max-width: min(500px, 90vw);
+    font-family: inherit;
+    font-size: var(--doc-font-size);
+    background-color: var(--doc-field-bg-color);
+    color: var(--doc-field-text-color);
+    color-scheme: light;
+    overflow: visible !important;
+    opacity: 1;
+    backdrop-filter: none;
+
+    &::backdrop {
+        background: light-dark(rgb(15 23 42 / 0.35), rgb(0 0 0 / 0.55));
+    }
+
+    & .jamsedu-tw-link-dialog-panel {
+        position: relative;
+        padding: 16px;
+    }
+
+    & .doc-link-popover-heading {
+        margin-bottom: 12px;
+        color: var(--doc-text-color);
+    }
+
+    & .doc-link-popover-input {
+        display: block;
+        width: 100%;
+        border: 1px solid var(--doc-field-border-color);
+        border-radius: var(--doc-border-radius);
+        padding: 8px 10px;
+        font-size: var(--doc-font-size);
+        font-family: inherit;
+        background-color: var(--doc-field-bg-color);
+        color: var(--doc-field-text-color);
+        caret-color: var(--doc-field-text-color);
+        color-scheme: light;
+        margin-bottom: 8px;
+        outline: none;
+        transition: border-color var(--doc-transition-smooth), box-shadow var(--doc-transition-smooth);
+
+        &:focus-visible {
+            border-color: var(--doc-focus-color);
+            box-shadow: var(--doc-focus-shadow);
+        }
+
+        &::placeholder,
+        &::-webkit-input-placeholder {
+            color: var(--doc-field-placeholder-color);
+            -webkit-text-fill-color: var(--doc-field-placeholder-color);
+            opacity: 1;
+        }
+
+        &::-moz-placeholder {
+            color: var(--doc-field-placeholder-color);
+            opacity: 1;
+        }
+    }
+
+    & .doc-link-popover-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    & .doc-link-save,
+    & .doc-link-clear {
+        border-radius: var(--doc-border-radius);
+        padding: 6px 16px;
+        margin-top: 0;
+        font-size: var(--font-size-sm);
+        cursor: pointer;
+        font-family: inherit;
+        transition: background-color var(--doc-transition-smooth), border-color var(--doc-transition-smooth), color var(--doc-transition-smooth);
+    }
+
+    & .doc-link-save {
+        border: none;
+        background-color: var(--doc-btn-accent-bg);
+        color: var(--doc-btn-accent-fg);
+
+        &:hover {
+            background-color: var(--doc-btn-accent-bg-hover);
+        }
+    }
+
+    & .doc-link-clear {
+        appearance: none;
+        box-sizing: border-box;
+        border: 1px solid var(--jamsedu-seed-state-error);
+        border-style: solid;
+        background-color: transparent;
+        color: var(--jamsedu-seed-state-error);
+        transition:
+            background-color var(--doc-transition-smooth),
+            border-color var(--doc-transition-smooth),
+            color var(--doc-transition-smooth);
+
+        &:hover {
+            background-color: #fee2e2;
+            border-color: #991b1b;
+            color: #991b1b;
+        }
+    }
+
+    & .doc-link-cancel {
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        appearance: none;
+        box-sizing: border-box;
+        border: 1px solid var(--doc-link-popover-border-color);
+        border-style: solid;
+        border-radius: 50%;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        background-color: var(--doc-field-bg-color);
+        color: var(--doc-field-text-color);
+        display: flex;
+        height: 40px;
+        width: 40px;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        cursor: pointer;
+        transition: background-color var(--doc-transition-smooth), border-color var(--doc-transition-smooth), color var(--doc-transition-smooth);
+        pointer-events: auto;
+
+        &:active {
+            pointer-events: none;
+        }
+
+        &:hover {
+            background-color: #ffffff;
+            border-color: var(--doc-focus-color);
+            color: var(--doc-link-color);
+        }
+
+        & svg {
+            stroke: currentColor;
+        }
+    }
+}

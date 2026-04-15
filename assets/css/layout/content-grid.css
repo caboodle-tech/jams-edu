@@ -1,0 +1,60 @@
+
+
+
+/**
+ * Named-line content grid. After: https://youtu.be/c13gpBrnGEw
+ * Tokens: `--content-max-width`, `--breakout-size`, `--spacing-*` (`tokens/variables.css`).
+ * Outer gutters: `--spacing-md` on small viewports, `--spacing-lg` from `--breakpoint-md` up.
+ */
+:where(body > .content-grid) {
+    flex: 1;
+    min-height: 0;
+}
+
+.content-grid {
+    display: grid;
+    align-content: start;
+    grid-template-rows: auto 1fr auto;
+    grid-template-columns:
+        [full-width-start]
+        minmax(var(--spacing-md), 1fr)
+        [breakout-start]
+        minmax(0, var(--breakout-size))
+        [content-start]
+        min(100% - (var(--spacing-md) * 2), var(--content-max-width))
+        [content-end]
+        minmax(0, var(--breakout-size))
+        [breakout-end]
+        minmax(var(--spacing-md), 1fr)
+        [full-width-end];
+
+    & > :not(.breakout, .full-width),
+    & > .full-width > :not(.breakout, .full-width) {
+        grid-column: content;
+    }
+
+    & > .breakout {
+        grid-column: breakout;
+    }
+
+    & > .full-width {
+        grid-column: full-width;
+        display: grid;
+        grid-template-columns: inherit;
+    }
+
+    @media (min-width: 768px) {
+        grid-template-columns:
+            [full-width-start]
+            minmax(var(--spacing-lg), 1fr)
+            [breakout-start]
+            minmax(0, var(--breakout-size))
+            [content-start]
+            min(100% - (var(--spacing-lg) * 2), var(--content-max-width))
+            [content-end]
+            minmax(0, var(--breakout-size))
+            [breakout-end]
+            minmax(var(--spacing-lg), 1fr)
+            [full-width-end];
+    }
+}

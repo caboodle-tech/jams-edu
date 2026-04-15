@@ -1,0 +1,169 @@
+
+
+
+/**
+ * `.theme-control` is the shared tile for the disclosure trigger (`summary`) and each radio `label`.
+ * Scoped under `details.theme-menu` so load order vs `details.css` does not matter.
+ */
+details.theme-menu {
+    position: relative;
+    display: inline-block;
+    width: max-content;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    flex-shrink: 0;
+    box-shadow: none;
+    overflow: visible;
+    color: inherit;
+
+    &:focus,
+    &:focus-visible {
+        outline: none;
+    }
+
+    /* Disclosure trigger: reset chrome, then same tile rules as `.theme-control` labels. */
+    > summary.theme-control {
+        text-transform: none;
+        font-weight: normal;
+        list-style: none;
+        width: max-content;
+
+        &::after {
+            content: none;
+            display: none;
+            mask: none;
+            -webkit-mask: none;
+            width: 0;
+            height: 0;
+            margin: 0;
+        }
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+
+        &::marker {
+            content: '';
+        }
+
+        &:focus {
+            outline: none;
+        }
+
+        &:focus-visible {
+            outline: var(--padding-xxs) solid var(--color-accent);
+            outline-offset: var(--padding-xxs);
+        }
+
+        &::before {
+            content: '⚙️';
+        }
+    }
+
+    .theme-control {
+        box-sizing: border-box;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: calc(var(--icon-size-md) + var(--spacing-md));
+        min-height: calc(var(--icon-size-md) + var(--spacing-md));
+        margin: 0;
+        padding: 0;
+        font-size: var(--icon-size-sm);
+        line-height: 1;
+        color: var(--header-text);
+        background-color: var(--theme-toggle-bg);
+        border: 1px solid var(--theme-toggle-border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition:
+            background-color var(--transition-base),
+            border-color var(--transition-base);
+
+        &:hover {
+            background-color: var(--theme-toggle-bg-hover);
+            border-color: var(--theme-toggle-border-hover);
+        }
+    }
+
+    > .theme-extra {
+        position: absolute;
+        z-index: 50;
+        top: calc(100% + var(--spacing-md));
+        margin: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: var(--spacing-md);
+        padding: 0;
+        background: none;
+        border: none;
+        box-shadow: none;
+    }
+
+    &:not([open]) > .theme-extra {
+        display: none;
+    }
+
+    &[open] > .theme-extra {
+        animation: theme-extra-reveal 0.2s ease-out;
+    }
+
+    .theme-pick {
+        position: relative;
+
+        input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+            margin: 0;
+            pointer-events: none;
+        }
+
+        &:has(input:focus-visible) {
+            outline: var(--padding-xxs) solid var(--color-accent);
+            outline-offset: var(--padding-xxs);
+        }
+    }
+}
+
+html:has(input[name='theme-preference'][value='light']:checked) {
+    & details.theme-menu > summary.theme-control::before {
+        content: '☀️';
+    }
+
+    & details.theme-menu .theme-pick[data-theme-pick='light'] {
+        display: none;
+    }
+}
+
+html:has(input[name='theme-preference'][value='dark']:checked) {
+    & details.theme-menu > summary.theme-control::before {
+        content: '🌖';
+    }
+
+    & details.theme-menu .theme-pick[data-theme-pick='dark'] {
+        display: none;
+    }
+}
+
+html:has(input[name='theme-preference'][value='system']:checked) {
+    & details.theme-menu .theme-pick[data-theme-pick='system'] {
+        display: none;
+    }
+}
+
+@keyframes theme-extra-reveal {
+    from {
+        transform: translateY(-0.4rem);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}

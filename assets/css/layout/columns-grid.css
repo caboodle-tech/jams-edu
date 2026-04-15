@@ -1,0 +1,36 @@
+
+
+
+/**
+ * Simple responsive column tracks for cards or feature rows.
+ * Composable with `.content-grid` (place a `.columns` inside the content column).
+ */
+.columns {
+    display: grid;
+    gap: var(--spacing-xl);
+    grid-auto-rows: auto;
+
+    &.two {
+        grid-template-columns: 1fr;
+    }
+
+    &.three {
+        grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 480px) {
+        &.three {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 768px) {
+        &.two {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        &.three {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+}

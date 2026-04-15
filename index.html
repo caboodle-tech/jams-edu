@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="./assets/css/main.css" rel="stylesheet">
+        <title>JamsEdu</title>
+        <meta name="description" content="JamsEDU builds static sites from JHP pages, compile-time hooks, and built-in features for math formulas, diagrams, editable text areas, code blocks, PDF viewing, and theming.">
+        <script type="module" src="./assets/js/main.js"></script>
+        <script src="./assets/js/theme-preference.js"></script>
+    </head>
+    <body>
+<div class="content-grid">
+<header class="full-width">
+    <input class="visually-hidden" type="checkbox" id="site-nav-toggle" aria-controls="site-primary-nav">
+    <label class="site-nav-backdrop" for="site-nav-toggle" aria-hidden="true"></label>
+    <div class="inner">
+        <div class="site-brand">
+            <a class="brand-link" href="./index.html" aria-label="JamsEdu home">
+                <img class="site-logo mobile dark" src="./assets/images/logos/icon-dark.svg" alt decoding="async">
+                <img class="site-logo mobile light" src="./assets/images/logos/icon-light.svg" alt decoding="async">
+                <img class="site-logo desktop dark" src="./assets/images/logos/full-dark.svg" alt decoding="async">
+                <img class="site-logo desktop light" src="./assets/images/logos/full-light.svg" alt decoding="async">
+            </a>
+        </div>
+        <nav aria-label="Primary" class="site-primary-nav" id="site-primary-nav">
+            <ul class="nav-list">
+                <li><a href="./index.html">Home</a></li>
+                <li><a href="./features/getting-started.html">Get Started</a></li>
+                <li><a href="./features/index.html">Docs</a></li>
+                <li><a href="./features/built-in-features.html">Features</a></li>
+            </ul>
+        </nav>
+        <div class="site-header-tools">
+            <label class="site-nav-menu-btn" for="site-nav-toggle">
+                <span class="visually-hidden">Menu</span>
+                <svg class="site-nav-icon site-nav-icon-open" aria-hidden="true" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" fill="currentColor"></svg>
+                <svg class="site-nav-icon site-nav-icon-close" aria-hidden="true" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"></svg>
+            </label>
+            <details class="theme-menu">
+                <summary class="theme-control">
+                    <span class="visually-hidden">Color scheme</span>
+                </summary>
+                <div class="theme-extra" role="group" aria-label="Choose color scheme">
+                    <label class="theme-control theme-pick" data-theme-pick="light">
+                        <input name="theme-preference" type="radio" value="light">
+                        <span aria-hidden="true">☀️</span>
+                        <span class="visually-hidden">Light</span>
+                    </label>
+                    <label class="theme-control theme-pick" data-theme-pick="system">
+                        <input name="theme-preference" type="radio" value="system">
+                        <span aria-hidden="true">⚙️</span>
+                        <span class="visually-hidden">System default</span>
+                    </label>
+                    <label class="theme-control theme-pick" data-theme-pick="dark">
+                        <input name="theme-preference" type="radio" value="dark">
+                        <span aria-hidden="true">🌖</span>
+                        <span class="visually-hidden">Dark</span>
+                    </label>
+                </div>
+            </details>
+        </div>
+    </div>
+</header>
+<main>
+<h1>Welcome to JamsEDU</h1>
+<p>
+    JamsEDU is a feature-rich yet simple-to-use <a href="https://jamstack.org/" rel="noreferrer noopener" target="_blank">Jamstack</a> application originally designed for educational content. It is a practical way to publish a secure, static site for courses, documentation, and technical writing without wiring up separate frameworks. You supply HTML and content; JamsEDU handles generation, shared layout, and optional built-ins such as math, diagrams, and forms. With modern AI tools, building and customizing your site can be faster than hand-maintaining every page.
+</p>
+<h2>What You Get</h2>
+<div class="card-grid">
+    <article class="content-card">
+        <h3><a href="./features/getting-started.html">Fast, dependable pages</a></h3>
+        <p>Your site is published as plain HTML and assets, so it loads quickly and works with virtually any hosting; no live app server required.</p>
+    </article>
+    <article class="content-card">
+        <h3><a href="./features/jhp-templates.html">Reusable page pieces</a></h3>
+        <p>Share headers, footers, and variables across your site so every page stays consistent without copying and pasting the same blocks by hand.</p>
+    </article>
+    <article class="content-card">
+        <h3><a href="./features/hooks.html">Optional build tweaks</a></h3>
+        <p>Hook into the generator to adjust or clean up pages automatically each time you publish, instead of editing each file individually.</p>
+    </article>
+    <article class="content-card">
+        <h3><a href="./features/built-in-features.html">Built-In Features</a></h3>
+        <p>Math formulas, diagrams, highlighted code blocks, editable rich text areas, interactive forms and reports, a PDF viewer, and theme options, all ready to use.</p>
+    </article>
+    <article class="content-card">
+        <h3><a href="./features/builtins/css-theming.html">Consistent content layout</a></h3>
+        <p>Headings, tables, callouts, and code samples pick up shared spacing and styles so readers get a clean, predictable experience across your site.</p>
+    </article>
+    <article class="content-card">
+        <h3><a href="./features/builtins/css-theming.html">Comfortable theming</a></h3>
+        <p>Tune colors, typography, and light or dark mode with simple theme settings so the site feels like yours without rebuilding the design from scratch.</p>
+    </article>
+</div>
+<h2>Who Is JamsEDU For</h2>
+<ul>
+    <li>Educators and researchers publishing curriculum, dissertations, theses, and portfolios.</li>
+    <li>Bloggers, writers, and small businesses who want a professional site without the complexity of a CMS.</li>
+    <li>Open source projects that need clean, maintainable API docs and tutorials.</li>
+    <li>Anyone who has outgrown hand maintained HTML and wants something better.</li>
+</ul>
+<h2>Get Started Fast</h2>
+<p>
+    JamsEDU is a terminal based application. Getting started is as simple as opening your terminal and running three commands:
+</p>
+<pre><code class="bash">
+    npm install -g @caboodle-tech/jamsedu
+    jamsedu --init
+    jamsedu --watch
+</code></pre>
+<p>
+    For full setup and options see <a href="./features/getting-started.html">Getting Started</a> and <a href="./features/configuration.html">Configuration</a>.
+</p>
+</main>
+<footer class="full-width">
+    <div class="columns two">
+        <nav aria-label="Footer">
+            <a href="https://www.npmjs.com/package/@caboodle-tech/jamsedu" rel="noopener noreferrer" target="_blank">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24">
+                    <path d="M1.763 0C.786 0 0 .786 0 1.763v20.474C0 23.214.786 24 1.763 24h20.474c.977 0 1.763-.786 1.763-1.763V1.763C24 .786 23.214 0 22.237 0zM5.13 5.323l13.837.019-.009 13.836h-3.464l.01-10.382h-3.456L12.04 19.17H5.113z">
+                </svg>
+                App
+            </a>
+            <a href="./features/index.html">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill-rule="evenodd" clip-rule="evenodd">
+                    <path d="M22 24h-17c-1.657 0-3-1.343-3-3v-18c0-1.657 1.343-3 3-3h17v24zm-2-4h-14.505c-1.375 0-1.375 2 0 2h14.505v-2zm0-18h-15v16h15v-16zm-3 3v3h-9v-3h9z">
+                </svg>
+                Docs
+            </a>
+            <a href="https://github.com/caboodle-tech/jams-edu" rel="noopener noreferrer" target="_blank">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24">
+                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12">
+                </svg>
+                Source
+            </a>
+        </nav>
+        <div>
+            Built with
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Love">
+                <path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5">
+            </svg>
+            by <a href="https://github.com/caboodle-tech" rel="noopener noreferrer" target="_blank">Caboodle Tech</a>
+        </div>
+    </div>
+</footer>
+</div>
+</body>
+</html>
