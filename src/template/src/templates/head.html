@@ -1,3 +1,6 @@
+<!-- @jamsedu-version: 1.0.0 -->
+<!-- @jamsedu-component: templates-head -->
+
 <script>
     /**
      * Default values for meta tags if not provided
@@ -6,22 +9,20 @@
         const title = 'JamsEdu';
     }
     if (!description) {
-        const description = 'Welcome to JamsEdu - A simple static site generator.';
+        const description = 'JamsEdu static site generator for teaching and open content.';
     }
 </script>
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <meta content="width=device-width, initial-scale=1.0" name="viewport">
-        <link href="./assets/css/main.css" rel="stylesheet">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="/assets/css/main.css" rel="stylesheet">
         <title><script>$echo(title);</script></title>
         <script>
-        $echo(`<meta name="description" content="${description}">`);
-    </script>
-        <script type="module" src="./assets/js/main.js"></script>
-        <!-- Blocking; runs in `head` before `body` exists. See `theme-preference.js`. -->
-        <script src="./assets/js/theme-preference.js"></script>
+            $echo(`<meta name="description" content="${description}">`);
+        </script>
+        <script type="module" src="/assets/js/main.js"></script>
+        <script src="/assets/js/theme-preference.js"></script>
     </head>
     <body>
-

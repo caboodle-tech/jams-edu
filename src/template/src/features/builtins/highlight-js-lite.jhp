@@ -1,0 +1,155 @@
+<script>
+    const title = 'Highlight JS Lite · JamsEDU';
+    const description = 'How to use Highlight JS Lite in JamsEDU for syntax highlighted code blocks with line numbers, copy button, mini editors, and theme-aware styling.';
+
+    $include('../../templates/header.html');
+</script>
+
+<p class="breadcrumb">
+    <a href="/index.html">Home</a> · <a href="/features/index.html">Docs</a> · <a href="/features/built-in-features.html">Built-In Features</a> · Highlight JS Lite
+</p>
+
+<h1>Highlight JS Lite</h1>
+
+<p>
+    JamsEDU uses <a href="https://github.com/caboodle-tech/highlight-js-lite" rel="noopener noreferrer" target="_blank">Highlight JS Lite</a> (HLJSL) to provide syntax highlighting for code blocks. Out of the box it gives you automatic language detection, line numbers, a copy to clipboard button, automatic indentation correction, and colors that respect your site's light or dark mode. It is designed to work with zero configuration but can be customized when needed.
+</p>
+<p>
+    You can customize how highlighting behaves by editing <code>jamsEduConfig.highlightJsLite</code> in <code>assets/js/main.js</code>. Set only the properties you need and anything you omit will use the default values. To disable highlighting entirely, set the whole key to <code>false</code>. For more on how <code>jamsEduConfig</code> works across all built-ins, see <a href="/features/built-in-features.html#frontend-feature-options-heading">Optional Settings</a>.
+</p>
+<dl>
+    <div>
+        <dt><code>useMutationObserver</code></dt>
+        <dd>When <code>true</code> (default), new <code>pre &gt; code</code> blocks added to the page after load are automatically highlighted through the shared DOM watcher. When <code>false</code>, only code blocks present in the DOM at load time are processed.</dd>
+    </div>
+    <div>
+        <dt><code>version</code></dt>
+        <dd>The HLJSL version to load from jsDelivr. Currently defaults to <code>4.3.0</code>.</dd>
+    </div>
+    <div>
+        <dt>Other keys</dt>
+        <dd>Forwarded directly to <code>window.hljslConfig</code>. See the <a href="https://github.com/caboodle-tech/highlight-js-lite" rel="noopener noreferrer" target="_blank">HLJSL project</a> for additional supported keys.</dd>
+    </div>
+</dl>
+
+<section aria-labelledby="hljsl-usage-heading">
+    <h2 id="hljsl-usage-heading">Basic Markup</h2>
+    <p>
+        Wrap your code in a <code>pre</code> element containing a <code>code</code> element. You can set a language class on the <code>code</code> element to specify the language explicitly, or leave it off and let HLJSL detect the language automatically. Thanks to the built-in indentation correction, you can indent your code blocks just like any other HTML in your source files.
+    </p>
+    <pre><code class="html">
+        &lt;pre&gt;&lt;code class="javascript"&gt;
+            const greeting = 'Hello';
+            console.log(greeting);
+        &lt;/code&gt;&lt;/pre&gt;
+    </code></pre>
+</section>
+
+<section aria-labelledby="hljsl-line-numbers-heading">
+    <h2 id="hljsl-line-numbers-heading">Line Numbers</h2>
+    <p>
+        Line numbers are shown by default on all code blocks. You can control this per block by adding the class <code>hide-numbers</code> or <code>show-numbers</code> to the <code>pre</code> element. You can also set a minimum line threshold so that short blocks hide their numbers automatically.
+    </p>
+    <pre><code class="html">
+        &lt;!-- Hide line numbers on this block --&gt;
+        &lt;pre class="hide-numbers"&gt;&lt;code class="javascript"&gt;
+            console.log('No line numbers here');
+        &lt;/code&gt;&lt;/pre&gt;
+
+        &lt;!-- Force line numbers even if globally hidden --&gt;
+        &lt;pre class="show-numbers"&gt;&lt;code class="javascript"&gt;
+            console.log('Line numbers shown');
+        &lt;/code&gt;&lt;/pre&gt;
+    </code></pre>
+</section>
+
+<section aria-labelledby="hljsl-editor-heading">
+    <h2 id="hljsl-editor-heading">Mini Editors</h2>
+    <p>
+        HLJSL can turn any code block into an editable mini editor. Add the class <code>editor</code> to the <code>pre</code> element and the code area becomes editable with live syntax highlighting as you type. By default the language is detected automatically as the user types, but you can lock it to a specific language by adding both a language class and the <code>locked</code> class to the <code>code</code> element. Try editing the code below:
+    </p>
+    <pre class="editor"><code class="python">
+        def greet(name):
+            return f"Hello, {name}!"
+
+        print(greet("World"))
+    </code></pre>
+    <p>
+        This editor is locked to HTML so only HTML syntax is highlighted regardless of what you type:
+    </p>
+    <pre class="editor"><code class="html locked">
+        &lt;div class="callout notice"&gt;
+            &lt;div class="title"&gt;Hello&lt;/div&gt;
+            &lt;p&gt;Try editing this HTML.&lt;/p&gt;
+        &lt;/div&gt;
+    </code></pre>
+    <p>
+        Here is an example of how to add different types of editors to your page:
+    </p>
+    <pre><code class="html">
+        &lt;!-- Editable, language auto-detected --&gt;
+        &lt;pre class="editor"&gt;&lt;code class="python"&gt;
+            def greet(name):
+                return f"Hello, {name}!"
+        &lt;/code&gt;&lt;/pre&gt;
+
+        &lt;!-- Editable, locked to HTML --&gt;
+        &lt;pre class="editor"&gt;&lt;code class="html locked"&gt;
+            &amp;lt;div class="callout notice"&amp;gt;
+                &amp;lt;div class="title"&amp;gt;Hello&amp;lt;/div&amp;gt;
+                &amp;lt;p&amp;gt;Try editing this HTML.&amp;lt;/p&amp;gt;
+            &amp;lt;/div&amp;gt;
+        &lt;/code&gt;&lt;/pre&gt;
+    </code></pre>
+
+    <div class="callout warn icon">
+        When displaying HTML markup inside a <code>pre code</code> block or editor, you must encode angle brackets as <code>&amp;lt;</code> and <code>&amp;gt;</code> so the browser does not interpret them as actual HTML tags.
+    </div>
+</section>
+
+<section aria-labelledby="hljsl-copy-heading">
+    <h2 id="hljsl-copy-heading">Copy with Context</h2>
+    <p>
+        The copy button copies the code to the clipboard by default. You can enhance this by placing <code>template</code> elements directly before and after your <code>pre</code> block. Any content inside these templates will be included with the copied code, which is useful for sharing instructions, prompts, or context alongside your code. Try copying the code below and pasting it into a text editor or AI tool to see the full output.
+    </p>
+    <template>Write a Python function that takes a list of room dictionaries like the one below and builds a text adventure game. Requirements: implement a game loop with input validation, add inventory management, and include a win condition when the player finds the treasure.</template>
+    <pre><code class="python">
+        rooms = {
+            'start': {
+                'description': 'You are in a dimly lit entrance hall.',
+                'north': 'hallway',
+                'items': ['torch']
+            },
+            'hallway': {
+                'description': 'A long hallway stretches before you.',
+                'south': 'start',
+                'east': 'treasure_room',
+                'locked': True,
+                'requires': 'key'
+            },
+            'treasure_room': {
+                'description': 'Gold glimmers in the torchlight.',
+                'items': ['treasure']
+            }
+        }
+    </code></pre>
+    <template>The function should print room descriptions, handle movement commands (north, south, east, west), and let the player pick up and use items. End the game when the player picks up the treasure.</template>
+    <pre><code class="html">
+        &lt;template&gt;Your prompt or instructions before the code.&lt;/template&gt;
+        &lt;pre&gt;&lt;code class="python"&gt;
+            your_code_here = True
+        &lt;/code&gt;&lt;/pre&gt;
+        &lt;template&gt;Your prompt or instructions after the code.&lt;/template&gt;
+    </code></pre>
+</section>
+
+<section aria-labelledby="hljsl-styling-heading">
+    <h2 id="hljsl-styling-heading">Styling</h2>
+    <p>
+        In a standard JamsEDU app that keeps the built-in theming stack, HLJSL automatically follows the same light and dark palettes as the rest of your site. If you need to customize the code block appearance specifically, you can override HLJSL variables like <code>--highlight-bg</code>, <code>--highlight-color</code>, and <code>--editor-control-bar</code> on <code>:root</code> or a wrapper element. Make sure your overrides load after the HLJSL stylesheet or use <code>@layer</code> so they take priority. For the full list of available variables see the <a href="https://github.com/caboodle-tech/highlight-js-lite#styling-css-variables" rel="noopener noreferrer" target="_blank">HLJSL styling documentation</a>. For details on how JamsEDU theming works as a whole, see the <a href="/features/builtins/css-theming.html">CSS and Theming</a> guide.
+    </p>
+</section>
+
+<script>
+    $include('../../templates/footer.html');
+</script>

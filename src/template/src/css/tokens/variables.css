@@ -1,10 +1,15 @@
-/**
- * Non-color design tokens: type, radius, spacing, motion, icons. Abbreviations use `-md` (not `-med`).
- * Typography assumes `html { font-size: 62.5%; }` (`base/reset.css`): 1rem = 10px at default UA 16px.
- * Body scale: `--font-size-md` is 1.8rem (18px); steps are 0.3rem up/down. Each `--line-height-*` is the
- * matching font size + 0.3rem (absolute rem, not a unitless ratio).
- */
+/* @jamsedu-version: 2.2.2 */
+/* @jamsedu-component: variables-css */
 
+/**
+ * JamsEdu non-color tokens: type, radius, spacing, motion, icons. Names and steps are ours; other
+ * sites are informal visual reference only, not a spec to copy.
+ *
+ * Typography: `html { font-size: 62.5%; }` (`base/reset.css`): 1rem = 10px at default UA 16px.
+ *
+ * Line heights are fixed rem, tuned by role (not a flat offset): body scale targets ~1.5–1.55 ratio
+ * for readable prose; larger display sizes use tighter ratios so multi-line titles do not balloon.
+ */
 :root {
     --font-family-sans: 'Inter', system-ui, sans-serif;
     --font-family-mono: 'Fira Code', 'Roboto Mono', monospace;
@@ -17,21 +22,17 @@
     --font-size-2xl: 2.7rem;
     --font-size-3xl: 3rem;
     --font-size-4xl: 3.6rem;
-    /* Dense editors (WYSIWYG): one step above body */
     --font-size-editor: var(--font-size-lg);
 
-    --line-height-xs: 1.5rem;
-    --line-height-sm: 1.8rem;
-    --line-height-md: 2.1rem;
-    --line-height-lg: 2.4rem;
-    --line-height-xl: 2.7rem;
-    --line-height-2xl: 3rem;
-    --line-height-3xl: 3.3rem;
-    --line-height-4xl: 3.9rem;
+    --line-height-xs: 1.8rem;
+    --line-height-sm: 2.25rem;
+    --line-height-md: 2.8rem;
+    --line-height-lg: 2.9rem;
+    --line-height-xl: 3.05rem;
+    --line-height-2xl: 3.25rem;
+    --line-height-3xl: 3.5rem;
+    --line-height-4xl: 4.05rem;
 
-    /**
-     * Borders and radius
-     */
     --radius-xs: 2px;
     --radius-sm: 4px;
     --radius-md: 6px;
@@ -43,38 +44,44 @@
      */
     --border-inline-accent-width: 3px;
 
-    /**
-     * Content spacing (rem tuned for 62.5% root; ~8px / 16px / 24px / 32px / 48px)
-     */
-    --spacing-xs: 0.8rem;
-    --spacing-sm: 1.6rem;
-    --spacing-md: 2.4rem;
-    --spacing-lg: 3.2rem;
-    --spacing-xl: 4.8rem;
+    --spacing-xs: 4px;
+    --spacing-sm: 10px;
+    --spacing-md: 16px;
+    --spacing-lg: 22px;
+    --spacing-xl: 28px;
+
+    --padding-xxs: 2px;
+    --padding-xs: var(--spacing-xs);
+    --padding-sm: var(--spacing-sm);
+    --padding-md: var(--spacing-md);
+    --padding-lg: var(--spacing-lg);
+    --padding-xl: var(--spacing-xl);
+
+    --margin-xs: var(--spacing-xs);
+    --margin-sm: var(--spacing-sm);
+    --margin-md: var(--spacing-md);
+    --margin-lg: var(--spacing-lg);
+    --margin-xl: var(--spacing-xl);
+
+    --space-gutter: 24px;
+    --space-gutter-tight: 12px;
 
     /**
-     * Padding and margin
+     * Masthead row from viewport top: safe area + bar padding + max(brand line, chrome control tile).
+     * Mobile nav drawer uses this as `top` so links sit below icons.
      */
-    --padding-xs: 0.8rem;
-    --padding-sm: 1.6rem;
-    --padding-md: 2.4rem;
-    --padding-lg: 3.2rem;
-    --padding-xl: 4.8rem;
+    --site-header-bar-height: calc(
+        env(safe-area-inset-top, 0px) + (var(--spacing-md) * 2) +
+            max(var(--line-height-2xl), calc(var(--icon-size-md) + var(--spacing-md)))
+    );
 
-    --margin-xs: 0.8rem;
-    --margin-sm: 1.6rem;
-    --margin-md: 2.4rem;
-    --margin-lg: 3.2rem;
-    --margin-xl: 4.8rem;
+    --breakpoint-sm: 480px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 960px;
 
-    --space-gutter: 3.2rem;
-    --space-gutter-tight: 1.6rem;
-
-    /**
-     * Page layout (`.content-grid`, Kevin Powell-style named columns)
-     */
     --content-max-width: 1200px;
-    --breakout-size: 120px;
+    --breakout-max-width: calc(var(--content-max-width) + (var(--spacing-lg) * 2));
+    --breakout-size: calc((var(--breakout-max-width) - var(--content-max-width)) / 2);
 
     --transition-base: 0.2s ease;
     --transition-smooth: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -84,15 +91,18 @@
     --transition-popup: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     --transition-drawer: 0.35s cubic-bezier(0.04, 0.9, 0.2, 1);
 
-    /**
-     * Icon dimensions
-     */
+    --icon-size-xs: 18px;
     --icon-size-sm: 24px;
     --icon-size-md: 32px;
     --icon-size-lg: 48px;
-    /* Touch target step: `--icon-size-sm` + half `--spacing-sm` at 62.5% root */
     --icon-dimensions: var(--icon-size-md);
 
-    --table-cell-padding-y: 2px;
+    --code-padding-y: var(--radius-xs);
+    --code-padding-x: var(--radius-sm);
+
+    /** Prose `mark` horizontal inset; pairs with `--color-mark-*` (`tokens/colors.css`). */
+    --mark-padding-inline: 1px;
+
+    --table-cell-padding-y: 0.4rem;
     --table-cell-padding-x: var(--font-size-md);
 }

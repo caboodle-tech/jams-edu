@@ -1,13 +1,13 @@
-/* @jamsedu-version: 2.0.0 */
+/* @jamsedu-version: 2.2.1 */
 /* @jamsedu-component: layout-columns-grid */
+
 /**
  * Simple responsive column tracks for cards or feature rows.
  * Composable with `.content-grid` (place a `.columns` inside the content column).
  */
-
 .columns {
     display: grid;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-xl);
     grid-auto-rows: auto;
 
     &.two {
@@ -19,16 +19,16 @@
     }
 
     @media (min-width: 480px) {
-        &.two {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
         &.three {
             grid-template-columns: repeat(2, 1fr);
         }
     }
 
     @media (min-width: 768px) {
+        &.two {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
         &.three {
             grid-template-columns: repeat(3, 1fr);
         }

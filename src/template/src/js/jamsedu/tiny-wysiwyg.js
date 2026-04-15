@@ -1,5 +1,5 @@
 // @jamsedu-version: 1.4.0
-// @jamsedu-component: tiny-wysiwyg
+// @jamsedu-component: tiny-wysiwyg-2
 
 import './dom-watcher.js';
 
@@ -26,7 +26,8 @@ class TinyWysiwyg {
         ol: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" x2="21" y1="6" y2="6"/><line x1="10" x2="21" y1="12" y2="12"/><line x1="10" x2="21" y1="18" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>`,
         paragraph: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pilcrow-icon lucide-pilcrow"><path d="M13 4v16"/><path d="M17 4v16"/><path d="M19 4H9.5a4.5 4.5 0 0 0 0 9H13"/></svg>`,
         ul: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>`,
-        underline: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" x2="20" y1="20" y2="20"/></svg>`
+        underline: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" x2="20" y1="20" y2="20"/></svg>`,
+        close: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`
     };
     /* eslint-enable max-len */
 
@@ -131,7 +132,6 @@ class TinyWysiwyg {
         clearTimeout(this.cleanupDebounceTimer);
         this.cleanupDebounceTimer = setTimeout(() => {
             this.cleanHTML(this.editor);
-            this.syncEditorEmptyClass();
         }, 300);
     }
 
@@ -211,64 +211,84 @@ class TinyWysiwyg {
         this.textarea.parentNode.insertBefore(this.container, this.textarea.nextSibling);
     }
 
-    createLinkModal() {
-        this.linkModal = document.createElement('div');
-        this.linkModal.className = 'tw-link-modal';
-        this.linkModal.style.display = 'none';
+    /**
+     * @param {string} text
+     * @returns {string}
+     */
+    #formatLinkPopoverHeading(text) {
+        const trimmed = String(text).trim();
+        if (!trimmed) {
+            return '';
+        }
+        const last = trimmed.slice(-1);
+        if ('.?!:'.includes(last)) {
+            return trimmed;
+        }
+        return `${trimmed}:`;
+    }
 
-        this.linkModal.innerHTML = `
-            <div class="tw-lm-backdrop"></div>
-            <div class="tw-lm-content">
-                <h3 class="tw-lm-title">Insert Link</h3>
-                <label>URL:</label>
-                <input type="url" class="tw-lm-link-url" placeholder="https://example.com">
-                <div class="tw-lm-buttons">
-                    <button class="danger tw-lm-unlink-btn" style="display:none;">Remove Link</button>
-                    <button class="tw-lm-cancel-btn">Cancel</button>
-                    <button class="primary tw-lm-insert-btn">Insert</button>
+    createLinkModal() {
+        const dialog = document.createElement('dialog');
+        dialog.className = 'doc-link-popover jamsedu-tw-link-dialog';
+        dialog.innerHTML = `
+            <div class="jamsedu-tw-link-dialog-panel">
+                <div class="doc-link-popover-heading"></div>
+                <input type="url" class="doc-link-popover-input" placeholder="https://..." autocomplete="url">
+                <div class="doc-link-popover-actions">
+                    <button type="button" class="doc-button doc-link-cancel" aria-label="Close">${this.#icons.close}</button>
+                    <button type="button" class="doc-button doc-link-clear">Clear</button>
+                    <button type="button" class="doc-button doc-link-save">Save</button>
                 </div>
             </div>
         `;
+        this.linkModal = dialog;
+        document.body.appendChild(dialog);
 
-        this.container.appendChild(this.linkModal);
+        const urlInput = dialog.querySelector('input.doc-link-popover-input');
+        const saveBtn = dialog.querySelector('.doc-link-save');
+        const cancelBtn = dialog.querySelector('.doc-link-cancel');
+        const clearBtn = dialog.querySelector('.doc-link-clear');
 
-        // Set up modal event listeners once
-        const urlInput = this.linkModal.querySelector('.tw-lm-link-url');
-        const insertBtn = this.linkModal.querySelector('.tw-lm-insert-btn');
-        const cancelBtn = this.linkModal.querySelector('.tw-lm-cancel-btn');
-        const unlinkBtn = this.linkModal.querySelector('.tw-lm-unlink-btn');
-
-        insertBtn.addEventListener('click', () => {
+        saveBtn.addEventListener('click', () => {
             const url = urlInput.value.trim();
             if (url) {
                 const sanitized = this.sanitizeUrl(url);
                 if (sanitized) {
-                    this.insertLink(sanitized, this.linkModal.dataset.existingLink === 'true');
+                    this.insertLink(sanitized, dialog.dataset.existingLink === 'true');
                 }
             }
             this.hideLinkModal();
         });
 
-        cancelBtn.addEventListener('click', () => { return this.hideLinkModal(); });
+        cancelBtn.addEventListener('click', () => {
+            this.hideLinkModal();
+        });
 
-        unlinkBtn.addEventListener('click', () => {
-            this.removeLink(this.linkModal.existingLinkElement);
+        clearBtn.addEventListener('click', () => {
+            if (dialog.existingLinkElement) {
+                this.removeLink(dialog.existingLinkElement);
+            }
+            urlInput.value = '';
             this.hideLinkModal();
         });
 
         urlInput.addEventListener('keydown', (evt) => {
             if (evt.key === 'Enter') {
                 evt.preventDefault();
-                insertBtn.click();
-            } else if (evt.key === 'Escape') {
-                evt.preventDefault();
+                saveBtn.click();
+            }
+        });
+
+        dialog.addEventListener('click', (evt) => {
+            if (evt.target === dialog) {
                 this.hideLinkModal();
             }
         });
 
-        this.linkModal.addEventListener('click', (evt) => {
-            if (evt.target === this.linkModal) {
-                this.hideLinkModal();
+        dialog.addEventListener('close', () => {
+            dialog.existingLinkElement = null;
+            if (this.editor) {
+                this.editor.focus();
             }
         });
     }
@@ -1322,9 +1342,9 @@ class TinyWysiwyg {
     }
 
     hideLinkModal() {
-        this.linkModal.style.display = 'none';
-        this.linkModal.existingLinkElement = null;
-        this.editor.focus();
+        if (this.linkModal && this.linkModal.open) {
+            this.linkModal.close();
+        }
     }
 
     init() {
@@ -1688,6 +1708,7 @@ class TinyWysiwyg {
             }
 
             this.recordHistory();
+            this.syncToTextarea();
             this.debouncedCleanup();
         };
 
@@ -1708,21 +1729,25 @@ class TinyWysiwyg {
     }
 
     showLinkModal(currentUrl, existingLink) {
-        const title = this.linkModal.querySelector('.tw-lm-title');
-        const urlInput = this.linkModal.querySelector('.tw-lm-link-url');
-        const insertBtn = this.linkModal.querySelector('.tw-lm-insert-btn');
-        const unlinkBtn = this.linkModal.querySelector('.tw-lm-unlink-btn');
+        const dialog = this.linkModal;
+        const title = dialog.querySelector('.doc-link-popover-heading');
+        const urlInput = dialog.querySelector('input.doc-link-popover-input');
+        const saveBtn = dialog.querySelector('.doc-link-save');
+        const clearBtn = dialog.querySelector('.doc-link-clear');
 
         const isEdit = !!existingLink;
-        title.textContent = isEdit ? 'Edit Link' : 'Insert Link';
-        urlInput.value = currentUrl;
-        insertBtn.textContent = isEdit ? 'Update' : 'Insert';
-        unlinkBtn.style.display = isEdit ? 'inline-block' : 'none';
+        title.textContent = isEdit
+            ? this.#formatLinkPopoverHeading('Edit link')
+            : this.#formatLinkPopoverHeading('Insert link');
+        urlInput.value = currentUrl || '';
+        saveBtn.textContent = 'Save';
 
-        this.linkModal.dataset.existingLink = isEdit;
-        this.linkModal.existingLinkElement = existingLink;
+        dialog.dataset.existingLink = String(isEdit);
+        dialog.existingLinkElement = existingLink;
 
-        this.linkModal.style.display = 'flex';
+        if (!dialog.open) {
+            dialog.showModal();
+        }
         urlInput.focus();
         urlInput.select();
     }

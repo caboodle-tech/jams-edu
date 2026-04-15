@@ -1,0 +1,107 @@
+<script>
+    const title = 'Build Hooks · JamsEDU';
+    const description = 'Learn how to register pre and post build hooks in your JamsEDU configuration to query and modify HTML during the build process.';
+
+    $include('../templates/header.html');
+</script>
+
+<p class="breadcrumb"><a href="/index.html">Home</a> · <a href="/features/index.html">Docs</a> · Build Hooks</p>
+
+<h1>Build Hooks</h1>
+
+<p>
+    Hooks let you run your own JavaScript during the build to modify HTML before it is written to disk. <strong>Pre</strong> hooks run before template expansion and <strong>post</strong> hooks run after templates have been applied. JamsEDU also has its own built-in post hooks for things like video embedding. Your hooks are merged in and run alongside them.
+</p>
+
+<section aria-labelledby="registration-heading">
+    <h2 id="registration-heading">Registration</h2>
+    <p>
+        To register a hook, import your function and add it to the <code>pre</code> or <code>post</code> array in your configuration file. You can register as many hooks as you need in either array.
+    </p>
+    <pre><code class="javascript">
+        import myPostHook from './hooks/myPostHook.js';
+
+        export default {
+            destDir: 'www/public',
+            srcDir: 'www/private',
+            templateDir: 'www/private/templates',
+            post: [myPostHook]
+        };
+    </code></pre>
+</section>
+
+<section aria-labelledby="hook-shape-heading">
+    <h2 id="hook-shape-heading">Writing a Hook</h2>
+    <p>
+        A hook is a function that receives a <code>scope</code> object. This object gives you access to the parsed document tree along with information about the file being processed. Hooks do not return a value. Instead you modify <code>scope.dom</code> directly and JamsEDU writes the result to disk after all hooks have run.
+    </p>
+    <pre><code class="javascript">
+        /**
+         * @param {object} scope
+         * @param {object} scope.dom - Root of the parsed document tree
+         * @param {string} scope.cwd - Absolute directory of the source file
+         * @param {string} scope.relPath - Path of the file relative to the project root
+         */
+        const myHook = (scope) => {
+            const node = scope.dom.querySelector('main');
+            if (node) {
+                node.setAttribute('data-built', 'true');
+            }
+        };
+
+        export default myHook;
+    </code></pre>
+</section>
+
+<section aria-labelledby="tree-api-heading">
+    <h2 id="tree-api-heading">Tree API</h2>
+    <p>
+        The document tree exposed through <code>scope.dom</code> is powered by <a href="https://github.com/caboodle-tech/simple-html-parser" rel="noopener noreferrer" target="_blank">simple-html-parser</a>. It provides a familiar set of methods for querying and modifying elements.
+    </p>
+    <dl>
+        <div>
+            <dt>Querying</dt>
+            <dd>Use <code>querySelector</code> and <code>querySelectorAll</code> to find elements using CSS-like selectors.</dd>
+        </div>
+        <div>
+            <dt>Attributes</dt>
+            <dd><code>getAttribute</code>, <code>setAttribute</code>, <code>removeAttribute</code>, and <code>updateAttribute</code>. The <code>updateAttribute</code> method appends a value with a separator, which is especially useful for adding to <code>class</code> lists.</dd>
+        </div>
+        <div>
+            <dt>DOM Manipulation</dt>
+            <dd><code>insertAdjacentHTML</code>, <code>appendChild</code>, <code>insertBefore</code>, <code>insertAfter</code>, <code>replaceWith</code>, and <code>remove</code>. You can also read or replace an element's contents using <code>innerHTML</code> and <code>innerText</code>.</dd>
+        </div>
+        <div>
+            <dt>Node Types</dt>
+            <dd>Nodes are typed as <code>root</code>, <code>tag-open</code>, <code>tag-close</code>, <code>text</code>, or <code>comment</code>. Opening and closing tags are modeled as siblings and the element's contents live in the opening tag's <code>children</code> array.</dd>
+        </div>
+    </dl>
+    <p>
+        For the full API reference see the <a href="https://github.com/caboodle-tech/simple-html-parser" rel="noopener noreferrer" target="_blank">simple-html-parser repository</a> on GitHub.
+    </p>
+</section>
+
+<section aria-labelledby="example-heading">
+    <h2 id="example-heading">Example</h2>
+    <p>
+        This post hook finds all <code>video</code> elements with a <code>src</code> attribute and replaces each one with a responsive <code>figure</code> wrapping an iframe embed.
+    </p>
+    <pre><code class="javascript">
+        const replaceVideos = (scope) => {
+            const videoNodes = scope.dom.querySelectorAll('video[src]');
+
+            for (const videoNode of videoNodes) {
+                const url = videoNode.getAttribute('src');
+                const html = `&lt;figure class="video"&gt;&lt;iframe src="${url}"&gt;&lt;/iframe&gt;&lt;/figure&gt;`;
+                videoNode.insertAdjacentHTML('beforebegin', html);
+                videoNode.remove();
+            }
+        };
+
+        export default replaceVideos;
+    </code></pre>
+</section>
+
+<script>
+    $include('../templates/footer.html');
+</script>

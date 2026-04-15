@@ -1,35 +1,35 @@
-/* @jamsedu-version: 1.3.3 */
+/* @jamsedu-version: 1.6.3 */
 /* @jamsedu-component: embed-pdf */
-/*
- * EmbedPDF snippet layout and chrome. Theme tokens live in `tokens.css` (`--pdf-*`).
- * `embed-pdf.js` reads `--pdf-*` from getComputedStyle on `.embed-pdf-container`.
- *
- * Mount targets: div[data-pdf], embed[src$=.pdf]; JS replaces them with .embed-pdf-container.
- */
 
+/*
+ * Snippet shell (`tokens.css` / `--pdf-*` + `embed-pdf.js`). Toolbar rem fix targets the first viewer
+ * shadow host only (`--spacing` + `--text-*`, not `--container-sm`).
+ */
 div[data-pdf]:not(.embed-pdf-container) {
     box-sizing: border-box;
     display: block;
-    width: var(--pdf-width, 100%);
-    min-height: var(--pdf-height, var(--pdf-min-height, var(--min-height, 600px)));
+    width: var(--pdf-width);
+    min-height: var(--pdf-min-height);
 }
 
 embed[src$=".pdf" i] {
     box-sizing: border-box;
     display: block;
-    width: var(--pdf-width, 100%);
-    height: var(--pdf-height, 600px);
+    width: var(--pdf-width);
+    height: var(--pdf-height);
     border: 0;
 }
 
 .embed-pdf-container {
     position: relative;
     box-sizing: border-box;
-    width: var(--pdf-width, 100%);
-    height: var(--pdf-height, 600px);
-    min-height: var(--pdf-height, var(--pdf-min-height, var(--min-height, 600px)));
-    margin: var(--pdf-margin, 1rem 0);
-    border-radius: var(--pdf-border-radius, var(--radius-md, 6px));
+    width: var(--pdf-width);
+    max-width: 100%;
+    min-width: 0;
+    height: var(--pdf-height);
+    min-height: var(--pdf-min-height);
+    margin: var(--pdf-margin);
+    border-radius: var(--pdf-border-radius);
     border: 1px solid var(--pdf-card-border-color);
     box-shadow: var(--pdf-shadow);
     overflow: hidden;
@@ -37,16 +37,18 @@ embed[src$=".pdf" i] {
     display: flex;
     flex-direction: column;
 
-    > * {
+    & > * {
         flex: 1 1 auto;
         min-height: 0;
+        min-width: 0;
         width: 100%;
+        max-width: 100%;
         background: var(--pdf-snippet-host-fill);
     }
 
-    *,
-    *::before,
-    *::after {
+    & *,
+    & *::before,
+    & *::after {
         box-sizing: border-box;
     }
 }

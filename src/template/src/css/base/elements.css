@@ -1,5 +1,6 @@
 /* @jamsedu-version: 2.1.13 */
 /* @jamsedu-component: elements-css */
+
 /* --- Document surface --- */
 :where(body) {
     margin: 0;
@@ -252,68 +253,8 @@
 }
 
 /* --- Block media --- */
-:where(hr, figure, blockquote, pre) {
+:where(hr, figure, pre) {
     margin-block: 0 var(--margin-md);
-}
-
-/**
- * Pull quotes in page prose (`main` only). Rich Text blockquotes keep their own rules under
- * `.tiny-wysiwyg-container` (see `tiny-wysiwyg.css`).
- */
-:where(main blockquote) {
-    position: relative;
-    margin-block: 0 var(--margin-md);
-    margin-inline: 0;
-    padding-block: var(--padding-md);
-    padding-inline: var(--padding-md) var(--padding-md);
-    padding-inline-start: calc(var(--padding-lg) + var(--spacing-sm));
-    border-inline-start: var(--border-inline-accent-width) solid var(--color-border-inline-accent);
-    border-radius: var(--radius-sm);
-    background-color: var(--color-prose-card-bg);
-    color: var(--color-text);
-}
-
-:where(main blockquote)::before {
-    content: '\201C';
-    position: absolute;
-    inset-inline-start: var(--spacing-sm);
-    inset-block-start: var(--spacing-xs);
-    font-family: Georgia, 'Times New Roman', ui-serif, serif;
-    font-size: clamp(3rem, 5vw, 4.2rem);
-    line-height: 1;
-    color: color-mix(in srgb, var(--color-text) 18%, var(--color-border));
-    pointer-events: none;
-    user-select: none;
-}
-
-:where(main blockquote) p {
-    margin-block: 0 var(--spacing-sm);
-    font-size: var(--font-size-md);
-    line-height: var(--line-height-lg);
-}
-
-:where(main blockquote) p:last-of-type {
-    margin-block-end: 0;
-}
-
-:where(main blockquote) cite {
-    display: block;
-    margin-block-start: var(--spacing-sm);
-    font-size: var(--font-size-sm);
-    line-height: var(--line-height-sm);
-    font-style: normal;
-    color: var(--color-text-muted);
-}
-
-:where(main blockquote) cite a {
-    color: var(--color-link);
-    text-decoration: none;
-    cursor: pointer;
-    transition: color var(--transition-base);
-}
-
-:where(main blockquote) cite a:hover {
-    color: var(--color-link-hover);
 }
 
 /**
@@ -339,10 +280,18 @@
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-sm);
     font-family: var(--font-family-mono);
-    font-size: var(--font-size-md);
-    font-weight: bold;
+    font-size: calc(var(--font-size-md) * 0.9);
     margin: 0 var(--padding-xxs);
-    padding: var(--padding-xxs) var(--spacing-xs);
+    padding: 0 0.25em;
+}
+
+/**
+ * `mark`: `--color-mark-*` and `--mark-padding-inline` from `tokens/`.
+ */
+:where(mark) {
+    padding-inline: var(--mark-padding-inline);
+    background-color: var(--color-mark-bg);
+    color: var(--color-mark-fg);
 }
 
 /* --- Tables --- */

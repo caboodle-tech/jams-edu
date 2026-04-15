@@ -1,9 +1,10 @@
-/* @jamsedu-version: 1.5.8 */
+/* @jamsedu-version: 1.6.3 */
 /* @jamsedu-component: jamsedu-css */
-@import './tokens.css';
-@import './tiny-document.css';
-@import './embed-pdf.css';
-@import './tiny-wysiwyg.css';
+
+@import './tokens.css' layer(vendor);
+@import './tiny-document.css' layer(vendor);
+@import './embed-pdf.css' layer(vendor);
+@import './tiny-wysiwyg.css' layer(vendor);
 
 /**
  * Non-`:where()` so these beat `.tiny-wysiwyg-container * { padding: 0 }`
@@ -40,11 +41,15 @@ div.math {
  * `:has(svg)` applies the filter only after render, not to plain `pre` source.
  */
 @media (prefers-color-scheme: dark) {
-    html:has(input[name='theme-preference'][value='system']:checked) pre.mermaid:has(svg) {
-        filter: invert(1) hue-rotate(180deg);
+    html:has(input[name='theme-preference'][value='system']:checked) {
+        & pre.mermaid:has(svg) {
+            filter: invert(1) hue-rotate(180deg);
+        }
     }
 }
 
-html:has(input[name='theme-preference'][value='dark']:checked) pre.mermaid:has(svg) {
-    filter: invert(1) hue-rotate(180deg);
+html:has(input[name='theme-preference'][value='dark']:checked) {
+    & pre.mermaid:has(svg) {
+        filter: invert(1) hue-rotate(180deg);
+    }
 }

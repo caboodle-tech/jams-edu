@@ -1,28 +1,71 @@
 <script>
-    const title = 'Hello, World!';
-    const description = 'Welcome to your new JamsEdu project';
-    
+    const title = 'JamsEdu';
+    const description =
+        'JamsEDU builds static sites from JHP pages, compile-time hooks, and built-in features for math formulas, diagrams, editable text areas, code blocks, PDF viewing, and theming.';
+
     $include('./templates/header.html');
 </script>
 
-<h1>Hello, World!</h1>
+<h1>Welcome to JamsEDU</h1>
 
-<p>Welcome to your new JamsEdu project! &#x1F389;</p>
+<p>
+    JamsEDU is a feature-rich yet simple-to-use <a href="https://jamstack.org/" rel="noreferrer noopener" target="_blank">Jamstack</a> application originally designed for educational content. It is a practical way to publish a secure, static site for courses, documentation, and technical writing without wiring up separate frameworks. You supply HTML and content; JamsEDU handles generation, shared layout, and optional built-ins such as math, diagrams, and forms. With modern AI tools, building and customizing your site can be faster than hand-maintaining every page.
+</p>
 
-<p>This is a simple example page to help you get started. You can edit this file at <code>src/index.jhp</code>.</p>
+<h2>What You Get</h2>
 
-<h2>What's Next?</h2>
+<div class="card-grid">
+    <article class="content-card">
+        <h3><a href="/features/getting-started.html">Fast, dependable pages</a></h3>
+        <p>Your site is published as plain HTML and assets, so it loads quickly and works with virtually any hosting; no live app server required.</p>
+    </article>
+    <article class="content-card">
+        <h3><a href="/features/jhp-templates.html">Reusable page pieces</a></h3>
+        <p>Share headers, footers, and variables across your site so every page stays consistent without copying and pasting the same blocks by hand.</p>
+    </article>
+    <article class="content-card">
+        <h3><a href="/features/hooks.html">Optional build tweaks</a></h3>
+        <p>Hook into the generator to adjust or clean up pages automatically each time you publish, instead of editing each file individually.</p>
+    </article>
+    <article class="content-card">
+        <h3><a href="/features/built-in-features.html">Built-In Features</a></h3>
+        <p>Math formulas, diagrams, highlighted code blocks, editable rich text areas, interactive forms and reports, a PDF viewer, and theme options, all ready to use.</p>
+    </article>
+    <article class="content-card">
+        <h3><a href="/features/builtins/css-theming.html">Consistent content layout</a></h3>
+        <p>Headings, tables, callouts, and code samples pick up shared spacing and styles so readers get a clean, predictable experience across your site.</p>
+    </article>
+    <article class="content-card">
+        <h3><a href="/features/builtins/css-theming.html">Comfortable theming</a></h3>
+        <p>Tune colors, typography, and light or dark mode with simple theme settings so the site feels like yours without rebuilding the design from scratch.</p>
+    </article>
+</div>
+
+<h2>Who Is JamsEDU For</h2>
 
 <ul>
-    <li>Edit this file to customize your homepage</li>
-    <li>Check out the <code>docs/</code> directory for detailed guides</li>
-    <li>Run <code>jamsedu --build</code> to build your site</li>
-    <li>Run <code>jamsedu --watch</code> to start the development server</li>
+    <li>Educators and researchers publishing curriculum, dissertations, theses, and portfolios.</li>
+    <li>Bloggers, writers, and small businesses who want a professional site without the complexity of a CMS.</li>
+    <li>Open source projects that need clean, maintainable API docs and tutorials.</li>
+    <li>Anyone who has outgrown hand maintained HTML and wants something better.</li>
 </ul>
 
-<p>Learn more about JHP templates, CSS customization, and the JavaScript API in the documentation!</p>
+<h2>Get Started Fast</h2>
+
+<p>
+    JamsEDU is a terminal based application. Getting started is as simple as opening your terminal and running three commands:
+</p>
+
+<pre><code class="bash">
+    npm install -g @caboodle-tech/jamsedu
+    jamsedu --init
+    jamsedu --watch
+</code></pre>
+
+<p>
+    For full setup and options see <a href="/features/getting-started.html">Getting Started</a> and <a href="/features/configuration.html">Configuration</a>.
+</p>
 
 <script>
     $include('./templates/footer.html');
 </script>
-

@@ -1,5 +1,6 @@
-/* @jamsedu-version: 1.3.0 */
+/* @jamsedu-version: 1.7.9 */
 /* @jamsedu-component: main-css */
+
 @layer tokens, base, layout, components, utilities, vendor;
 
 @import './tokens/colors.css' layer(tokens);
@@ -14,11 +15,48 @@
 @import './layout/footer.css' layer(layout);
 
 @import './components/callouts.css' layer(components);
+@import './components/blockquotes.css' layer(components);
+@import './components/cards.css' layer(components);
 @import './components/details.css' layer(components);
 @import './components/color-mode-toggle.css' layer(components);
 @import './components/site-chrome.css' layer(components);
-@import './components/site-main.css' layer(components);
+@import './components/video-embed.css' layer(components);
 
 @import './utilities/utilities.css' layer(utilities);
 
 @import './vendor/jamsedu/jamsedu.css' layer(vendor);
+
+/* Inline `svg.icon`: unlayered so this beats `layer(vendor)`. Stroke icons set `stroke` on the root; filled logos omit it. */
+svg.icon {
+    &[stroke] {
+        color: inherit;
+        fill: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    &[stroke] :is(path, line, polyline, polygon) {
+        fill: none;
+        stroke: currentColor;
+    }
+
+    &:not([stroke]) {
+        fill: currentColor;
+    }
+
+    &:not([stroke]) :is(path, circle, ellipse, rect, polygon, polyline) {
+        fill: currentColor;
+        stroke: currentColor;
+    }
+}
+
+/* Icons inside anchors: keep body ink so icons are not painted like link text (`currentColor`). */
+a svg.icon {
+    color: var(--color-text);
+}
+
+.content-grid > header a svg.icon,
+.content-grid > footer a svg.icon,
+:where(footer) a svg.icon {
+    color: color-mix(in srgb, var(--header-text) 92%, var(--header-bg));
+}

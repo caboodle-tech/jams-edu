@@ -1,0 +1,80 @@
+<script>
+    const title = 'Get Started · JamsEDU';
+    const description = 'Learn how to install JamsEDU globally, initialize a new project, and start previewing your site locally with a few simple terminal commands.';
+
+    $include('../templates/header.html');
+</script>
+
+<p class="breadcrumb"><a href="/index.html">Home</a> · <a href="/features/index.html">Docs</a> · Get Started</p>
+
+<h1>Get Started</h1>
+
+<p>
+    JamsEDU is distributed as the npm package <code>@caboodle-tech/jamsedu</code>. You only need to install it once and then you can run <code>jamsedu</code> from any terminal on your machine. Before you begin, make sure you have a recent version of <a href="https://nodejs.org/" rel="noreferrer noopener" target="_blank">Node.js</a> installed (LTS is recommended) along with <code>npm</code> or <code>pnpm</code> as your package manager.
+</p>
+
+<h2>Install JamsEDU</h2>
+
+<pre><code class="bash">
+    # Install with PNPM
+    pnpm install -g @caboodle-tech/jamsedu
+
+    # or install with NPM
+    npm install -g @caboodle-tech/jamsedu
+</code></pre>
+
+<p>
+    After installation, close and reopen your terminal, then run <code>jamsedu --help</code> to verify everything is working. If the command is not recognized, your global npm bin directory may not be on your system's <code>PATH</code>. Check your Node.js installation notes for instructions on how to resolve this for your operating system.
+</p>
+
+<h2>Create a Project</h2>
+
+<p>
+    Open your terminal and navigate to the <strong>parent</strong> directory where you want your new site to be created. For example, this might be your Documents or Projects directory. Then run the initialization command:
+</p>
+
+<pre><code class="bash">
+    jamsedu --init
+</code></pre>
+
+<p>
+    Follow the prompts and JamsEDU will create a new project directory with a default layout for your pages, shared chrome, and assets. Once that is complete, open the new project directory in your preferred code editor before continuing.
+</p>
+
+<h2>Preview While You Edit</h2>
+
+<p>
+    Navigate into your new project directory and start the local development server with the watch command. Replace <code>your-project</code> below with the actual directory name that was created during initialization:
+</p>
+
+<pre><code class="bash">
+    cd your-project
+    jamsedu --watch
+</code></pre>
+
+<p>
+    The watch command will automatically rebuild your site every time you save a file, giving you a live preview as you work. When you are ready to generate a final production build, use <code>jamsedu --build</code> instead. You can also add <code>--verbose</code> to either command for more detailed logging output.
+</p>
+
+<h2>Project Configuration</h2>
+
+<p>
+    During initialization JamsEDU creates a configuration file at <code>.jamsedu/config.js</code> in your project root. This file controls where the builder reads your source pages and assets, where shared layout fragments live, and where it writes the compiled site. It also includes optional settings for hooks, asset handling, and more. If you have a legacy project using <code>jamsedu.config.js</code> at the root, that will still be recognized. You can also point to a custom configuration file at any time by running <code>jamsedu --config path/to/file.js</code>.
+</p>
+
+<p>
+    Every available option is documented on the <a href="/features/configuration.html">Configuration</a> page.
+</p>
+
+<div class="callout notice">
+    <div class="title">What to review next:</div>
+    <ul>
+        <li><a href="/features/configuration.html">Configuration</a></li>
+        <li><a href="/features/jhp-templates.html">Authoring with JHP</a></li>
+        <li><a href="/features/built-in-features.html">Built-In Features</a></li>
+    </ul>
+</div>
+
+<script>
+    $include('../templates/footer.html');
+</script>

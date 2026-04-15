@@ -1,0 +1,253 @@
+<script>
+    const title = 'CSS and Theming · JamsEDU';
+    const description = 'Built-in starter styles for JamsEDU projects including colors, typography, light and dark mode, and default content element styling.';
+
+    $include('../../templates/header.html');
+</script>
+
+<p class="breadcrumb">
+    <a href="/index.html">Home</a> · <a href="/features/index.html">Docs</a> · <a href="/features/built-in-features.html">Built-In Features</a> · CSS and Theming
+</p>
+
+<h1>CSS and Theming</h1>
+
+<p>
+    Every new JamsEDU project comes with a clean set of default styles for common page elements. These give you a readable, consistent look right away so you can start publishing immediately. When you are ready to match your own brand, everything is controlled through a small set of CSS custom properties that you can override in a few files.
+</p>
+
+<nav aria-labelledby="theming-toc-heading">
+    <h2 id="theming-toc-heading">On This Page</h2>
+    <ul>
+        <li><a href="#built-in-elements">Built-In Element Examples</a></li>
+        <li><a href="#definition-lists">Definition lists</a></li>
+        <li><a href="#color-and-theming">Color and Theming</a></li>
+        <li><a href="#light-and-dark-mode">Light and Dark Mode</a></li>
+    </ul>
+</nav>
+
+<section id="built-in-elements" aria-labelledby="built-in-elements-heading">
+    <h2 id="built-in-elements-heading">Built-In Element Examples</h2>
+    <p>
+        Below are examples of the styled elements available in every JamsEDU project.
+    </p>
+
+    <details>
+        <summary>Headings and Collapsible Sections</summary>
+        <p>
+            JamsEDU styles all six heading levels for you. This is also an example of a collapsible section using the <code>details</code> element.
+        </p>
+        <h1>Heading 1</h1>
+        <h2>Heading 2</h2>
+        <h3>Heading 3</h3>
+        <h4>Heading 4</h4>
+        <h5>Heading 5</h5>
+        <h6>Heading 6</h6>
+    </details>
+
+    <h3>Highlighted Text</h3>
+    <p>
+        Use the <code>mark</code> element when a term needs <mark>extra attention</mark> on the page.
+    </p>
+    <pre><code class="html">
+        &lt;mark&gt;extra attention&lt;/mark&gt;
+    </code></pre>
+
+    <h3>Keyboard Input</h3>
+    <p>
+        Show keyboard shortcuts with the <code>kbd</code> element. For example, press <kbd>Ctrl</kbd> + <kbd>P</kbd> to print this page.
+    </p>
+    <pre><code class="html">
+        &lt;kbd&gt;Ctrl&lt;/kbd&gt; + &lt;kbd&gt;P&lt;/kbd&gt;
+    </code></pre>
+
+    <h3>Code Blocks</h3>
+    <p>
+        Wrap terminal commands or code references with the <code>code</code> element and it will render like the inline code block in this paragraph. If you wrap the <code>code</code> element in a <code>pre</code> element, it will render as a code block with a border, padding, and line numbers like the following example:
+    </p>
+    <pre><code class="html">
+        &lt;code&gt;npm run build&lt;/code&gt;
+    </code></pre>
+
+    <h3>Horizontal Rule</h3>
+    <p>
+        Use a horizontal rule (<code>&lt;hr&gt;</code>) to visually separate sections of content on a page. By default it will render like the following example:
+    </p>
+    <hr>
+
+    <h3 id="definition-lists">Definition lists</h3>
+    <p>
+        In page prose, a <code>dl</code> defaults to a glossary style: each <code>div</code> that wraps a <code>dt</code> and <code>dd</code> is spaced from the next pair with vertical margin only (no rules or hairlines), and definitions are indented so long lists of terms stay readable. For a few highlighted entries, add <code>class="card"</code> or <code>class="cards"</code> on the <code>dl</code> to use the same inset card treatment as blockquotes (surface, border, and start accent).
+    </p>
+    <dl class="cards">
+        <div>
+            <dt>Card row</dt>
+            <dd>Uses the opt-in <code>dl.cards</code> (or <code>dl.card</code>) layout.</dd>
+        </div>
+        <div>
+            <dt>Second row</dt>
+            <dd>Each pair sits in its own card.</dd>
+        </div>
+    </dl>
+    <pre><code class="html">
+        &lt;dl&gt;
+            &lt;div&gt;&lt;dt&gt;Term&lt;/dt&gt;&lt;dd&gt;Glossary style (default).&lt;/dd&gt;&lt;/div&gt;
+        &lt;/dl&gt;
+        &lt;dl class="cards"&gt;
+            &lt;div&gt;&lt;dt&gt;Term&lt;/dt&gt;&lt;dd&gt;Inset card row.&lt;/dd&gt;&lt;/div&gt;
+        &lt;/dl&gt;
+    </code></pre>
+
+    <h3 id="blockquotes">Blockquotes</h3>
+    <p>
+        Use a <code>blockquote</code> for quotations. You can optionally add a <code>cite</code> attribute with a URL on the <code>blockquote</code> element and the JamsEDU engine will automatically turn the attribution line into a link to that source.
+    </p>
+    <blockquote cite="https://example.com">
+        <p>
+            If future generations are to remember us more with gratitude than sorrow, we must achieve more than just the miracles of technology. We must also leave them a glimpse of the world as it was created, not just as it looked when we got through with it.
+        </p>
+        <cite>
+            Lyndon B. Johnson
+        </cite>
+    </blockquote>
+    <pre><code class="html">
+        &lt;blockquote cite="https://example.com/source-url"&gt;
+            &lt;p&gt;
+                Your quote here.
+            &lt;/p&gt;
+            &lt;cite&gt;
+                Author Name (Optional)
+            &lt;/cite&gt;
+        &lt;/blockquote&gt;
+    </code></pre>
+
+    <h3>Callouts</h3>
+    <p>
+        Callouts are styled alert panels that draw attention to important information. Add <code>class="callout"</code> to any <code>div</code> for the default tone, then add a type class to change its appearance. Adding the <code>icon</code> class will display a leading glyph that matches the callout type. The <code>title</code> row is optional on all types.
+    </p>
+    <p>
+        Available type classes are <code>notice</code> (also <code>info</code>), <code>success</code>, <code>warning</code> (also <code>warn</code> and <code>construction</code>), and <code>danger</code> (also <code>error</code>). The same type classes also work on <code>details</code> elements for collapsible callouts, with an additional <code>spoiler</code> class that uses the warning style.
+    </p>
+
+    <div class="callout icon">
+        <p>
+            Default callout with no type class and no title row.
+        </p>
+    </div>
+    <div class="callout notice icon">
+        <div class="title">Notice</div>
+        <p>
+            Highlights something readers should be aware of.
+        </p>
+    </div>
+    <div class="callout success icon">
+        <div class="title">Success</div>
+        <p>
+            Confirms that something completed or is valid.
+        </p>
+    </div>
+    <div class="callout warning icon">
+        <div class="title">Warning</div>
+        <p>
+            Signals caution or a potential risk.
+        </p>
+    </div>
+    <div class="callout error icon">
+        <p>
+            Indicates a serious error or destructive action. This example has no title row.
+        </p>
+    </div>
+
+    <pre><code class="html">
+        &lt;div class="callout success icon"&gt;
+            &lt;div class="title"&gt;Saved&lt;/div&gt;
+            &lt;p&gt;Your changes were stored.&lt;/p&gt;
+        &lt;/div&gt;
+        &lt;div class="callout danger icon"&gt;
+            &lt;p&gt;No title row is still valid.&lt;/p&gt;
+        &lt;/div&gt;
+    </code></pre>
+</section>
+
+<section id="color-and-theming" aria-labelledby="color-and-theming-heading">
+    <h2 id="color-and-theming-heading">Color and Theming</h2>
+    <p>
+        JamsEDU theming is token based. Every built-in feature reads its colors and spacing from CSS custom properties using a three level fallback system. The feature's own token is checked first, then your site-wide shared token, and finally a sensible default value.
+    </p>
+    <pre><code class="css">
+        --doc-text-color: var(--doc-text-color, var(--color-text, #000000));
+    </code></pre>
+    <p>
+        This means your custom value always wins. If you have not set one, the shared site token is used. If neither exists, the built-in default takes over. In a new JamsEDU project the following files control your site's visual appearance. All of them are meant to be edited.
+    </p>
+    <dl>
+        <div>
+            <dt><code>css/tokens/colors.css</code></dt>
+            <dd>Site color tokens and light or dark palettes.</dd>
+        </div>
+        <div>
+            <dt><code>css/tokens/variables.css</code></dt>
+            <dd>Typography, spacing, border radius, motion, and layout tokens.</dd>
+        </div>
+        <div>
+            <dt><code>css/vendor/jamsedu/tokens.css</code></dt>
+            <dd>Token bridge for built-in features like Tiny Doc, Rich Text, and the PDF viewer.</dd>
+        </div>
+        <div>
+            <dt><code>css/main.css</code></dt>
+            <dd>Your project's main stylesheet. It defines import order and is the usual place to add site-wide rules after the defaults.</dd>
+        </div>
+    </dl>
+
+    <h3>Common Token Prefixes</h3>
+    <p>
+        When overriding built-in styles, these prefixes will help you find the right tokens.
+    </p>
+    <dl>
+        <div>
+            <dt><code>--jamsedu-seed-*</code></dt>
+            <dd>Base seed values in the vendor token bridge. These feed the shared feature tokens below.</dd>
+        </div>
+        <div>
+            <dt><code>--jamsedu-*</code></dt>
+            <dd>Shared built-in feature tokens used across forms, Rich Text, and PDF UI.</dd>
+        </div>
+        <div>
+            <dt><code>--doc-*</code></dt>
+            <dd>Interactive form surfaces and text.</dd>
+        </div>
+        <div>
+            <dt><code>--richtext-*</code></dt>
+            <dd>Rich Text editor chrome.</dd>
+        </div>
+        <div>
+            <dt><code>--pdf-*</code></dt>
+            <dd>Embedded PDF viewer chrome.</dd>
+        </div>
+    </dl>
+</section>
+
+<section id="light-and-dark-mode" aria-labelledby="light-dark-heading">
+    <h2 id="light-dark-heading">Light and Dark Mode</h2>
+    <p>
+        JamsEDU supports light, dark, and system color modes out of the box. The default project includes a theme picker in the header and footer that lets visitors choose their preference. Their choice is saved to <code>localStorage</code> and applied before the first paint so there is no flash of the wrong theme on page load.
+    </p>
+    <p>
+        All of the color mode logic lives in the same token files described above. <code>css/tokens/colors.css</code> uses <code>html:has(...)</code> selectors to detect the active choice and sets <code>color-scheme</code> accordingly. When system mode is selected it defers to the browser's <code>prefers-color-scheme</code> setting. Because every built-in feature reads from the same token system, switching between light and dark mode updates everything on the page automatically.
+    </p>
+    <p>
+        To customize colors for either mode, start with the shared tokens in <code>css/tokens/colors.css</code>. If a specific built-in feature needs a different value in one mode, override its feature token using the prefixes listed above.
+    </p>
+    <pre><code class="css">
+        :root {
+            --doc-link-color: #0b57d0;
+            --richtext-link-color: #0b57d0;
+        }
+    </code></pre>
+    <p>
+        If you replace the default theme picker with your own UI, make sure your implementation still sets <code>color-scheme</code> on the document root so the token system and CSS <code>light-dark()</code> functions continue to resolve correctly.
+    </p>
+</section>
+
+<script>
+    $include('../../templates/footer.html');
+</script>

@@ -1,5 +1,6 @@
-/* @jamsedu-version: 1.4.0 */
+/* @jamsedu-version: 1.5.2 */
 /* @jamsedu-component: tiny-document */
+
 .document {
         position: relative;
         font-family: var(--doc-font-family);
@@ -13,7 +14,9 @@
         color: var(--doc-text-color);
 
         /* Box-sizing for all elements */
-        *, *::before, *::after {
+        & *,
+        & *::before,
+        & *::after {
             box-sizing: border-box;
         }
 
@@ -29,8 +32,8 @@
 
             &.doc-template-button,
             &.doc-download-button {
-                background-color: var(--doc-btn-accent-bg, #2563eb);
-                color: var(--doc-btn-accent-fg, #ffffff);
+                background-color: var(--doc-btn-accent-bg);
+                color: var(--doc-btn-accent-fg);
                 border: none;
                 border-radius: var(--doc-border-radius);
                 padding: 7px 14px;
@@ -38,12 +41,12 @@
                 transition: background-color var(--doc-transition-smooth), box-shadow var(--doc-transition-smooth);
 
                 &:hover {
-                    background-color: var(--doc-btn-accent-bg-hover, #1d4ed8);
+                    background-color: var(--doc-btn-accent-bg-hover);
                     box-shadow: var(--doc-box-shadow);
                 }
 
                 &:active {
-                    background-color: var(--doc-btn-accent-bg-active, #1e40af);
+                    background-color: var(--doc-btn-accent-bg-active);
                 }
             }
         }
@@ -58,7 +61,7 @@
             position: relative;
             align-items: center;
             justify-content: center;
-            color: var(--doc-field-text-color, var(--jamsedu-seed-doc-field-ink, #0a0a0a));
+            color: var(--doc-field-text-color);
 
             .count {
                 position: absolute;
@@ -197,43 +200,47 @@
             font-style: italic;
         }
 
+        :where(
+            .doc-file-wrapper,
+            .doc-link-wrapper,
+            .tiny-wysiwyg-container
+        ) {
+            margin-block-end: var(--doc-field-stack-gap);
+        }
+
+        :where(
+            input.doc-input:not([type="hidden"]),
+            select.doc-select,
+            textarea.doc-textarea
+        ) {
+            margin-block-end: var(--doc-field-stack-gap);
+        }
+
+        .doc-file-wrapper :where(input, select, textarea),
+        .doc-link-wrapper input.doc-input {
+            margin-block-end: 0;
+        }
+
         /* Room for outside markers; do not use `inside` (breaks hanging indent on wrapped `li` text). */
         :where(ol, ul) {
             list-style-position: outside;
             padding-inline-start: 1.75em;
             margin: 0 0 14pt 0;
         }
-
-        /* Rich editor: shell + placeholder live in `tiny-wysiwyg.css`; keep document rhythm here only */
-        .tiny-wysiwyg-container .tw-content {
-            p {
-                margin: 0 0 var(--spacing-xs, 7pt) 0 !important;
-            }
-
-            blockquote {
-                margin: var(--spacing-xs) 0 !important;
-            }
-
-            h1, h2, h3, h4, h5, h6 {
-                font-size: 18pt !important;
-                line-height: 20pt !important;
-                font-weight: bold !important;
-                color: var(--doc-text-color) !important;
-                margin: var(--doc-margin) 0;
-            }
-        }
-
+        
         & > div, & > p {
             margin: 0 0 14pt 0;
             vertical-align: top;
         }
 
         a {
-            color: var(--doc-link-color, #2563eb);
+            color: var(--doc-link-color);
             text-decoration: none;
+            cursor: pointer;
+            transition: color var(--doc-transition-smooth);
 
             &:hover {
-                text-decoration: underline;
+                color: var(--color-link-hover);
             }
         }
 
@@ -243,7 +250,7 @@
             padding: 0 30px 0 0;
             max-width: 100%;
 
-            > .doc-button.doc-trash-button {
+            & > .doc-button.doc-trash-button {
                 position: absolute;
                 top: 5px;
                 right: 5px;
@@ -255,7 +262,7 @@
                 opacity: 0.25;
                 transition: opacity var(--doc-transition-smooth);
 
-                svg {
+                & svg {
                     fill: var(--doc-danger-color);
                 }
 
@@ -269,12 +276,12 @@
             &:hover:not(:has(.doc-template-wrapper:hover)) {
                 border: 1px dashed var(--doc-border-color-light);
 
-                > .doc-button.doc-trash-button {
+                & > .doc-button.doc-trash-button {
                     opacity: 0.65;
                 }
             }
-            
-            > .doc-button.doc-trash-button:hover {
+
+            & > .doc-button.doc-trash-button:hover {
                 opacity: 1 !important;
             }
         }
@@ -289,12 +296,12 @@
             font-family: inherit;
             font-size: var(--doc-font-size);
             line-height: var(--doc-line-height);
-            padding: 3px 6px;
-            border: 1px solid var(--doc-field-border-color, #a3a3a3);
+            padding: var(--doc-field-padding-block) var(--doc-field-padding-inline);
+            border: 1px solid var(--doc-field-border-color);
             border-radius: var(--doc-border-radius);
-            background-color: var(--doc-field-bg-color, #f3f4f6);
-            color: var(--doc-field-text-color, #0a0a0a);
-            caret-color: var(--doc-field-text-color, #0a0a0a);
+            background-color: var(--doc-field-bg-color);
+            color: var(--doc-field-text-color);
+            caret-color: var(--doc-field-text-color);
             color-scheme: light;
             transition: border-color var(--doc-transition-smooth), box-shadow var(--doc-transition-smooth);
             outline: none;
@@ -307,7 +314,7 @@
         }
 
         input.doc-input[type="date"] {
-            color: var(--doc-field-text-color, #0a0a0a);
+            color: var(--doc-field-text-color);
         }
 
         input.doc-input[type="file"] {
@@ -317,11 +324,11 @@
             padding: 7px;
 
             &::file-selector-button {
-                background-color: var(--doc-btn-accent-bg, #2563eb);
+                background-color: var(--doc-btn-accent-bg);
                 border-radius: var(--doc-border-radius);
                 border: none;
-                color: var(--doc-btn-accent-fg, #ffffff);
-                -webkit-text-fill-color: var(--doc-btn-accent-fg, #ffffff);
+                color: var(--doc-btn-accent-fg);
+                -webkit-text-fill-color: var(--doc-btn-accent-fg);
                 cursor: pointer;
                 padding: 4px 8px;
                 font: inherit;
@@ -330,7 +337,7 @@
             }
 
             &:hover::file-selector-button {
-                background-color: var(--doc-btn-accent-bg-hover, #1d4ed8);
+                background-color: var(--doc-btn-accent-bg-hover);
             }
 
             &:focus-visible {
@@ -345,7 +352,7 @@
         input.doc-input[type="date"] {
             display: inline-block;
             min-width: 150px;
-            color: var(--doc-field-text-color, #0a0a0a);
+            color: var(--doc-field-text-color);
         }
 
         /* Link input with popover (same color axis as .doc-file-wrapper: light scheme + field ink on wells) */
@@ -354,7 +361,7 @@
             align-items: center;
             position: relative;
             color-scheme: light;
-            color: var(--doc-field-text-color, var(--jamsedu-seed-doc-field-ink, #0a0a0a));
+            color: var(--doc-field-text-color);
 
             &:has(.doc-link:not(.filled):not([placeholder])) {
                 .doc-link-icon {
@@ -390,26 +397,26 @@
         }
 
         input.doc-input.doc-link.filled {
-            color: var(--doc-link-color, #2563eb);
-            -webkit-text-fill-color: var(--doc-link-color, #2563eb);
+            color: var(--doc-link-color);
+            -webkit-text-fill-color: var(--doc-link-color);
             text-decoration: none;
         }
 
         input.doc-input.doc-link.filled ~ .doc-link-icon {
-            color: var(--doc-link-color, #2563eb);
+            color: var(--doc-link-color);
         }
 
         dialog.doc-link-popover {
-            border: 1px solid var(--doc-link-popover-border-color, #6b7280);
+            border: 1px solid var(--doc-link-popover-border-color);
             border-radius: var(--doc-border-radius);
             padding: 16px;
-            box-shadow: var(--doc-link-popover-shadow, var(--doc-box-shadow));
+            box-shadow: var(--doc-link-popover-shadow);
             min-width: 300px;
             max-width: 500px;
             font-family: inherit;
             font-size: var(--doc-font-size);
-            background-color: var(--doc-field-bg-color, #f3f4f6);
-            color: var(--doc-field-text-color, #0a0a0a);
+            background-color: var(--doc-field-bg-color);
+            color: var(--doc-field-text-color);
             /* Panel is always a light field well; keeps inherited site `--color-*` from darkening ink on controls */
             color-scheme: light;
             /* UA modal dialog can clip; keep offset close control paintable */
@@ -430,14 +437,14 @@
         .doc-link-popover-input {
             display: block;
             width: 100%;
-            border: 1px solid var(--doc-field-border-color, #a3a3a3);
+            border: 1px solid var(--doc-field-border-color);
             border-radius: var(--doc-border-radius);
             padding: 8px 10px;
             font-size: var(--doc-font-size);
             font-family: inherit;
-            background-color: var(--doc-field-bg-color, #f3f4f6);
-            color: var(--doc-field-text-color, #0a0a0a);
-            caret-color: var(--doc-field-text-color, #0a0a0a);
+            background-color: var(--doc-field-bg-color);
+            color: var(--doc-field-text-color);
+            caret-color: var(--doc-field-text-color);
             color-scheme: light;
             margin-bottom: 8px;
             outline: none;
@@ -469,22 +476,22 @@
 
         .doc-link-save {
             border: none;
-            background-color: var(--doc-btn-accent-bg, #2563eb);
-            color: var(--doc-btn-accent-fg, #ffffff);
+            background-color: var(--doc-btn-accent-bg);
+            color: var(--doc-btn-accent-fg);
 
             &:hover {
-                background-color: var(--doc-btn-accent-bg-hover, #1d4ed8);
+                background-color: var(--doc-btn-accent-bg-hover);
             }
         }
 
         .doc-link-clear {
-            /* Native `button` borders are easy to lose cross-browser; outline-style stays visible on the light panel */
+            /* Native `button` borders are easy to lose cross-browser; outline-style stays visible on the light panel. */
             appearance: none;
             box-sizing: border-box;
-            border: 1px solid var(--jamsedu-seed-state-error, #dc2626);
+            border: 1px solid var(--jamsedu-seed-state-error);
             border-style: solid;
             background-color: transparent;
-            color: var(--jamsedu-seed-state-error, #dc2626);
+            color: var(--jamsedu-seed-state-error);
             transition:
                 background-color var(--doc-transition-smooth),
                 border-color var(--doc-transition-smooth),
@@ -503,13 +510,16 @@
             right: -40px;
             appearance: none;
             box-sizing: border-box;
-            /* Match the light field well (same as inputs); do not use `--doc-bg-color` / `--doc-text-color` (site dark mode inks the wrong branch) */
-            border: 1px solid var(--doc-link-popover-border-color, #6b7280);
+            /*
+             * Match the light field well (same as inputs); do not use `--doc-bg-color` / `--doc-text-color`
+             * (site dark mode inks the wrong branch).
+             */
+            border: 1px solid var(--doc-link-popover-border-color);
             border-style: solid;
             border-radius: 50%;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-            background-color: var(--doc-field-bg-color, #f3f4f6);
-            color: var(--doc-field-text-color, #0a0a0a);
+            background-color: var(--doc-field-bg-color);
+            color: var(--doc-field-text-color);
             display: flex;
             height: 40px;
             width: 40px;
@@ -527,8 +537,8 @@
 
             &:hover {
                 background-color: #ffffff;
-                border-color: var(--doc-focus-color, #2563eb);
-                color: var(--doc-link-color, #2563eb);
+                border-color: var(--doc-focus-color);
+                color: var(--doc-link-color);
             }
 
             svg {
@@ -543,8 +553,8 @@
             max-width: 100%;
             margin: 6pt 0 14pt 0;
             cursor: pointer;
-            background-color: var(--doc-field-bg-color, #f3f4f6);
-            color: var(--doc-field-text-color, #0a0a0a);
+            background-color: var(--doc-field-bg-color);
+            color: var(--doc-field-text-color);
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231a1a1a' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
@@ -552,8 +562,8 @@
             appearance: none;
 
             option {
-                color: var(--doc-field-text-color, #0a0a0a);
-                background-color: var(--doc-field-bg-color, #ffffff);
+                color: var(--doc-field-text-color);
+                background-color: var(--doc-bg-color);
             }
 
             &:focus-visible {
@@ -569,8 +579,8 @@
         textarea.doc-textarea {
             width: 100%;
             display: block;
-            margin: 0 0 14pt 0;
-            padding: 12px;
+            margin-block-start: 0;
+            padding: var(--padding-sm);
             min-height: 150px;
             resize: vertical;
             overflow: auto;
@@ -616,11 +626,13 @@
             }
 
             a {
-                color: #1976d2;
+                color: var(--doc-link-color);
                 text-decoration: none;
+                cursor: pointer;
+                transition: color var(--doc-transition-smooth);
 
                 &:hover {
-                    text-decoration: underline;
+                    color: var(--color-link-hover);
                 }
             }
 
@@ -752,8 +764,8 @@
     }
 
 .document input.doc-input[type="date"] {
-    color: var(--doc-field-text-color, #0a0a0a);
-    accent-color: var(--doc-link-color, #2563eb);
+    color: var(--doc-field-text-color);
+    accent-color: var(--doc-link-color);
     color-scheme: light;
 }
 
@@ -764,7 +776,8 @@
 
 /*
  * Native placeholder styling: must stay lighter than `--doc-field-text-color`.
- * Parent `-webkit-text-fill-color` on the control forces placeholder to match value color in WebKit; we omit it on inputs (see block above) and reinforce pseudos here for global sheet order.
+ * Parent `-webkit-text-fill-color` forces placeholder to match value color in WebKit; we omit it on inputs
+ * (see block above) and reinforce pseudos here for global sheet order.
  */
 .document input.doc-input:not([type="file"])::placeholder,
 .document input.doc-input:not([type="file"])::-webkit-input-placeholder,
@@ -772,14 +785,14 @@
 .document textarea.doc-textarea::-webkit-input-placeholder,
 .document .doc-link-popover-input::placeholder,
 .document .doc-link-popover-input::-webkit-input-placeholder {
-    color: var(--doc-field-placeholder-color, #9ca3af);
-    -webkit-text-fill-color: var(--doc-field-placeholder-color, #9ca3af);
+    color: var(--doc-field-placeholder-color);
+    -webkit-text-fill-color: var(--doc-field-placeholder-color);
     opacity: 1;
 }
 
 .document input.doc-input:not([type="file"])::-moz-placeholder,
 .document textarea.doc-textarea::-moz-placeholder,
 .document .doc-link-popover-input::-moz-placeholder {
-    color: var(--doc-field-placeholder-color, #9ca3af);
+    color: var(--doc-field-placeholder-color);
     opacity: 1;
 }

@@ -1,0 +1,70 @@
+<script>
+    const title = 'Embedded PDF · JamsEDU';
+    const description =
+        'Embed existing PDF files in JamsEDU pages with data-pdf or embed markup and the bundled PDF viewer.';
+
+    $include('../../templates/header.html');
+</script>
+
+<p class="breadcrumb">
+    <a href="/index.html">Home</a> · <a href="/features/index.html">Docs</a> · <a href="/features/built-in-features.html">Built-In Features</a> · Embedded PDF
+</p>
+
+<h1>Embedded PDF</h1>
+
+<p>
+    JamsEDU uses <a href="https://www.embedpdf.com/" rel="noopener noreferrer" target="_blank">EmbedPDF</a> to display PDF files directly on your pages. Add a <code>div</code> with a <code>data-pdf</code> attribute pointing to your PDF file, or use an <code>embed</code> element whose <code>src</code> ends in <code>.pdf</code>. JamsEDU turns either one into an in-page reader with zoom and scrolling. Make sure the file is somewhere your site can serve it, such as <code>/assets/docs/</code>.
+</p>
+
+<pre><code class="html">
+    &lt;div data-pdf="/assets/docs/your-handout.pdf"&gt;&lt;/div&gt;
+</code></pre>
+
+<p>
+    You can customize how the PDF viewer behaves by editing <code>jamsEduConfig.embedPdf</code> in <code>assets/js/main.js</code>. Set only the properties you need and anything you omit will use the default values. To disable the viewer entirely, set the whole key to <code>false</code>. For more on how <code>jamsEduConfig</code> works across all built-ins, see <a href="/features/built-in-features.html#frontend-feature-options-heading">Optional Settings</a>.
+</p>
+<dl>
+    <div>
+        <dt><code>useMutationObserver</code></dt>
+        <dd>When <code>true</code> (default), new <code>[data-pdf]</code> or <code>embed[src$=".pdf"]</code> elements added to the page after load are automatically mounted through the shared DOM watcher. When <code>false</code>, only elements present in the DOM at load time are mounted.</dd>
+    </div>
+    <div>
+        <dt><code>version</code></dt>
+        <dd>The <code>@embedpdf/snippet</code> version to load from jsDelivr. Currently defaults to <code>2.14.0</code>.</dd>
+    </div>
+    <div>
+        <dt><code>minZoom</code>, <code>maxZoom</code></dt>
+        <dd>Minimum and maximum zoom levels for the viewer. Currently default to <code>0.5</code> and <code>3</code>.</dd>
+    </div>
+    <div>
+        <dt><code>scrollPageGap</code></dt>
+        <dd>Pixel gap between pages in continuous scroll mode. Currently defaults to <code>12</code>.</dd>
+    </div>
+    <div>
+        <dt><code>disabledCategories</code></dt>
+        <dd>An array of toolbar category IDs to hide. Setting this replaces the default list entirely. The defaults hide <code>form</code>, <code>redaction</code>, <code>document-open</code>, <code>document-close</code>, <code>document-capture</code>, <code>document-protect</code>, and <code>capture</code>.</dd>
+    </div>
+    <div>
+        <dt><code>fullscreenProxy</code></dt>
+        <dd>When <code>true</code> (default), adds extra fullscreen control wiring for the viewer UI.</dd>
+    </div>
+</dl>
+
+<h2>Live example</h2>
+
+<p>
+    The embed below uses the demo PDF shipped with this documentation site.
+</p>
+
+<embed src="/assets/docs/jamsedu-demo.pdf" type="application/pdf" width="100%" style="min-height:1000px" title="Demo PDF (JamsEdu)">
+
+<section aria-labelledby="embedded-pdf-styling-heading">
+    <h2 id="embedded-pdf-styling-heading">Styling</h2>
+    <p>
+        In a standard JamsEDU app that keeps the built-in theming stack, the PDF viewer automatically follows the same light and dark palettes as the rest of your site. If you need to customize its appearance, you can override <code>--pdf-*</code> variables for toolbar colors, canvas background, and layout defaults like height. Behavioral options such as zoom limits and toolbar visibility are controlled through <code>jamsEduConfig.embedPdf</code> in <code>assets/js/main.js</code>. For the full list of available variables and how they connect to the shared token system, see the <a href="/features/builtins/css-theming.html">CSS and Theming</a> guide.
+    </p>
+</section>
+
+<script>
+    $include('../../templates/footer.html');
+</script>

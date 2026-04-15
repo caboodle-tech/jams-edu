@@ -1,18 +1,27 @@
+// @jamsedu-version: 1.6.1
+// @jamsedu-component: embed-pdf-js
+
 import './dom-watcher.js';
 
 /**
- * Mounts EmbedPDF Snippet on `[data-pdf]` divs and pdf `<embed>`s. Loads `@embedpdf/snippet` from jsDelivr.
- * Docs: https://www.embedpdf.com/docs/snippet/getting-started
+ * EmbedPDF Snippet loader: mounts viewers for `div[data-pdf]` and `embed[src$=".pdf"]`.
+ * Loads `@embedpdf/snippet` from jsDelivr, maps `.embed-pdf-container` CSS variables into
+ * `EmbedPDF.init({ theme })`, and defaults to fit-to-width zoom (see EmbedPDF `ZoomMode`).
+ * Form editing and redaction UI are disabled by default. Document open/close, screenshot
+ * capture, and password protect/lock UI are disabled; opening an encrypted PDF can still
+ * prompt for a password (that flow is not the same as `document-protect` toolbar actions).
+ * A placeholder fullscreen control is appended to `[data-epdf-i="right-group"]` (wiring TODO).
  *
- * @typedef {object} EmbedPdfLoaderOptions
- * @property {boolean} [useMutationObserver] Watch DOM for new PDF targets (used by `start` only).
- * @property {string} [version] npm tag for `@embedpdf/snippet` (alias of `snippetVersion`).
- * @property {string} [snippetVersion] Same as `version`.
- * @property {number} [minZoom]
- * @property {number} [maxZoom]
- * @property {number} [scrollPageGap] Pixels between pages in scroll mode.
- * @property {string[]} [disabledCategories] Toolbar category ids to turn off (replaces whole list).
- * @property {boolean} [fullscreenProxy] Hook custom fullscreen behavior for the built-in toolbar.
+ * Mount identity: the loader assigns `data-pdf-id` on each `.embed-pdf-container` (`embed-pdf-1`,
+ * `embed-pdf-2`, ΓÇª). Do not set this on authored nodes; it is managed only here.
+ *
+ * Public API: `EmbedPdfLoader.shared.mountsById.get(id)` ΓåÆ `{ id, container, viewer, registry }`
+ * (`registry` null until ready). Same order in `shared.viewers` / `shared.registries`. Each container
+ * has `data-pdf-id`, `embedPdfId`, `embedPdfViewer`, and `embedPdfRegistry` (async).
+ *
+ * @see https://www.embedpdf.com/docs/snippet/getting-started
+ * @see https://www.embedpdf.com/docs/snippet/plugins/plugin-zoom
+ * @see https://www.embedpdf.com/docs/snippet/customizing-ui
  */
 
 class EmbedPdfLoader {
@@ -28,7 +37,7 @@ class EmbedPdfLoader {
 
     #importPromise = null;
 
-    /** @type {number | null} Schedules `#mountAllIfNeeded` on the next frame. */
+    /** @type {number | null} */
     #mountRaf = null;
 
     #autoMountSeq = 0;
@@ -36,30 +45,37 @@ class EmbedPdfLoader {
     static #loader = null;
 
     /**
-     * Return values from `EmbedPDF.init`, one per mount, in order.
+     * Return values from `EmbedPDF.init()`, in mount order (public; not private fields).
      * @type {unknown[]}
      */
     viewers = [];
 
     /**
-     * Registry from each viewer's `.registry` promise; same index as `viewers`, `null` until settled.
+     * Plugin registries from `await viewer.registry`, same indices as {@link EmbedPdfLoader#viewers};
+     * `null` until that viewerΓÇÖs registry promise settles (public).
      * @type {unknown[]}
      */
     registries = [];
 
     /**
-     * By assigned `data-pdf-id` (`embed-pdf-1`, …). Value: `{ id, container, viewer, registry }`.
+     * Lookup by loader-assigned `data-pdf-id`. Values are plain objects; `registry` is null until ready.
      * @type {Map<string, { id: string, container: HTMLElement, viewer: unknown, registry: unknown | null }>}
      */
     mountsById = new Map();
 
     /**
-     * @param {Omit<EmbedPdfLoaderOptions, 'useMutationObserver'>} [options]
-     *   Snippet options only; `useMutationObserver` belongs on `start`.
+     * @param {{
+     *   snippetVersion?: string,
+     *   minZoom?: number,
+     *   maxZoom?: number,
+     *   scrollPageGap?: number,
+     *   disabledCategories?: string[],
+     *   fullscreenProxy?: boolean
+     * }} [options]
      */
     constructor(options = {}) {
         this.config = {
-            snippetVersion: 'latest',
+            snippetVersion: '2',
             minZoom: 0.5,
             maxZoom: 3,
             scrollPageGap: 12,
@@ -78,7 +94,25 @@ class EmbedPdfLoader {
     }
 
     /**
-     * @param {EmbedPdfLoaderOptions} [options]
+     * @param {{
+     *   snippetVersion?: string,
+     *   minZoom?: number,
+     *   maxZoom?: number,
+     *   scrollPageGap?: number,
+     *   disabledCategories?: string[],
+     *   fullscreenProxy?: boolean
+     * }} [options]
+     */
+    static autoInitialize(options) {
+        const loader = EmbedPdfLoader.#getLoader();
+        if (options) {
+            loader.configure(options);
+        }
+        loader.#registerBoot(true);
+    }
+
+    /**
+     * @param {Record<string, unknown>} [options] Pass `useMutationObserver: false` to skip `DomWatcher`.
      */
     static start(options = {}) {
         const loader = EmbedPdfLoader.#getLoader();
@@ -91,24 +125,26 @@ class EmbedPdfLoader {
     }
 
     /**
-     * @param {Omit<EmbedPdfLoaderOptions, 'useMutationObserver'>} [options]
-     */
-    static autoInitialize(options) {
-        const loader = EmbedPdfLoader.#getLoader();
-        if (options) {
-            loader.configure(options);
-        }
-        loader.#registerBoot(true);
-    }
-
-    /**
-     * @param {Omit<EmbedPdfLoaderOptions, 'useMutationObserver'>} options
+     * @param {{
+     *   snippetVersion?: string,
+     *   minZoom?: number,
+     *   maxZoom?: number,
+     *   scrollPageGap?: number,
+     *   disabledCategories?: string[],
+     *   fullscreenProxy?: boolean
+     * }} options
      */
     static configure(options) {
         EmbedPdfLoader.#getLoader().configure(options);
     }
 
-    /** Shared loader instance. */
+    /**
+     * Singleton used by `autoInitialize` / `configure`. Prefer `shared.mountsById.get(id)`; also
+     * `shared.viewers` / `shared.registries` and per-container `embedPdfId`, `embedPdfViewer`,
+     * `embedPdfRegistry` for `commands`, `ui.mergeSchema`, etc.
+     *
+     * @returns {EmbedPdfLoader}
+     */
     static get shared() {
         return EmbedPdfLoader.#getLoader();
     }
@@ -118,7 +154,7 @@ class EmbedPdfLoader {
     }
 
     /**
-     * @param {boolean} useMutationObserver Whether to register `DomWatcher` for new PDF nodes.
+     * @param {boolean} useMutationObserver
      */
     #registerBoot(useMutationObserver) {
         if (this.#started) {
@@ -156,7 +192,14 @@ class EmbedPdfLoader {
     }
 
     /**
-     * @param {Omit<EmbedPdfLoaderOptions, 'useMutationObserver'>} options
+     * @param {{
+     *   snippetVersion?: string,
+     *   minZoom?: number,
+     *   maxZoom?: number,
+     *   scrollPageGap?: number,
+     *   disabledCategories?: string[],
+     *   fullscreenProxy?: boolean
+     * }} options
      */
     configure(options) {
         if (!options) {
@@ -168,7 +211,7 @@ class EmbedPdfLoader {
         if (typeof options.snippetVersion === 'string') {
             this.config.snippetVersion = options.snippetVersion.trim() ?
                 options.snippetVersion.trim() :
-                'latest';
+                this.config.snippetVersion;
         }
         if (typeof options.minZoom === 'number') {
             this.config.minZoom = options.minZoom;
@@ -194,38 +237,29 @@ class EmbedPdfLoader {
         return EmbedPdfLoader.#loader;
     }
 
-    /** @returns {string} Unique id such as `embed-pdf-1`. */
+    /**
+     * @returns {string}
+     */
     #nextMountId() {
         this.#autoMountSeq += 1;
         return `embed-pdf-${this.#autoMountSeq}`;
     }
 
     /**
-     * Loads the snippet ESM from jsDelivr; falls back to tag `latest` if the first import fails.
-     *
      * @returns {Promise<{ default: function, ZoomMode?: Record<string, unknown> }>}
      */
     #loadSnippetModule() {
         if (this.#importPromise) {
             return this.#importPromise;
         }
-        const makeUrl = (v) => {
-            return `https://cdn.jsdelivr.net/npm/@embedpdf/snippet@${v}/dist/embedpdf.js`;
-        };
-        const rawTag = String(this.config.snippetVersion ?? '').trim();
-        const primary = rawTag || 'latest';
-        this.#importPromise = import(/* webpackIgnore: true */ makeUrl(primary)).catch((err) => {
-            console.warn('[jamsedu/embed-pdf] Failed to load @embedpdf/snippet:', primary, err);
-            if (primary === 'latest') {
-                throw err;
-            }
-            this.config.snippetVersion = 'latest';
-            return import(/* webpackIgnore: true */ makeUrl('latest'));
-        });
+        const url = `https://cdn.jsdelivr.net/npm/@embedpdf/snippet@${this.config.snippetVersion}/dist/embedpdf.js`;
+        this.#importPromise = import(/* webpackIgnore: true */ url);
         return this.#importPromise;
     }
 
-    /** Ensures pdf `<embed>` has `type="application/pdf"` for native fallback. */
+    /**
+     * Sets `type="application/pdf"` on PDF `<embed>` elements so native viewers can take over if the snippet fails.
+     */
     #ensurePdfEmbedsTyped() {
         document.querySelectorAll('embed').forEach((el) => {
             const src = el.getAttribute('src')?.trim();
@@ -240,10 +274,10 @@ class EmbedPdfLoader {
     }
 
     /**
-     * @returns {Array<{ node: Element, src: string }>}
+     * @returns {Array<{ node: Element, src: string, kind: 'data-pdf' | 'embed' }>}
      */
     #collectMounts() {
-        /** @type {Array<{ node: Element, src: string }>} */
+        /** @type {Array<{ node: Element, src: string, kind: 'data-pdf' | 'embed' }>} */
         const mounts = [];
 
         document.querySelectorAll('[data-pdf]').forEach((el) => {
@@ -257,7 +291,7 @@ class EmbedPdfLoader {
             if (!raw) {
                 return;
             }
-            mounts.push({ node: el, src: raw });
+            mounts.push({ node: el, src: raw, kind: 'data-pdf' });
         });
 
         document.querySelectorAll('embed').forEach((el) => {
@@ -269,7 +303,7 @@ class EmbedPdfLoader {
             if (type && type !== 'application/pdf') {
                 return;
             }
-            mounts.push({ node: el, src });
+            mounts.push({ node: el, src, kind: 'embed' });
         });
 
         return mounts;
@@ -312,9 +346,9 @@ class EmbedPdfLoader {
     }
 
     /**
-     * Builds an EmbedPDF `theme` fragment from `--pdf-*` CSS vars on `el`.
+     * Reads `--pdf-*` tokens from a mounted `.embed-pdf-container` for EmbedPDF `theme`.
      *
-     * @param {Element} el Usually `.embed-pdf-container`.
+     * @param {Element} el
      * @returns {Record<string, unknown>}
      */
     #themeFragmentFromElement(el) {
@@ -373,6 +407,205 @@ class EmbedPdfLoader {
     }
 
     /**
+     * Snippet Tailwind uses `--text-*` and `--spacing` in `rem`, both tied to **document** `html`.
+     * With `font-size: 62.5%`, toolbar labels and icon sizes (`h-*`, `gap-*`) collapse. We set a
+     * **single** scale on the **first** shadow host under the mount (main viewer shell only), not
+     * every nested shadow, so we do not stack extra width. Skip `--container-sm` (modal min-widths).
+     *
+     * @param {HTMLElement} container
+     */
+    #compensateSnippetTailwindRootRem(container) {
+        const props = [
+            ['--spacing', '0.4rem'],
+            ['--text-xs', '1.2rem'],
+            ['--text-sm', '1.4rem'],
+            ['--text-base', '1.6rem'],
+            ['--text-lg', '1.8rem'],
+            ['--text-xl', '2rem']
+        ];
+        const stamp = 'data-jamsedu-epdf-toolbar-rem';
+        const apply = () => {
+            if (!container.isConnected) {
+                return;
+            }
+            /** @type {Element[]} */
+            const queue = [...container.children];
+            while (queue.length) {
+                const el = queue.shift();
+                if (el instanceof HTMLElement) {
+                    if (el.shadowRoot) {
+                        const { host } = el.shadowRoot;
+                        if (host instanceof HTMLElement && !host.hasAttribute(stamp)) {
+                            host.setAttribute(stamp, '');
+                            for (const [key, value] of props) {
+                                host.style.setProperty(key, value);
+                            }
+                        }
+                        return;
+                    }
+                    for (let i = 0; i < el.children.length; i++) {
+                        const c = el.children[i];
+                        if (c instanceof Element) {
+                            queue.push(c);
+                        }
+                    }
+                }
+            }
+        };
+        apply();
+        [16, 80, 250, 600].forEach((ms) => {
+            setTimeout(apply, ms);
+        });
+    }
+
+    /**
+     * Snippet `bg-bg-app` is the main app surface. Default: vertical reading → `overflow-y: auto`,
+     * `overflow-x: hidden`. When the user switches to horizontal / spread layout, the first
+     * `display:flex` descendant under `bg-bg-app` typically becomes `flex-direction: row`; then use
+     * `overflow: auto` so horizontal panning works. MutationObserver on subtree/class/style only;
+     * no ResizeObserver on this node (resize from scrollbars re-applied overflow and broke thumb drag).
+     * Inline overflow is updated only when row vs column mode changes.
+     *
+     * @param {HTMLElement} container
+     */
+    #attachPdfBgAppOverflowSync(container) {
+        /** @type {MutationObserver | null} */
+        let mo = null;
+        let attached = false;
+        /** @type {string} */
+        let lastOverflowMode = '';
+
+        const disconnect = () => {
+            if (mo) {
+                mo.disconnect();
+                mo = null;
+            }
+            attached = false;
+            lastOverflowMode = '';
+        };
+
+        /**
+         * @param {Element} el
+         * @returns {boolean}
+         */
+        const isFlex = (el) => {
+            return el instanceof HTMLElement && getComputedStyle(el).display === 'flex';
+        };
+
+        /**
+         * @returns {HTMLElement | null}
+         */
+        const findBgApp = () => {
+            /** @type {(Element | ShadowRoot)[]} */
+            const q = [container];
+            while (q.length) {
+                const n = q.shift();
+                if (n instanceof Element) {
+                    if (n.classList.contains('bg-bg-app')) {
+                        return n;
+                    }
+                    if (n.shadowRoot) {
+                        q.push(n.shadowRoot);
+                    }
+                    for (let i = 0; i < n.children.length; i++) {
+                        q.push(n.children[i]);
+                    }
+                } else if (n instanceof ShadowRoot) {
+                    for (let i = 0; i < n.children.length; i++) {
+                        q.push(n.children[i]);
+                    }
+                }
+            }
+            return null;
+        };
+
+        /**
+         * @param {HTMLElement} rootEl
+         * @returns {HTMLElement | null}
+         */
+        const findFirstFlexDescendant = (rootEl) => {
+            /** @type {(Element | ShadowRoot)[]} */
+            const q = [];
+            for (let i = 0; i < rootEl.children.length; i++) {
+                q.push(rootEl.children[i]);
+            }
+            while (q.length) {
+                const n = q.shift();
+                if (n instanceof Element) {
+                    if (isFlex(n)) {
+                        return n;
+                    }
+                    if (n.shadowRoot) {
+                        q.push(n.shadowRoot);
+                    }
+                    for (let i = 0; i < n.children.length; i++) {
+                        q.push(n.children[i]);
+                    }
+                } else if (n instanceof ShadowRoot) {
+                    for (let i = 0; i < n.children.length; i++) {
+                        q.push(n.children[i]);
+                    }
+                }
+            }
+            return null;
+        };
+
+        const applyOverflow = () => {
+            if (!container.isConnected) {
+                disconnect();
+                return;
+            }
+            const bgApp = findBgApp();
+            if (!bgApp) {
+                return;
+            }
+            const flexEl = findFirstFlexDescendant(bgApp);
+            const dir = flexEl ? getComputedStyle(flexEl).flexDirection : '';
+            const rowish = dir === 'row' || dir === 'row-reverse';
+            const mode = !flexEl ? 'col' : rowish ? 'row' : 'col';
+            if (mode === lastOverflowMode) {
+                return;
+            }
+            lastOverflowMode = mode;
+            bgApp.style.overflow = '';
+            bgApp.style.overflowX = '';
+            bgApp.style.overflowY = '';
+            if (mode === 'row') {
+                bgApp.style.overflow = 'auto';
+            } else {
+                bgApp.style.overflowX = 'hidden';
+                bgApp.style.overflowY = 'auto';
+            }
+        };
+
+        const tryAttach = () => {
+            if (!container.isConnected || attached) {
+                return;
+            }
+            const bgApp = findBgApp();
+            if (!bgApp) {
+                return;
+            }
+            disconnect();
+            attached = true;
+            mo = new MutationObserver(() => {
+                requestAnimationFrame(applyOverflow);
+            });
+            mo.observe(bgApp, {
+                subtree: true,
+                childList: true,
+                attributes: true,
+                attributeFilter: ['class', 'style']
+            });
+            applyOverflow();
+        };
+
+        [0, 50, 150, 400, 1000, 2500].forEach((ms) => {
+            setTimeout(tryAttach, ms);
+        });
+    }
+
+    /**
      * @param {Record<string, unknown>} obj
      * @returns {Record<string, unknown>}
      */
@@ -417,7 +650,7 @@ class EmbedPdfLoader {
     }
 
     /**
-     * Restores a native PDF `<embed>` after `EmbedPDF.init` fails (`[data-pdf]` div or `<embed>`).
+     * Restores a native PDF `<embed>` after a failed snippet init (same `src` as authored).
      *
      * @param {HTMLElement} container
      * @param {string} src
@@ -438,6 +671,26 @@ class EmbedPdfLoader {
     }
 
     /**
+     * Restores a `div[data-pdf]` placeholder after a failed snippet init.
+     *
+     * @param {HTMLElement} container
+     * @param {string} src
+     */
+    #restoreDataPdfPlaceholder(container, src) {
+        const div = document.createElement('div');
+        div.setAttribute('data-pdf', src);
+        if (container.id) {
+            div.id = container.id;
+        }
+        container.classList.forEach((c) => {
+            if (c && c !== 'embed-pdf-container') {
+                div.classList.add(c);
+            }
+        });
+        container.replaceWith(div);
+    }
+
+    /**
      * @returns {Element | null}
      */
     #fullscreenElement() {
@@ -447,7 +700,7 @@ class EmbedPdfLoader {
     /**
      * Toolbar fullscreen proxy: uses your `#icons`; opens the document menu if needed, clicks the
      * real `document:fullscreen` control, then closes the menu. Icons follow `fullscreenchange`
-     * for this mount's container.
+     * for this mountΓÇÖs container.
      *
      * @param {HTMLElement} container
      */
@@ -619,7 +872,7 @@ class EmbedPdfLoader {
                     btn.before(tooltip);
 
                     // Show the tooltip
-                    tooltip.style.transform = 'translateX(-25px)';
+                    tooltip.style.transform = 'translateX(-30px)';
                     const tooltipArrow = tooltip.querySelector('div');
                     if (tooltipArrow instanceof HTMLElement) {
                         tooltipArrow.style.left = '80%';
@@ -698,7 +951,7 @@ class EmbedPdfLoader {
 
         const disabled = this.config.disabledCategories;
 
-        for (const { node, src } of mounts) {
+        for (const { node, src, kind } of mounts) {
             const absolute = this.#resolveUrl(src);
             const mountId = this.#nextMountId();
             const container = this.#wrapMountTarget(node, mountId);
@@ -758,9 +1011,15 @@ class EmbedPdfLoader {
                 });
 
                 void this.#attachFullscreenProxy(container);
+                this.#compensateSnippetTailwindRootRem(container);
+                this.#attachPdfBgAppOverflowSync(container);
             } catch (err) {
                 console.error('[jamsedu/embed-pdf] EmbedPDF.init failed:', err);
-                this.#restoreNativePdfEmbed(container, src);
+                if (kind === 'embed') {
+                    this.#restoreNativePdfEmbed(container, src);
+                } else {
+                    this.#restoreDataPdfPlaceholder(container, src);
+                }
             }
         }
     }

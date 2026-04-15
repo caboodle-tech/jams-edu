@@ -1,9 +1,10 @@
-/* @jamsedu-version: 1.7.3 */
+/* @jamsedu-version: 1.7.8 */
 /* @jamsedu-component: jamsedu-vendor-tokens */
+
 /**
  * JamEdu vendor tokens (`www/private/assets/css/vendor/jamsedu/tokens.css`).
  *
- * Rule: **do not reference `--pdf-*` from `--doc-*` / `--richtext-*` or from `tiny-wysiwyg.css`.**
+ * Rule: **Do not reference `--pdf-*` from `--doc-*` / `--richtext-*` or from `tiny-wysiwyg.css`.**
  * Shared surfaces, borders, and interaction paint live under **`--jamsedu-*`**. `--pdf-*` remains the public
  * EmbedPDF API but aliases those shared values where they match.
  */
@@ -28,19 +29,19 @@
     --jamsedu-seed-state-success: #16a34a;
 
     /*
-     * --- JamEdu shared chrome (PDF, WYSIWYG, and other vendors use these; never cross-link `--pdf` into richtext) ---
+     * --- JamEdu shared chrome (PDF, WYSIWYG, other vendors). Do not cross-link `--pdf` into richtext. ---
      */
     --jamsedu-surface-pane: light-dark(var(--jamsedu-seed-pdf-surface), var(--color-bg));
     --jamsedu-surface-elevated: light-dark(var(--jamsedu-seed-paper), var(--color-surface));
     --jamsedu-overlay: light-dark(rgb(0 0 0 / 0.45), rgb(0 0 0 / 0.65));
-    --jamsedu-ink-primary: var(--color-text, light-dark(var(--seed-text, #1e293b), oklch(from var(--seed-text, #1e293b) calc(l + 0.52) calc(c * 0.35) h)));
-    --jamsedu-accent-primary: var(--color-accent, light-dark(var(--seed-accent, #2563eb), oklch(from var(--seed-accent, #2563eb) calc(l + 0.12) calc(c * 1.08) h)));
-    --jamsedu-accent-primary-hover: var(--color-accent-hover, light-dark(var(--seed-accent-hover, #1d4ed8), oklch(from var(--seed-accent-hover, #1d4ed8) calc(l + 0.14) calc(c * 1.08) h)));
+    --jamsedu-ink-primary: var(--color-text);
+    --jamsedu-accent-primary: var(--color-accent);
+    --jamsedu-accent-primary-hover: var(--color-accent-hover);
     --jamsedu-interactive-hover: color-mix(in srgb, var(--jamsedu-ink-primary) 7%, var(--jamsedu-surface-pane));
     --jamsedu-interactive-active: color-mix(in srgb, var(--jamsedu-ink-primary) 11%, var(--jamsedu-surface-pane));
     --jamsedu-interactive-selected: color-mix(in srgb, var(--jamsedu-accent-primary) 14%, var(--jamsedu-surface-pane));
     --jamsedu-interactive-focus: var(--jamsedu-accent-primary);
-    --jamsedu-border-default: var(--color-border, light-dark(var(--jamsedu-seed-doc-border-light), oklch(from var(--jamsedu-seed-doc-border-light) calc(l * 0.33) calc(c * 0.82) h)));
+    --jamsedu-border-default: var(--color-border);
     --jamsedu-border-subtle: color-mix(in srgb, var(--jamsedu-ink-primary) 5%, var(--jamsedu-surface-pane));
 
     /*
@@ -50,9 +51,9 @@
     --pdf-height: 600px;
     --pdf-min-height: 600px;
     --pdf-margin: var(--margin-sm) 0;
-    --pdf-border-radius: var(--radius-md, 6px);
-    --pdf-shadow: var(--shadow-elevated, 0 2px 8px light-dark(rgb(0 0 0 / 0.12), rgb(0 0 0 / 0.45)));
-    --pdf-transition: var(--transition-base, 0.2s ease);
+    --pdf-border-radius: var(--radius-md);
+    --pdf-shadow: var(--shadow-elevated);
+    --pdf-transition: var(--transition-base);
 
     /*
      * --- PDF: theme (aliases shared `--jamsedu-*` where aligned) ---
@@ -62,14 +63,14 @@
         color-mix(in srgb, var(--color-text) 14%, var(--color-bg))
     );
     --pdf-background-surface: var(--jamsedu-surface-pane);
-    --pdf-snippet-host-fill: var(--pdf-snippet-host-bg, var(--pdf-background-surface));
+    --pdf-snippet-host-fill: var(--pdf-background-surface);
     --pdf-background-elevated: var(--jamsedu-surface-elevated);
     --pdf-background-overlay: var(--jamsedu-overlay);
     --pdf-background-input: var(--pdf-background-elevated);
 
     --pdf-foreground-primary: var(--jamsedu-ink-primary);
     --pdf-foreground-secondary: color-mix(in srgb, var(--pdf-foreground-primary) 78%, var(--pdf-background-elevated));
-    --pdf-foreground-muted: var(--color-text-muted, light-dark(var(--jamsedu-seed-ink-muted), oklch(from var(--jamsedu-seed-ink-muted) calc(l + 0.28) calc(c * 0.45) h)));
+    --pdf-foreground-muted: var(--color-text-muted);
     --pdf-foreground-disabled: color-mix(in srgb, var(--pdf-foreground-muted) 65%, var(--pdf-background-surface));
 
     --pdf-background-surface-alt: color-mix(in srgb, var(--pdf-foreground-primary) 6%, var(--pdf-background-surface));
@@ -89,7 +90,7 @@
     --pdf-border-default: var(--jamsedu-border-default);
     --pdf-border-subtle: var(--jamsedu-border-subtle);
     --pdf-border-strong: color-mix(in srgb, var(--pdf-foreground-primary) 18%, var(--pdf-background-surface));
-    --pdf-card-border-color: var(--pdf-card-border, light-dark(#64748b, #78716c));
+    --pdf-card-border-color: light-dark(#64748b, #78716c);
 
     --pdf-state-error: light-dark(var(--jamsedu-seed-state-error), oklch(from var(--jamsedu-seed-state-error) calc(l + 0.22) calc(c * 0.92) h));
     --pdf-state-error-light: color-mix(in srgb, var(--pdf-state-error) 12%, var(--pdf-background-elevated));
@@ -103,90 +104,87 @@
     /*
      * --- Tiny document ---
      */
-    --doc-font-family: var(--font-family-sans, system-ui, sans-serif);
-    --doc-font-family-mono: var(--font-family-mono, ui-monospace, monospace);
-    --doc-font-size: var(--font-size-md);
+    --doc-font-family: var(--font-family-sans);
+    --doc-font-family-mono: var(--font-family-mono);
+    --doc-font-size: var(--font-size-editor);
     --doc-spacing: var(--spacing-sm);
-    --doc-line-height: var(--line-height-md);
+    --doc-line-height: var(--line-height-lg);
+    --doc-field-stack-gap: var(--spacing-sm);
+    --doc-field-padding-block: var(--padding-xs);
+    --doc-field-padding-inline: var(--padding-sm);
     --doc-border-radius: var(--radius-sm);
     --doc-margin: var(--doc-spacing);
     --doc-padding: var(--doc-spacing);
     --doc-transition-smooth: var(--transition-smooth);
 
-    --jamsedu-accent-fallback: light-dark(var(--seed-accent, #2563eb), oklch(from var(--seed-accent, #2563eb) calc(l + 0.12) calc(c * 1.08) h));
-    --jamsedu-accent-hover-fallback: light-dark(var(--seed-accent-hover, #1d4ed8), oklch(from var(--seed-accent-hover, #1d4ed8) calc(l + 0.14) calc(c * 1.08) h));
+    --jamsedu-accent-fallback: var(--color-accent);
+    --jamsedu-accent-hover-fallback: var(--color-accent-hover);
 
-    --doc-text-color: var(--color-text, light-dark(var(--seed-text, #0a0a0a), oklch(from var(--seed-text, #0a0a0a) calc(l + 0.52) calc(c * 0.35) h)));
-    --doc-bg-color: var(--color-surface, light-dark(var(--jamsedu-seed-paper), oklch(from var(--jamsedu-seed-paper) calc(l * 0.26) calc(c * 0.5 + 0.02) h)));
-    --doc-border-color: var(--doc-border, var(--color-border, light-dark(var(--jamsedu-seed-doc-border), oklch(from var(--jamsedu-seed-doc-border) calc(l * 0.35) calc(c * 0.75) h))));
+    --doc-text-color: var(--color-text);
+    --doc-bg-color: var(--color-surface);
+    --doc-border-color: var(--color-border);
     --doc-border-color-light: light-dark(var(--jamsedu-seed-doc-border-light), oklch(from var(--jamsedu-seed-doc-border-light) calc(l * 0.32) calc(c * 0.55) h));
     --doc-placeholder-color: var(--color-text-muted);
-    --doc-box-shadow: var(--shadow-elevated, 0 1px 5px light-dark(rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.28)));
-    --doc-link-color: var(--color-link, var(--jamsedu-accent-fallback, #2563eb));
-    --doc-focus-color: var(--color-accent, var(--jamsedu-accent-fallback, #2563eb));
-    --doc-focus-shadow: 0 0 0 2px color-mix(in srgb, var(--doc-focus-color, #2563eb) 35%, transparent);
-    --doc-danger-color: var(--color-danger, light-dark(var(--jamsedu-seed-state-error), oklch(from var(--jamsedu-seed-state-error) calc(l + 0.22) calc(c * 0.92) h)));
-    --doc-danger-hover-color: var(--color-danger-hover, color-mix(in srgb, var(--doc-danger-color) 88%, var(--doc-text-color)));
-    --doc-link-popover-border-color: var(--doc-popover-border, light-dark(#3f3f46, #a1a1aa));
+    --doc-box-shadow: var(--shadow-elevated);
+    --doc-link-color: var(--color-link);
+    --doc-focus-color: var(--color-accent);
+    --doc-focus-shadow: 0 0 0 2px color-mix(in srgb, var(--doc-focus-color) 35%, transparent);
+    --doc-danger-color: var(--color-danger);
+    --doc-danger-hover-color: var(--color-danger-hover);
+    --doc-link-popover-border-color: light-dark(#3f3f46, #a1a1aa);
     --doc-link-popover-shadow-default: 0 2px 12px light-dark(rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.3)),
         0 0 0 1px light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.08));
-    --doc-link-popover-shadow: var(--doc-popover-shadow, var(--doc-link-popover-shadow-default));
+    --doc-link-popover-shadow: var(--doc-link-popover-shadow-default);
 
-    --doc-field-bg-color: var(--doc-field-bg, var(--jamsedu-seed-doc-field-bg));
-    --doc-field-border-color: var(--doc-field-border, var(--jamsedu-seed-doc-field-border));
-    --doc-field-text-color: var(--doc-field-text, var(--jamsedu-seed-doc-field-ink));
-    --doc-field-placeholder-color: var(--doc-field-placeholder, color-mix(in srgb, var(--jamsedu-seed-doc-field-ink) 22%, var(--jamsedu-seed-doc-field-bg)));
+    --doc-field-bg-color: var(--jamsedu-seed-doc-field-bg);
+    --doc-field-border-color: var(--jamsedu-seed-doc-field-border);
+    --doc-field-text-color: var(--jamsedu-seed-doc-field-ink);
+    --doc-field-placeholder-color: color-mix(in srgb, var(--jamsedu-seed-doc-field-ink) 22%, var(--jamsedu-seed-doc-field-bg));
 
-    --doc-btn-accent-bg: var(--doc-btn-accent-bg-override, var(--color-btn-accent-bg, var(--color-accent, var(--jamsedu-accent-fallback, #2563eb))));
-    --doc-btn-accent-fg: var(--doc-btn-accent-fg-override, var(--color-btn-accent-fg, light-dark(#ffffff, #f8fafc)));
-    --doc-btn-accent-bg-hover: var(--doc-btn-accent-bg-hover-override, var(--color-btn-accent-bg-hover, var(--color-accent-hover, var(--jamsedu-accent-hover-fallback, #1d4ed8))));
-    --doc-btn-accent-bg-active: var(--doc-btn-accent-bg-active-override, var(--color-btn-accent-bg-active, color-mix(in srgb, var(--doc-btn-accent-bg-hover, #1d4ed8) 82%, var(--doc-text-color, #1e293b))));
+    --doc-btn-accent-bg: var(--color-btn-accent-bg);
+    --doc-btn-accent-fg: var(--color-btn-accent-fg);
+    --doc-btn-accent-bg-hover: var(--color-btn-accent-bg-hover);
+    --doc-btn-accent-bg-active: var(--color-btn-accent-bg-active);
 
-    --doc-btn-danger-outline-bg: var(--color-btn-danger-outline-bg, transparent);
-    --doc-btn-danger-outline-bg-hover: var(--color-btn-danger-outline-bg-hover, var(--color-danger-soft-hover));
-    --doc-btn-danger-outline-border: var(--color-btn-danger-outline-border, var(--doc-danger-color));
-    --doc-btn-danger-outline-border-hover: var(--color-btn-danger-outline-border-hover, var(--doc-danger-hover-color));
-    --doc-btn-danger-outline-fg: var(--color-btn-danger-outline-fg, var(--doc-danger-color));
+    --doc-btn-danger-outline-bg: var(--color-btn-danger-outline-bg);
+    --doc-btn-danger-outline-bg-hover: var(--color-btn-danger-outline-bg-hover);
+    --doc-btn-danger-outline-border: var(--color-btn-danger-outline-border);
+    --doc-btn-danger-outline-border-hover: var(--color-btn-danger-outline-border-hover);
+    --doc-btn-danger-outline-fg: var(--color-btn-danger-outline-fg);
 
     --doc-btn-neutral-bg: var(--doc-field-bg-color);
-    --doc-btn-neutral-bg-hover: color-mix(in srgb, var(--color-accent, var(--jamsedu-accent-fallback, #2563eb)) 12%, var(--doc-field-bg-color));
+    --doc-btn-neutral-bg-hover: color-mix(in srgb, var(--color-accent) 12%, var(--doc-field-bg-color));
     --doc-btn-neutral-border: var(--doc-link-popover-border-color);
-    --doc-btn-neutral-border-hover: color-mix(in srgb, var(--color-accent, var(--jamsedu-accent-fallback, #2563eb)) 38%, var(--doc-field-border-color));
+    --doc-btn-neutral-border-hover: color-mix(in srgb, var(--color-accent) 38%, var(--doc-field-border-color));
     --doc-btn-neutral-fg: var(--doc-field-text-color);
 
     --doc-print-blockquote-padding: 6pt 6pt 6pt calc(18pt + 20px);
 
     /*
-     * --- Rich text (WYSIWYG): composed + override hooks; defaults use `--jamsedu-*`, never `--pdf-*` ---
+     * --- Rich text (WYSIWYG): composed from `--jamsedu-*` and site `--color-*`; never `--pdf-*` ---
      */
     --richtext-content-min-height: calc(2 * var(--line-height-lg) + 2 * var(--padding-sm));
     --richtext-toolbar-separator-margin: 0.25rem;
 
-    --richtext-card-border-color: var(--richtext-card-border-override, var(--color-border));
-    --richtext-toolbar-border-color: var(--richtext-toolbar-border-override, var(--jamsedu-border-default));
+    --richtext-card-border-color: var(--color-border);
+    --richtext-toolbar-border-color: var(--jamsedu-border-default);
     --richtext-content-bg-color: var(--jamsedu-surface-elevated);
-    --richtext-container-bg-color: var(--richtext-container-bg-override, var(--container-bg-color, var(--jamsedu-surface-pane)));
-    --richtext-toolbar-bg-color: var(--richtext-toolbar-bg-override, var(--toolbar-bg-color, var(--jamsedu-surface-pane)));
-    --richtext-toolbar-button-bg: var(--richtext-toolbar-button-bg-override, transparent);
-    --richtext-toolbar-button-hover-bg: var(--richtext-toolbar-button-hover-bg-override, var(--jamsedu-interactive-hover));
-    --richtext-toolbar-button-border: var(--richtext-toolbar-button-border-override, transparent);
-    --richtext-separator-color: var(--richtext-separator-override, var(--jamsedu-border-subtle));
-    --richtext-button-text-color: var(--richtext-button-text-override, var(--jamsedu-ink-primary));
-    --richtext-blockquote-border-color: var(--richtext-blockquote-border-override, var(--color-border));
-    --richtext-blockquote-bg-color: var(
-        --richtext-blockquote-bg-override,
-        var(
-            --blockquote-bg-color,
-            color-mix(in srgb, var(--color-text) 4%, var(--richtext-content-bg-color))
-        )
-    );
-    --richtext-code-border-color: var(--richtext-code-border-override, var(--color-code-border));
+    --richtext-container-bg-color: var(--jamsedu-surface-pane);
+    --richtext-toolbar-bg-color: var(--jamsedu-surface-pane);
+    --richtext-toolbar-button-bg: transparent;
+    --richtext-toolbar-button-hover-bg: var(--jamsedu-interactive-hover);
+    --richtext-toolbar-button-border: transparent;
+    --richtext-separator-color: var(--jamsedu-border-subtle);
+    --richtext-button-text-color: var(--jamsedu-ink-primary);
+    --richtext-blockquote-border-color: var(--color-border);
+    --richtext-blockquote-bg-color: color-mix(in srgb, var(--color-text) 4%, var(--richtext-content-bg-color));
+    --richtext-code-border-color: var(--color-code-border);
     --richtext-placeholder-color: color-mix(in srgb, var(--color-text-muted) 52%, var(--richtext-content-bg-color));
 
-    --richtext-btn-accent-bg: var(--richtext-btn-accent-bg-override, var(--color-btn-accent-bg, var(--color-accent, var(--jamsedu-accent-fallback, #2563eb))));
-    --richtext-btn-accent-fg: var(--richtext-btn-accent-fg-override, var(--color-btn-accent-fg, #ffffff));
-    --richtext-btn-accent-bg-hover: var(--richtext-btn-accent-bg-hover-override, var(--color-btn-accent-bg-hover, var(--color-accent-hover, var(--jamsedu-accent-hover-fallback, #1d4ed8))));
-    --richtext-danger-bg-color: var(--richtext-danger-bg-override, var(--color-danger, var(--jamsedu-seed-state-error)));
-    --richtext-danger-text-color: var(--richtext-danger-fg-override, var(--color-btn-danger-fg));
+    --richtext-btn-accent-bg: var(--color-btn-accent-bg);
+    --richtext-btn-accent-fg: var(--color-btn-accent-fg);
+    --richtext-btn-accent-bg-hover: var(--color-btn-accent-bg-hover);
+    --richtext-danger-bg-color: var(--color-danger);
+    --richtext-danger-text-color: var(--color-btn-danger-fg);
     --richtext-danger-hover-bg-color: color-mix(in srgb, var(--richtext-danger-bg-color) 88%, var(--color-text));
 }

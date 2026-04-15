@@ -1,3 +1,6 @@
+// @jamsedu-version: 1.0.0
+// @jamsedu-component: js-theme-preference
+
 /**
  * Early theme sync for `tokens/colors.css` (`html:has(input[name="theme-preference"]…)`).
  * Load as a blocking script in `head` (no `defer` / `async`). If `document.body` is not created yet,
