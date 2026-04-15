@@ -1,7 +1,52 @@
-/* @jamsedu-version: 1.1.0 */
+/* @jamsedu-version: 3.2.0 */
 /* @jamsedu-component: layout-footer */
-@layer layout {
-    :where(footer) {
-        margin-top: auto;
+:where(footer) {
+    margin-top: auto;
+
+    & .columns {
+        gap: var(--spacing-lg);
+
+        & > :first-child {
+            text-align: start;
+        }
+
+        & > :nth-child(2) {
+            text-align: end;
+        }
+
+        @media (min-width: 768px) {
+            gap: var(--spacing-xl);
+            text-align: start;
+
+            & > p {
+                text-align: end;
+            }
+        }
+    }
+
+    & nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: var(--spacing-md) var(--spacing-xl);
+        font-size: var(--font-size-md);
+        line-height: var(--line-height-md);
+
+        @media (min-width: 768px) {
+            justify-content: flex-start;
+        }
+
+        & a {
+            color: var(--header-link);
+            text-decoration: none;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color var(--transition-base);
+
+            &:hover {
+                color: var(--header-link-hover);
+            }
+        }
     }
 }

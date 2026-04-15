@@ -5,7 +5,8 @@ import './dom-watcher.js';
  *
  * @typedef {object} MermaidLoaderConfig
  * @property {string} mermaidVersion npm tag.
- * @property {string} theme Passed to `mermaid.initialize`.
+ * @property {string} theme Passed to `mermaid.initialize`. Prefer `default` (light); dark pages use CSS
+ * `filter` in `jamsedu.css`.
  */
 
 class MermaidLoader {

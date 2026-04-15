@@ -2,6 +2,7 @@ import './dom-watcher.js';
 
 /**
  * Loads KaTeX from jsDelivr and renders `.math` blocks. Also handles `.math.macro` definitions.
+ * Use `displayMode` (centered block) by default; add class `inline` (e.g. `span.math.inline`) for flow inline like `code`.
  *
  * @typedef {object} KatexLoaderConfig
  * @property {string} [katexVersion] npm tag, default `latest`.
@@ -226,8 +227,9 @@ class KatexLoader {
                 return;
             }
             const formula = this.#sanitizeFormula(raw);
+            const displayMode = !el.classList.contains('inline');
             window.katex.render(formula, el, {
-                displayMode: true,
+                displayMode,
                 macros: this.#macros,
                 throwOnError: false
             });

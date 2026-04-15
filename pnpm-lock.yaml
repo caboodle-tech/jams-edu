@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@caboodle-tech/jhp':
-        specifier: ^3.5.1
-        version: 3.5.1
+        specifier: ^3.6.0
+        version: 3.6.0
       '@caboodle-tech/node-simple-server':
         specifier: ^4.3.0
         version: 4.3.0
@@ -30,15 +30,15 @@ importers:
 
 packages:
 
-  '@caboodle-tech/jhp@3.5.1':
-    resolution: {integrity: sha512-qyhdqzneuW52xpBOT9ml9Twj347fFuJ8edEX22eEJFVpZh9rIprGrOiVNokT/pdlpxv2hDWSPHQu+9UZXO9YXA==}
+  '@caboodle-tech/jhp@3.6.0':
+    resolution: {integrity: sha512-KYS2HjZoqhHVjrbLeieXtI7AawDX/obZIuPghf05tv1zKMoAI2XKiZ4V/GKZFxWiB9K2z9Py5ZvzjlqQcQkkeg==}
 
   '@caboodle-tech/node-simple-server@4.3.0':
     resolution: {integrity: sha512-r9aBk3Crwmh746wQzDC0S2j0m5s3c+0ojDBdKX6X8mhFg828S40U+dNVvKbfpoX34mQJUqw2bZ6dUkZqBFDGLQ==}
     engines: {node: '>=14.0.0'}
 
-  '@caboodle-tech/simple-html-parser@2.6.1':
-    resolution: {integrity: sha512-ahHfl7w7R4xUhvVcx4hARJPrSdNMhugF1+pT7tlf/9vuc9Q6LYOo4q/jppjUZSFEgUr2jvj7SGJXblHxVdedbA==}
+  '@caboodle-tech/simple-html-parser@2.7.0':
+    resolution: {integrity: sha512-RbKcf0dfWppidYQ/E1QHNgHWgAYfYtUw1brRruF0q/IWHOkz379LjDPQhAwKuqHLVvv6EEusGnoKXGE24rOp4g==}
     engines: {node: '>=22.0.0'}
 
   '@eslint-community/eslint-utils@4.9.1':
@@ -63,8 +63,8 @@ packages:
     resolution: {integrity: sha512-yL/sLrpmtDaFEiUj1osRP4TI2MDz1AddJL+jZ7KSqvBuliN4xqYY54IfdN8qD8Toa6g1iloph1fxQNkjOxrrpQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@eslint/core@1.1.1':
-    resolution: {integrity: sha512-QUPblTtE51/7/Zhfv8BDwO0qkkzQL7P/aWWbqcf4xWLEYn1oKjdO0gglQBB4GAsu7u6wjijbCmzsUTy6mnk6oQ==}
+  '@eslint/core@1.2.1':
+    resolution: {integrity: sha512-MwcE1P+AZ4C6DWlpin/OmOA54mmIZ/+xZuJiQd4SyB29oAJjN30UW9wkKNptW2ctp4cEsvhlLY/CsQ1uoHDloQ==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
   '@eslint/eslintrc@3.3.5':
@@ -162,8 +162,8 @@ packages:
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
-  brace-expansion@1.1.13:
-    resolution: {integrity: sha512-9ZLprWS6EENmhEOpjCYW2c8VkmOvckIJZfkr7rBW6dObmfgJ/L1GpSYW5Hpo9lDz4D1+n0Ckz8rU7FwHDQiG/w==}
+  brace-expansion@1.1.14:
+    resolution: {integrity: sha512-MWPGfDxnyzKU7rNOW9SP/c50vi3xrmrua/+6hfPbCS2ABNWfx24vPidzvC7krjU/RTo235sV776ymlsMtGKj8g==}
 
   callsites@3.1.0:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
@@ -437,9 +437,9 @@ packages:
 
 snapshots:
 
-  '@caboodle-tech/jhp@3.5.1':
+  '@caboodle-tech/jhp@3.6.0':
     dependencies:
-      '@caboodle-tech/simple-html-parser': 2.6.1
+      '@caboodle-tech/simple-html-parser': 2.7.0
       acorn-loose: 8.5.2
 
   '@caboodle-tech/node-simple-server@4.3.0':
@@ -450,7 +450,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@caboodle-tech/simple-html-parser@2.6.1': {}
+  '@caboodle-tech/simple-html-parser@2.7.0': {}
 
   '@eslint-community/eslint-utils@4.9.1(eslint@9.39.4)':
     dependencies:
@@ -475,7 +475,7 @@ snapshots:
     dependencies:
       '@types/json-schema': 7.0.15
 
-  '@eslint/core@1.1.1':
+  '@eslint/core@1.2.1':
     dependencies:
       '@types/json-schema': 7.0.15
 
@@ -497,7 +497,7 @@ snapshots:
 
   '@eslint/json@1.2.0':
     dependencies:
-      '@eslint/core': 1.1.1
+      '@eslint/core': 1.2.1
       '@eslint/plugin-kit': 0.6.1
       '@humanwhocodes/momoa': 3.3.10
       natural-compare: 1.4.0
@@ -511,7 +511,7 @@ snapshots:
 
   '@eslint/plugin-kit@0.6.1':
     dependencies:
-      '@eslint/core': 1.1.1
+      '@eslint/core': 1.2.1
       levn: 0.4.1
 
   '@html-eslint/eslint-plugin@0.52.1(eslint@9.39.4)':
@@ -601,7 +601,7 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
-  brace-expansion@1.1.13:
+  brace-expansion@1.1.14:
     dependencies:
       balanced-match: 1.0.2
       concat-map: 0.0.1
@@ -781,7 +781,7 @@ snapshots:
 
   minimatch@3.1.5:
     dependencies:
-      brace-expansion: 1.1.13
+      brace-expansion: 1.1.14
 
   ms@2.1.3: {}
 

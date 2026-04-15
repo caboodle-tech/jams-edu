@@ -13,7 +13,7 @@
         "watch:debug": "node bin/cli.js --watch --verbose"
     },
     "dependencies": {
-        "@caboodle-tech/jhp": "^3.5.1",
+        "@caboodle-tech/jhp": "^3.6.0",
         "@caboodle-tech/node-simple-server": "^4.3.0"
     },
     "devDependencies": {

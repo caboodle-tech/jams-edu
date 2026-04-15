@@ -1,0 +1,58 @@
+<script>
+    const title = 'Rich Text · JamsEDU';
+    const description =
+        'How JamsEDU turns a plain textarea with class rich into a simple rich text editor that follows the built-in JamsEDU theming stack.';
+
+    $include('../../templates/header.html');
+</script>
+
+<p class="breadcrumb">
+    <a href="/index.html">Home</a> · <a href="/features/index.html">Docs</a> · <a href="/features/built-in-features.html">Built-In Features</a> · Rich Text
+</p>
+
+<h1>Rich Text</h1>
+
+<p>
+    When a page includes a <code>textarea</code> with class <code>rich</code>, JamsEDU upgrades it to a small rich text editor with support for bold, italic, lists, links, and other common formatting controls.
+</p>
+<p>
+    You can customize how the editor behaves by editing <code>jamsEduConfig.tinyWysiwyg</code> in <code>assets/js/main.js</code>. Set only the properties you need and anything you omit will use the default values. To disable the editor entirely, set the whole key to <code>false</code>. For more on how <code>jamsEduConfig</code> works across all built-ins, see <a href="/features/built-in-features.html#frontend-feature-options-heading">Optional Settings</a>.
+</p>
+<dl>
+    <div>
+        <dt><code>useMutationObserver</code></dt>
+        <dd>When <code>true</code> (default), new <code>textarea.rich</code> elements added to the page after load are automatically upgraded through the shared DOM watcher. When <code>false</code>, only textareas present in the DOM at load time are upgraded.</dd>
+    </div>
+</dl>
+
+<section aria-labelledby="rich-text-usage-heading">
+    <h2 id="rich-text-usage-heading">Markup</h2>
+    <p>
+        Add a <code>textarea</code> with class <code>rich</code>. The script reads the initial value as HTML and keeps the field in sync as the user edits.
+    </p>
+    <pre><code class="html">
+        &lt;label for="bio"&gt;Bio&lt;/label&gt;
+        &lt;textarea id="bio" class="rich" name="bio"&gt;&lt;p&gt;Start here.&lt;/p&gt;&lt;/textarea&gt;
+    </code></pre>
+    <p>
+        The main bundle wires this up automatically when the page loads. You do not need extra script tags beyond the usual <code>main.js</code> module import.
+    </p>
+</section>
+
+<section aria-labelledby="rich-text-config-heading">
+    <h2 id="rich-text-config-heading">Configuration</h2>
+    <p>
+        The entries above are the only keys <code>TinyWysiwyg.start</code> reads from config today. There are no extra rich-text-specific keys in <code>assets/js/jamsedu/tiny-wysiwyg.js</code>. The bundle property name is <code>tinyWysiwyg</code>; in docs this feature is called rich text.
+    </p>
+</section>
+
+<section aria-labelledby="rich-text-styling-heading">
+    <h2 id="rich-text-styling-heading">Styling</h2>
+    <p>
+        In a standard JamsEDU app that keeps the built-in theming stack, the rich text editor automatically follows the same light and dark palettes as the rest of your site. If you need to customize the editor appearance, you can override <code>--richtext-*</code> variables like <code>--richtext-toolbar-bg-color</code>, <code>--richtext-content-bg-color</code>, and <code>--richtext-container-bg-color</code> on <code>:root</code> or a wrapper element. For the full list of available variables and how they connect to the shared token system, see the <a href="/features/builtins/css-theming.html">CSS and Theming</a> guide.
+    </p>
+</section>
+
+<script>
+    $include('../../templates/footer.html');
+</script>

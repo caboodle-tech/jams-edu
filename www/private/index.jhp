@@ -1,193 +1,71 @@
 <script>
-    const title = 'Hello, World!';
-    const description = 'Welcome to your new JamsEdu project';
-    
+    const title = 'JamsEdu';
+    const description =
+        'JamsEDU builds static sites from JHP pages, compile-time hooks, and built-in features for math formulas, diagrams, editable text areas, code blocks, PDF viewing, and theming.';
+
     $include('./templates/header.html');
 </script>
 
-
-<h1>Heading 1</h1>
-<h2>Heading 2</h2>
-<h3>Heading 3</h3>
-<h4>Heading 4</h4>
-<h5>Heading 5</h5>
-<h6>Heading 6</h6>
-
-<hr>
+<h1>Welcome to JamsEDU</h1>
 
 <p>
-    This is <mark>highlighted</mark> text using the <code>&lt;mark&gt;</code> tag.
+    JamsEDU is a feature-rich yet simple-to-use <a href="https://jamstack.org/" rel="noreferrer noopener" target="_blank">Jamstack</a> application originally designed for educational content. It is a practical way to publish a secure, static site for courses, documentation, and technical writing without wiring up separate frameworks. You supply HTML and content; JamsEDU handles generation, shared layout, and optional built-ins such as math, diagrams, and forms. With modern AI tools, building and customizing your site can be faster than hand-maintaining every page.
 </p>
+
+<h2>What You Get</h2>
+
+<div class="card-grid">
+    <article class="content-card">
+        <h3><a href="/features/getting-started.html">Fast, dependable pages</a></h3>
+        <p>Your site is published as plain HTML and assets, so it loads quickly and works with virtually any hosting; no live app server required.</p>
+    </article>
+    <article class="content-card">
+        <h3><a href="/features/jhp-templates.html">Reusable page pieces</a></h3>
+        <p>Share headers, footers, and variables across your site so every page stays consistent without copying and pasting the same blocks by hand.</p>
+    </article>
+    <article class="content-card">
+        <h3><a href="/features/hooks.html">Optional build tweaks</a></h3>
+        <p>Hook into the generator to adjust or clean up pages automatically each time you publish, instead of editing each file individually.</p>
+    </article>
+    <article class="content-card">
+        <h3><a href="/features/built-in-features.html">Built-In Features</a></h3>
+        <p>Math formulas, diagrams, highlighted code blocks, editable rich text areas, interactive forms and reports, a PDF viewer, and theme options, all ready to use.</p>
+    </article>
+    <article class="content-card">
+        <h3><a href="/features/builtins/css-theming.html">Consistent content layout</a></h3>
+        <p>Headings, tables, callouts, and code samples pick up shared spacing and styles so readers get a clean, predictable experience across your site.</p>
+    </article>
+    <article class="content-card">
+        <h3><a href="/features/builtins/css-theming.html">Comfortable theming</a></h3>
+        <p>Tune colors, typography, and light or dark mode with simple theme settings so the site feels like yours without rebuilding the design from scratch.</p>
+    </article>
+</div>
+
+<h2>Who Is JamsEDU For</h2>
+
+<ul>
+    <li>Educators and researchers publishing curriculum, dissertations, theses, and portfolios.</li>
+    <li>Bloggers, writers, and small businesses who want a professional site without the complexity of a CMS.</li>
+    <li>Open source projects that need clean, maintainable API docs and tutorials.</li>
+    <li>Anyone who has outgrown hand maintained HTML and wants something better.</li>
+</ul>
+
+<h2>Get Started Fast</h2>
 
 <p>
-    The kdb tag is used to define keyboard input: <kbd>&uarr;</kbd> <kbd>&uarr;</kbd> <kbd>&darr;</kbd> <kbd>&darr;</kbd> <kbd>&larr;</kbd> <kbd>&rarr;</kbd> <kbd>&larr;</kbd> <kbd>&rarr;</kbd> <kbd>B</kbd> <kbd>A</kbd>
+    JamsEDU is a terminal based application. Getting started is as simple as opening your terminal and running three commands:
 </p>
 
-<table>
-    <thead>
-        <tr>
-            <th>Company</th>
-            <th>Contact</th>
-            <th>Country</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>Alfreds Futterkiste</td>
-            <td>Maria Anders</td>
-            <td>Germany</td>
-        </tr>
-        <tr>
-            <td>Centro comercial Moctezuma</td>
-            <td>Francisco Chang</td>
-            <td>Mexico</td>
-        </tr>
-        <tr>
-            <td>Ernst Handel</td>
-            <td>Roland Mendel</td>
-            <td>Austria</td>
-        </tr>
-        <tr>
-            <td>Island Trading</td>
-            <td>Helen Bennett</td>
-            <td>UK</td>
-        </tr>
-        <tr>
-            <td>Laughing Bacchus Winecellars</td>
-            <td>Yoshi Tannamuri</td>
-            <td>Canada</td>
-        </tr>
-        <tr>
-            <td>Magazzini Alimentari Riuniti</td>
-            <td>Giovanni Rovelli</td>
-            <td>Italy</td>
-        </tr>
-    </tbody>
-</table>
-
-<p>
-    Inline code example: <code>const x = 42;</code>
-</p>
-
-<pre><code class="language-js">
-// Multiline code block with highlight.js style
-function greet(name) {
-    console.log(`Hello, ${name}!`);
-}
-greet('World');
+<pre><code class="bash">
+    npm install -g @caboodle-tech/jamsedu
+    jamsedu --init
+    jamsedu --watch
 </code></pre>
 
-<!-- <div class="document">
-    <div class="title">Unit 2 Code Review</div>
-
-    <div class="header">
-        <div><input type="text" placeholder="Your Name"></div>
-        <div><input type="date"></div>
-    </div>
-
-    <div class="section">Repositories Reviewed</div>
-
-    <div>
-        <input type="url" placeholder="Teammates Name" prompt="Link to teammate's GitHub repo">
-    </div>
-    <div class="subsection">Refactoring Status:</div>
-    <select>
-        <option value="❌ Not Started">Not started</option>
-        <option value="⚠️ In Progress">In progress</option>
-        <option value="✅ Completed">Completed MVC refactoring</option>
-    </select>
-    <div class="subsection">GitHub Issues Created:</div>
-    <ul>
-        <li><input type="url" placeholder="Issue Name" prompt="Link to GitHub issue"></li>
-        <template>
-            <li><input type="url" placeholder="Issue Name" prompt="Link to GitHub issue"></li>
-        </template>
-        <button class="template">Add Another Issue</button>
-    </ul>
-
-    <template>
-        <div class="spacer"></div>
-        <div>
-            <input type="url" placeholder="Teammates Name" prompt="Link to teammate's GitHub repo">
-        </div>
-        <div class="subsection">Refactoring Status:</div>
-        <select>
-            <option value="❌ Not Started">Not started</option>
-            <option value="⚠️ In Progress">In progress</option>
-            <option value="✅ Completed">Completed MVC refactoring</option>
-        </select>
-        <div class="subsection">GitHub Issues Created:</div>
-        <ul>
-            <li><input type="url" placeholder="Issue Name" prompt="Link to GitHub issue"></li>
-            <template>
-                <li><input type="url" placeholder="Issue Name" prompt="Link to GitHub issue"></li>
-            </template>
-            <button class="template">Add Another Issue</button>
-        </ul>
-    </template>
-    <button class="template">Review Additional Teammate</button>
-
-    <div class="section">Reflection</div>
-
-    <div class="instructions">
-        Write 2-3 <strong>paragraphs</strong>, not bullet points, reflecting on:
-        <ul>
-            <li>What you learned about code quality from reviewing others' work</li>
-            <li>How reviewing both traditional and MVC-structured code affected your understanding</li>
-            <li>What you discovered about the benefits and challenges of code organization</li>
-            <li>How this experience will help you write better code yourself</li>
-            <li>How you approached giving constructive feedback to teammates at different stages of refactoring</li>
-        </ul>
-    </div>
-
-    <p class="instructions">
-        Keep in mind that your ability to write clearly and communicate professionally will be evaluated in this assignment. It's important to express your ideas in an articulate and comprehensive manner.
-    </p>
-
-    <textarea class="rich" placeholder="Write your reflection here..."></textarea>
-
-    <input type="file" multiple>
-
-    <div class="section">Completion Confirmation</div>
-
-    <div>
-        I have notified both teammates that their code reviews are complete and they can view the GitHub issues I created. I notified them via <input type="text" placeholder="Contact Method"> on <input type="date">.
-    </div>
-</div> -->
-<div class="document">
-    <div class="title">Link Input Test Document</div>
-
-    <div class="section">Default (Display Text + URL)</div>
-    <div>With placeholder: <input type="url" placeholder="Teammates Name" prompt="Link to their GitHub repo and a really long story? What is this turns into an essay?"></div>
-    <div>No placeholder: <input type="url" prompt="Paste the repo URL"></div>
-    <div>No prompt: <input type="url" placeholder="Issue Name"></div>
-    <div>No placeholder, no prompt: <input type="url"></div>
-
-    <div class="section">Raw URL Only (data-raw)</div>
-    <div>With placeholder: <input type="url" data-raw placeholder="Repo URL"></div>
-    <div>No placeholder: <input type="url" data-raw></div>
-    <div>With prompt: <input type="url" data-raw placeholder="Deployment" prompt="Link to deployed site"></div>
-
-    <div class="section">Inside Templates</div>
-    <ul>
-        <li><input type="url" placeholder="Issue Name" prompt="Link to GitHub issue"></li>
-        <template>
-            <li><input type="url" placeholder="Issue Name" prompt="Link to GitHub issue"></li>
-        </template>
-        <button class="template">Add Another Issue</button>
-    </ul>
-
-    <div class="section">Pre-populated (data attributes)</div>
-    <div><input type="url" placeholder="Teammates Name" prompt="Link to repo" data-url="https://github.com/example" data-text="Jane Doe"></div>
-    <div><input type="url" data-raw placeholder="Site URL" data-url="https://example.com"></div>
-
-    <div class="section">Mixed With Other Inputs</div>
-    <div>
-        Reviewed by <input type="text" placeholder="Your Name"> on <input type="date"> — see <input type="url" placeholder="Review Link" prompt="Link to the review">
-    </div>
-</div>
+<p>
+    For full setup and options see <a href="/features/getting-started.html">Getting Started</a> and <a href="/features/configuration.html">Configuration</a>.
+</p>
 
 <script>
     $include('./templates/footer.html');
 </script>
-

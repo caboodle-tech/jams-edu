@@ -20,6 +20,8 @@
         $echo(`<meta name="description" content="${description}">`);
     </script>
         <script type="module" src="./assets/js/main.js"></script>
+        <!-- Blocking; runs in `head` before `body` exists. See `theme-preference.js`. -->
+        <script src="./assets/js/theme-preference.js"></script>
     </head>
     <body>
 

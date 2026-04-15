@@ -1,0 +1,70 @@
+/* @jamsedu-version: 1.0.7 */
+/* @jamsedu-component: blockquotes-css */
+
+/* main prose only; editor quotes live in `vendor/jamsedu/tiny-wysiwyg.css` */
+/* `cite` uses inline-flex so `::before` (em dash) is the first flex item and follows `direction` (RTL/LTR). */
+
+:where(main blockquote) {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    margin: 0 0 var(--margin-md) 0;
+    background-color: var(--color-prose-card-bg);
+    border: var(--border-prose-card);
+    border-inline-start: var(--border-inline-accent-width) solid var(--color-border-inline-accent);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    padding-block: var(--padding-sm);
+    padding-inline-end: var(--padding-md);
+    padding-inline-start: calc(var(--padding-md) * 2.5 + var(--font-size-4xl));
+    color: var(--color-text);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-md);
+    font-style: italic;
+
+    &::before {
+        content: '\201C';
+        position: absolute;
+        margin-top: -7px;
+        inset-block-start: var(--padding-sm);
+        inset-inline-start: var(--padding-sm);
+        font-family: Georgia, 'Times New Roman', Times, serif;
+        font-size: calc(var(--font-size-4xl) * 3);
+        line-height: 1;
+        color: var(--color-border-inline-accent);
+        pointer-events: none;
+    }
+
+    p {
+        margin: 0;
+        color: inherit;
+    }
+
+    cite {
+        display: inline-flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: var(--spacing-xs);
+        max-inline-size: 100%;
+        margin: 0;
+        color: inherit;
+        direction: inherit;
+        unicode-bidi: isolate;
+        vertical-align: baseline;
+
+        &::before {
+            content: '\2014\2009';
+            flex-shrink: 0;
+        }
+
+        a {
+            color: var(--color-link);
+
+            &:hover {
+                color: var(--color-link-hover);
+            }
+        }
+    }
+}

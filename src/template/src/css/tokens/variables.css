@@ -1,38 +1,98 @@
 /**
- * Non-color design tokens: type scale, spacing, motion.
+ * Non-color design tokens: type, radius, spacing, motion, icons. Abbreviations use `-md` (not `-med`).
+ * Typography assumes `html { font-size: 62.5%; }` (`base/reset.css`): 1rem = 10px at default UA 16px.
+ * Body scale: `--font-size-md` is 1.8rem (18px); steps are 0.3rem up/down. Each `--line-height-*` is the
+ * matching font size + 0.3rem (absolute rem, not a unitless ratio).
  */
-@layer tokens {
-    :root {
-        --font-family-sans: 'Inter', system-ui, sans-serif;
-        --font-family-mono: 'Fira Code', 'Roboto Mono', monospace;
 
-        --font-size-xs: 0.75rem;
-        --font-size-sm: 0.875rem;
-        --font-size-md: 1rem;
-        --font-size-lg: 1.125rem;
-        --font-size-xl: 1.3125rem;
-        --font-size-2xl: 1.5rem;
-        --font-size-3xl: 2.625rem;
-        --font-size-4xl: 4rem;
+:root {
+    --font-family-sans: 'Inter', system-ui, sans-serif;
+    --font-family-mono: 'Fira Code', 'Roboto Mono', monospace;
 
-        --line-height-xs: 1.3;
-        --line-height-sm: 1.4;
-        --line-height-md: 1.5;
-        --line-height-lg: 1.6;
-        --line-height-xl: 1.7;
-        --line-height-2xl: 1.8;
-        --line-height-3xl: 1.9;
-        --line-height-4xl: 2;
+    --font-size-xs: 1.2rem;
+    --font-size-sm: 1.5rem;
+    --font-size-md: 1.8rem;
+    --font-size-lg: 2.1rem;
+    --font-size-xl: 2.4rem;
+    --font-size-2xl: 2.7rem;
+    --font-size-3xl: 3rem;
+    --font-size-4xl: 3.6rem;
+    /* Dense editors (WYSIWYG): one step above body */
+    --font-size-editor: var(--font-size-lg);
 
-        --radius-sm: 4px;
-        --radius-md: 8px;
+    --line-height-xs: 1.5rem;
+    --line-height-sm: 1.8rem;
+    --line-height-md: 2.1rem;
+    --line-height-lg: 2.4rem;
+    --line-height-xl: 2.7rem;
+    --line-height-2xl: 3rem;
+    --line-height-3xl: 3.3rem;
+    --line-height-4xl: 3.9rem;
 
-        --space-gutter: 2rem;
-        --space-gutter-tight: 1rem;
+    /**
+     * Borders and radius
+     */
+    --radius-xs: 2px;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 10px;
 
-        --transition-base: 0.2s ease;
+    /**
+     * Prose card start border width; pairs with `--color-border-inline-accent` (`tokens/colors.css`).
+     */
+    --border-inline-accent-width: 3px;
 
-        --table-cell-padding-y: 2px;
-        --table-cell-padding-x: var(--font-size-md);
-    }
+    /**
+     * Content spacing (rem tuned for 62.5% root; ~8px / 16px / 24px / 32px / 48px)
+     */
+    --spacing-xs: 0.8rem;
+    --spacing-sm: 1.6rem;
+    --spacing-md: 2.4rem;
+    --spacing-lg: 3.2rem;
+    --spacing-xl: 4.8rem;
+
+    /**
+     * Padding and margin
+     */
+    --padding-xs: 0.8rem;
+    --padding-sm: 1.6rem;
+    --padding-md: 2.4rem;
+    --padding-lg: 3.2rem;
+    --padding-xl: 4.8rem;
+
+    --margin-xs: 0.8rem;
+    --margin-sm: 1.6rem;
+    --margin-md: 2.4rem;
+    --margin-lg: 3.2rem;
+    --margin-xl: 4.8rem;
+
+    --space-gutter: 3.2rem;
+    --space-gutter-tight: 1.6rem;
+
+    /**
+     * Page layout (`.content-grid`, Kevin Powell-style named columns)
+     */
+    --content-max-width: 1200px;
+    --breakout-size: 120px;
+
+    --transition-base: 0.2s ease;
+    --transition-smooth: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-slow: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    --transition-md: 0.4s ease-in-out;
+    --transition-fast: 0.3s ease-in-out;
+    --transition-popup: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-drawer: 0.35s cubic-bezier(0.04, 0.9, 0.2, 1);
+
+    /**
+     * Icon dimensions
+     */
+    --icon-size-sm: 24px;
+    --icon-size-md: 32px;
+    --icon-size-lg: 48px;
+    /* Touch target step: `--icon-size-sm` + half `--spacing-sm` at 62.5% root */
+    --icon-dimensions: var(--icon-size-md);
+
+    --table-cell-padding-y: 2px;
+    --table-cell-padding-x: var(--font-size-md);
 }

@@ -1,172 +1,52 @@
-/* @jamsedu-version: 1.2.0 */
+/* @jamsedu-version: 1.3.3 */
 /* @jamsedu-component: embed-pdf */
 /*
- * EmbedPDF Snippet wrapper. Public overrides: `--pdf-*` (see EmbedPDF theme API:
- * https://www.embedpdf.com/docs/snippet/theme ). `embed-pdf.js` reads the same names via
- * getComputedStyle() into EmbedPDF.init({ theme }).
+ * EmbedPDF snippet layout and chrome. Theme tokens live in `tokens.css` (`--pdf-*`).
+ * `embed-pdf.js` reads `--pdf-*` from getComputedStyle on `.embed-pdf-container`.
  *
- * Theme for dark UI follows `tokens/colors.css` radios: `#theme-system` + prefers-color-scheme,
- * or `#theme-dark`.
+ * Mount targets: div[data-pdf], embed[src$=.pdf]; JS replaces them with .embed-pdf-container.
  */
-@layer base, theme;
 
-@layer base {
-
-    div[data-pdf]:not(.embed-pdf-container) {
-        box-sizing: border-box;
-        display: block;
-        width: var(--pdf-width, 100%);
-        min-height: var(--pdf-height, var(--pdf-min-height, var(--min-height, 600px)));
-    }
-
-    embed[src$=".pdf" i] {
-        box-sizing: border-box;
-        display: block;
-        width: var(--pdf-width, 100%);
-        height: var(--pdf-height, 600px);
-        border: 0;
-    }
-
-    .embed-pdf-container {
-        position: relative;
-        box-sizing: border-box;
-        width: var(--pdf-width, 100%);
-        height: var(--pdf-height, 600px);
-        min-height: var(--pdf-height, var(--pdf-min-height, var(--min-height, 600px)));
-        margin: var(--pdf-margin, var(--margin, 1rem 0));
-
-        --pdf-border-radius: var(--pdf-border-radius, var(--radius-md, 6px));
-        --pdf-shadow: var(--pdf-shadow, var(--shadow-elevated, 0 2px 8px rgba(0, 0, 0, 0.12)));
-        --pdf-transition: var(--pdf-transition, var(--transition-base, 0.2s ease));
-
-        --pdf-accent-primary: var(--pdf-accent-primary, var(--color-accent, #2196f3));
-        --pdf-accent-primary-hover: var(--pdf-accent-primary-hover, var(--color-accent-hover, #1976d2));
-        --pdf-accent-primary-active: var(--pdf-accent-primary-active, var(--primary-active-bg-color, #1565c0));
-        --pdf-accent-primary-light: var(--pdf-accent-primary-light, #e3f2fd);
-        --pdf-accent-primary-foreground: var(--pdf-accent-primary-foreground, var(--primary-text-color, #ffffff));
-
-        --pdf-background-app: var(--pdf-background-app, #525659);
-        --pdf-background-surface: var(--pdf-background-surface, var(--color-surface, #eeeeee));
-        --pdf-background-surface-alt: var(--pdf-background-surface-alt, #e0e0e0);
-        --pdf-background-elevated: var(--pdf-background-elevated, #ffffff);
-        --pdf-background-overlay: var(--pdf-background-overlay, rgba(0, 0, 0, 0.45));
-        --pdf-background-input: var(--pdf-background-input, #ffffff);
-
-        --pdf-foreground-primary: var(--pdf-foreground-primary, var(--color-text, #212121));
-        --pdf-foreground-secondary: var(--pdf-foreground-secondary, #424242);
-        --pdf-foreground-muted: var(--pdf-foreground-muted, var(--color-text-muted, #757575));
-        --pdf-foreground-disabled: var(--pdf-foreground-disabled, #9e9e9e);
-        --pdf-foreground-on-accent: var(--pdf-foreground-on-accent, var(--primary-text-color, #ffffff));
-
-        --pdf-interactive-hover: var(--pdf-interactive-hover, #eeeeee);
-        --pdf-interactive-active: var(--pdf-interactive-active, #e0e0e0);
-        --pdf-interactive-selected: var(--pdf-interactive-selected, #e3f2fd);
-        --pdf-interactive-focus: var(--pdf-interactive-focus, var(--color-accent, #2196f3));
-
-        --pdf-border-default: var(--pdf-border-default, var(--color-border, #e0e0e0));
-        --pdf-border-subtle: var(--pdf-border-subtle, var(--border-color-light, #eeeeee));
-        --pdf-border-strong: var(--pdf-border-strong, #bdbdbd);
-
-        --pdf-state-error: var(--pdf-state-error, #d32f2f);
-        --pdf-state-error-light: var(--pdf-state-error-light, #ffebee);
-        --pdf-state-warning: var(--pdf-state-warning, #f57c00);
-        --pdf-state-warning-light: var(--pdf-state-warning-light, #fff3e0);
-        --pdf-state-success: var(--pdf-state-success, #388e3c);
-        --pdf-state-success-light: var(--pdf-state-success-light, #e8f5e9);
-        --pdf-state-info: var(--pdf-state-info, #1976d2);
-        --pdf-state-info-light: var(--pdf-state-info-light, #e3f2fd);
-
-        border-radius: var(--pdf-border-radius);
-        border: 1px solid var(--pdf-border-default);
-        box-shadow: var(--pdf-shadow);
-        overflow: hidden;
-        background: var(--pdf-background-app);
-        display: flex;
-        flex-direction: column;
-
-        > * {
-            flex: 1 1 auto;
-            min-height: 0;
-            width: 100%;
-        }
-
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-        }
-    }
+div[data-pdf]:not(.embed-pdf-container) {
+    box-sizing: border-box;
+    display: block;
+    width: var(--pdf-width, 100%);
+    min-height: var(--pdf-height, var(--pdf-min-height, var(--min-height, 600px)));
 }
 
-@layer theme {
+embed[src$=".pdf" i] {
+    box-sizing: border-box;
+    display: block;
+    width: var(--pdf-width, 100%);
+    height: var(--pdf-height, 600px);
+    border: 0;
+}
 
-    @media (prefers-color-scheme: dark) {
-        html:has(#theme-system:checked) .embed-pdf-container {
-            --pdf-shadow: var(--pdf-shadow, 0 2px 12px rgba(0, 0, 0, 0.45));
-            --pdf-accent-primary: var(--pdf-accent-primary, var(--color-accent, #42a5f5));
-            --pdf-accent-primary-hover: var(--pdf-accent-primary-hover, var(--color-accent-hover, #1e88e5));
-            --pdf-accent-primary-active: var(--pdf-accent-primary-active, var(--primary-active-bg-color, #1565c0));
-            --pdf-accent-primary-light: var(--pdf-accent-primary-light, #1e3a5f);
-            --pdf-accent-primary-foreground: var(--pdf-accent-primary-foreground, var(--primary-text-color, #ffffff));
-            --pdf-background-app: var(--pdf-background-app, #1e1e1e);
-            --pdf-background-surface: var(--pdf-background-surface, #2d2d2d);
-            --pdf-background-surface-alt: var(--pdf-background-surface-alt, #262626);
-            --pdf-background-elevated: var(--pdf-background-elevated, #383838);
-            --pdf-background-overlay: var(--pdf-background-overlay, rgba(0, 0, 0, 0.65));
-            --pdf-background-input: var(--pdf-background-input, #2d2d2d);
-            --pdf-foreground-primary: var(--pdf-foreground-primary, var(--color-text, #ececec));
-            --pdf-foreground-secondary: var(--pdf-foreground-secondary, #c4c4c4);
-            --pdf-foreground-muted: var(--pdf-foreground-muted, var(--color-text-muted, #9e9e9e));
-            --pdf-foreground-disabled: var(--pdf-foreground-disabled, #757575);
-            --pdf-interactive-hover: var(--pdf-interactive-hover, #3d3d3d);
-            --pdf-interactive-active: var(--pdf-interactive-active, #454545);
-            --pdf-interactive-selected: var(--pdf-interactive-selected, #1e3a5f);
-            --pdf-interactive-focus: var(--pdf-interactive-focus, var(--color-accent, #42a5f5));
-            --pdf-border-default: var(--pdf-border-default, var(--color-border, #4a4a4a));
-            --pdf-border-subtle: var(--pdf-border-subtle, var(--border-color-light, #3a3a3a));
-            --pdf-border-strong: var(--pdf-border-strong, #6f6f6f);
-            --pdf-state-error: var(--pdf-state-error, #ef5350);
-            --pdf-state-error-light: var(--pdf-state-error-light, #4a1f1f);
-            --pdf-state-warning: var(--pdf-state-warning, #ffb74d);
-            --pdf-state-warning-light: var(--pdf-state-warning-light, #4a3a1a);
-            --pdf-state-success: var(--pdf-state-success, #81c784);
-            --pdf-state-success-light: var(--pdf-state-success-light, #1f3d24);
-            --pdf-state-info: var(--pdf-state-info, #64b5f6);
-            --pdf-state-info-light: var(--pdf-state-info-light, #1a2f4a);
-        }
+.embed-pdf-container {
+    position: relative;
+    box-sizing: border-box;
+    width: var(--pdf-width, 100%);
+    height: var(--pdf-height, 600px);
+    min-height: var(--pdf-height, var(--pdf-min-height, var(--min-height, 600px)));
+    margin: var(--pdf-margin, 1rem 0);
+    border-radius: var(--pdf-border-radius, var(--radius-md, 6px));
+    border: 1px solid var(--pdf-card-border-color);
+    box-shadow: var(--pdf-shadow);
+    overflow: hidden;
+    background: var(--pdf-background-app);
+    display: flex;
+    flex-direction: column;
+
+    > * {
+        flex: 1 1 auto;
+        min-height: 0;
+        width: 100%;
+        background: var(--pdf-snippet-host-fill);
     }
 
-    html:has(#theme-dark:checked) .embed-pdf-container {
-        --pdf-shadow: var(--pdf-shadow, 0 2px 12px rgba(0, 0, 0, 0.45));
-        --pdf-accent-primary: var(--pdf-accent-primary, var(--color-accent, #42a5f5));
-        --pdf-accent-primary-hover: var(--pdf-accent-primary-hover, var(--color-accent-hover, #1e88e5));
-        --pdf-accent-primary-active: var(--pdf-accent-primary-active, var(--primary-active-bg-color, #1565c0));
-        --pdf-accent-primary-light: var(--pdf-accent-primary-light, #1e3a5f);
-        --pdf-accent-primary-foreground: var(--pdf-accent-primary-foreground, var(--primary-text-color, #ffffff));
-        --pdf-background-app: var(--pdf-background-app, #1e1e1e);
-        --pdf-background-surface: var(--pdf-background-surface, #2d2d2d);
-        --pdf-background-surface-alt: var(--pdf-background-surface-alt, #262626);
-        --pdf-background-elevated: var(--pdf-background-elevated, #383838);
-        --pdf-background-overlay: var(--pdf-background-overlay, rgba(0, 0, 0, 0.65));
-        --pdf-background-input: var(--pdf-background-input, #2d2d2d);
-        --pdf-foreground-primary: var(--pdf-foreground-primary, var(--color-text, #ececec));
-        --pdf-foreground-secondary: var(--pdf-foreground-secondary, #c4c4c4);
-        --pdf-foreground-muted: var(--pdf-foreground-muted, var(--color-text-muted, #9e9e9e));
-        --pdf-foreground-disabled: var(--pdf-foreground-disabled, #757575);
-        --pdf-interactive-hover: var(--pdf-interactive-hover, #3d3d3d);
-        --pdf-interactive-active: var(--pdf-interactive-active, #454545);
-        --pdf-interactive-selected: var(--pdf-interactive-selected, #1e3a5f);
-        --pdf-interactive-focus: var(--pdf-interactive-focus, var(--color-accent, #42a5f5));
-        --pdf-border-default: var(--pdf-border-default, var(--color-border, #4a4a4a));
-        --pdf-border-subtle: var(--pdf-border-subtle, var(--border-color-light, #3a3a3a));
-        --pdf-border-strong: var(--pdf-border-strong, #6f6f6f);
-        --pdf-state-error: var(--pdf-state-error, #ef5350);
-        --pdf-state-error-light: var(--pdf-state-error-light, #4a1f1f);
-        --pdf-state-warning: var(--pdf-state-warning, #ffb74d);
-        --pdf-state-warning-light: var(--pdf-state-warning-light, #4a3a1a);
-        --pdf-state-success: var(--pdf-state-success, #81c784);
-        --pdf-state-success-light: var(--pdf-state-success-light, #1f3d24);
-        --pdf-state-info: var(--pdf-state-info, #64b5f6);
-        --pdf-state-info-light: var(--pdf-state-info-light, #1a2f4a);
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
     }
 }

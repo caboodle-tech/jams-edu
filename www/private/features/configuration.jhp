@@ -1,0 +1,108 @@
+<script>
+    const title = 'Configuration · JamsEDU';
+    const description = 'Learn how to configure your JamsEDU project including directory paths, website URL, verbose logging, build hooks, and file copy exclusions.';
+
+    $include('../templates/header.html');
+</script>
+
+<p class="breadcrumb"><a href="/index.html">Home</a> · <a href="/features/index.html">Docs</a> · Configuration</p>
+
+<h1>Configuration</h1>
+
+<p>
+    Every JamsEDU project has a configuration file that controls how the builder processes your site. This file is a standard JavaScript module that exports a single object containing your project's directory paths, optional settings, and build hooks. It tells the builder where your pages and assets live, where compiled HTML should be written, and where your <strong>templates</strong> are stored so every page can reuse shared markup like <code>header.html</code> and <code>footer.html</code> templates.
+</p>
+
+<section aria-labelledby="config-file-heading">
+    <h2 id="config-file-heading">Which file is loaded</h2>
+    <p>
+        The builder looks for a configuration file in your <strong>project root</strong>, the directory you run <code>jamsedu --watch</code> or <code>jamsedu --build</code> from. It checks for <code>.jamsedu/config.js</code> first and falls back to <code>jamsedu.config.js</code> in the root if that does not exist. You only need one of these files.
+    </p>
+    <p>
+        The file uses standard ES module syntax: <code>export default { ... }</code> with properties separated by commas. There is no special syntax to learn beyond the option names documented below. To run a build with a different configuration file, use <code>jamsedu --config path/to/file.js</code>.
+    </p>
+</section>
+
+<section aria-labelledby="config-minimal-heading">
+    <h2 id="config-minimal-heading">Required paths</h2>
+    <p>
+        Three directory paths are required in every configuration file. Each is relative to your project root. Use clean, stable names like <code>www/private</code> rather than relative prefixes like <code>./</code> or <code>../</code> to keep paths predictable during builds.
+    </p>
+    <pre><code class="javascript">
+        export default {
+            destDir: 'output/',
+            srcDir: 'src/',
+            templateDir: 'src/templates'
+        };
+    </code></pre>
+    <p>
+        <code>srcDir</code> is your working directory where all authored content lives: <code>.jhp</code> pages, CSS, JavaScript, images, and other static assets. <code>destDir</code> is the build output where generated HTML and copied assets are written. This is what you upload or deploy to your hosting provider. You should never edit files inside <code>destDir</code> directly since it is regenerated on every build.
+    </p>
+    <p>
+        <code>templateDir</code> holds your shared HTML fragments and layout pieces that pages pull in using <code>$include</code> in JHP. Keeping templates in their own directory separates page content from site layout, so when you update something like <code>header.html</code>, every page that includes it picks up the change on the next build. Placing <code>templateDir</code> inside <code>srcDir</code> as shown above is the most common setup.
+    </p>
+</section>
+
+<section aria-labelledby="config-options-heading">
+    <h2 id="config-options-heading">Options reference</h2>
+    <p>
+        The three directory paths listed below are required. All other options are optional. The <code>pre</code> and <code>post</code> options accept arrays of standard JavaScript functions using either traditional or arrow syntax. The builder calls these functions at the appropriate stage of the build pipeline.
+    </p>
+    <dl>
+        <div>
+            <dt><code>destDir</code> <small>Required</small></dt>
+            <dd>Output directory where compiled HTML and copied assets are written for deployment or local preview.</dd>
+        </div>
+        <div>
+            <dt><code>srcDir</code> <small>Required</small></dt>
+            <dd>Input directory containing your pages, templates (if colocated), and all assets the build reads or copies from.</dd>
+        </div>
+        <div>
+            <dt><code>templateDir</code> <small>Required</small></dt>
+            <dd>Directory the compiler searches when resolving shared HTML templates and includes. Typically a <code>templates</code> folder inside <code>srcDir</code>.</dd>
+        </div>
+        <div>
+            <dt><code>websiteUrl</code> <small>Optional</small></dt>
+            <dd>Canonical absolute URL for your site (including <code>https://</code>), used by features like sitemap generation that need a stable origin. (Not implemented yet)</dd>
+        </div>
+        <div>
+            <dt><code>verbose</code> <small>Optional</small></dt>
+            <dd>Set to <code>true</code> to enable detailed logging on every build without passing <code>--verbose</code> on the command line.</dd>
+        </div>
+        <div>
+            <dt><code>pre</code> <small>Optional</small></dt>
+            <dd>Array of functions that run before the main template pass. Each receives the build <code>scope</code> which includes a mutable DOM view of the page.</dd>
+        </div>
+        <div>
+            <dt><code>post</code> <small>Optional</small></dt>
+            <dd>Array of functions that run after templates have been merged but before the final HTML is written to disk. Merged with any built in post processing steps where applicable.</dd>
+        </div>
+        <div>
+            <dt><code>doNotCopy</code> <small>Optional</small></dt>
+            <dd>List of file extensions (without the leading dot) that should not be copied into <code>destDir</code>. Setting this <strong>replaces</strong> the entire default exclusion list, so your array must include every extension you still want excluded.</dd>
+        </div>
+    </dl>
+    <div class="callout notice">
+        <div class="title">A Note on Extension Exclusions</div>
+        <p>
+            If you set <code>doNotCopy</code>, the built in default exclusions are completely discarded and only the extensions you specify will be blocked. Anything not in your list may be copied into the output directory as a normal asset. Double check your list before publishing, especially for source only or private file types. If you are unsure whether you need this option, leave it out until you have a specific reason to use it.
+        </p>
+    </div>
+</section>
+
+<section aria-labelledby="config-hooks-heading">
+    <h2 id="config-hooks-heading">Hooks</h2>
+    <p>
+        Hooks let you run your own JavaScript during the build to adjust HTML structure, inject repeated markup, or normalize content across pages. These are not browser scripts; the builder executes them while processing each page. <code>pre</code> hooks run before template expansion, and <code>post</code> hooks run after templates are applied but before the final HTML is written to disk.
+    </p>
+    <p>
+        Each hook receives structured access to the current document through a <code>scope</code> object, allowing you to query and modify the page tree. You do not need hooks for a straightforward static site. They are there for when templates and static assets alone are not enough.
+    </p>
+    <p>
+        For full details on the build pipeline, execution order, and working examples, see the <a href="/features/hooks.html">Hooks</a> page.
+    </p>
+</section>
+
+<script>
+    $include('../templates/footer.html');
+</script>

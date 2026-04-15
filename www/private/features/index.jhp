@@ -1,0 +1,79 @@
+<script>
+    const title = 'Docs · JamsEDU';
+    const description = 'Documentation for JamsEDU covering installation, configuration, page authoring, build hooks, built-in features, and theming.';
+
+    $include('../templates/header.html');
+</script>
+
+<p class="breadcrumb"><a href="/index.html">Home</a> · Docs</p>
+
+<h1>Documentation</h1>
+
+<p>
+    This is the full reference for JamsEDU. If you have not already, start with <a href="/features/getting-started.html">Getting Started</a> and <a href="/features/configuration.html">Configuration</a> from the main navigation before diving into the topics below.
+</p>
+
+<section id="authoring" aria-labelledby="authoring-heading">
+    <h2 id="authoring-heading">Authoring and Building</h2>
+    <dl>
+        <div>
+            <dt><a href="/features/jhp-templates.html">JHP Templates</a></dt>
+            <dd>Write pages using standard HTML with JHP directives for includes, variables, conditionals, and output buffering.</dd>
+        </div>
+        <div>
+            <dt><a href="/features/hooks.html">Build Hooks</a></dt>
+            <dd>Run your own JavaScript during the build to modify HTML structure, inject markup, or normalize content across pages.</dd>
+        </div>
+    </dl>
+</section>
+
+<section id="built-in-guides" aria-labelledby="built-in-guides-heading">
+    <h2 id="built-in-guides-heading">Built-In Feature Guides</h2>
+    <p>
+        The <a href="/features/built-in-features.html">Built-In Features</a> page has live examples of everything listed here. These individual guides go deeper into markup, options, and customization.
+    </p>
+    <dl>
+        <div>
+            <dt><a href="/features/builtins/katex-math.html">KaTeX Math</a></dt>
+            <dd>Render LaTeX math formulas inline or as standalone blocks.</dd>
+        </div>
+        <div>
+            <dt><a href="/features/builtins/mermaid-diagrams.html">Mermaid Diagrams</a></dt>
+            <dd>Create flowcharts, sequence diagrams, and more from plain text.</dd>
+        </div>
+        <div>
+            <dt><a href="/features/builtins/highlight-js-lite.html">Code Highlighting</a></dt>
+            <dd>Syntax highlighted code blocks with line numbers and a copy button.</dd>
+        </div>
+        <div>
+            <dt><a href="/features/builtins/rich-text.html">Rich Text</a></dt>
+            <dd>Turn any textarea into a lightweight editor with formatting controls.</dd>
+        </div>
+        <div>
+            <dt><a href="/features/builtins/embedded-pdf.html">Embedded PDF</a></dt>
+            <dd>Display PDF documents directly on the page for viewing.</dd>
+        </div>
+        <div>
+            <dt><a href="/features/builtins/tiny-document.html">Tiny Doc</a></dt>
+            <dd>Structured documents with sections, fields, repeatable rows, print or save support, and a compact field reference on the same page.</dd>
+        </div>
+    </dl>
+</section>
+
+<section id="customization" aria-labelledby="customization-heading">
+    <h2 id="customization-heading">Customization</h2>
+    <dl>
+        <div>
+            <dt><a href="/features/built-in-features.html#frontend-feature-options">Runtime options (<code>jamsEduConfig</code>)</a></dt>
+            <dd>Turn loaders off, pin CDN versions, or tune per-feature behavior in <code>assets/js/main.js</code>. This is separate from CLI <a href="/features/configuration.html">Configuration</a>.</dd>
+        </div>
+        <div>
+            <dt><a href="/features/builtins/css-theming.html">CSS and Theming</a></dt>
+            <dd>Design tokens, color modes, and how to make every built-in feature match your brand.</dd>
+        </div>
+    </dl>
+</section>
+
+<script>
+    $include('../templates/footer.html');
+</script>

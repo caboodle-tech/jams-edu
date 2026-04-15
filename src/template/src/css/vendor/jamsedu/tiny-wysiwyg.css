@@ -1,53 +1,24 @@
-/* @jamsedu-version: 1.2.0 */
+/* @jamsedu-version: 1.8.10 */
 /* @jamsedu-component: tiny-wysiwyg */
-@layer base, theme;
-
-@layer base {
-    .tiny-wysiwyg-container {
-        --richtext-border-radius: var(--richtext-border-radius, var(--radius-sm, 4px));
-        --richtext-font-size: var(--richtext-font-size, var(--font-size-md, 18px));
-        --richtext-gap: var(--richtext-gap, var(--gap, 7px));
-        --richtext-spacing: var(--richtext-spacing, var(--spacing, 16px));
-        --richtext-line-height: var(--richtext-line-height, var(--line-height-lg, 1.6));
-        --richtext-transition-duration: var(--richtext-transition-duration, var(--transition-base, 0.2s));
-
-        --richtext-margin: var(--richtext-margin, var(--margin, var(--richtext-spacing, 16px)));
-        --richtext-padding: var(--richtext-padding, var(--padding, var(--richtext-spacing, 16px)));
-
-        --richtext-border-color: var(--richtext-border-color, var(--color-border, #dddddd));
-        --richtext-shadow: var(--richtext-shadow, var(--shadow-elevated, 0 2px 5px rgba(0, 0, 0, 0.1)));
-        --richtext-content-bg-color: var(--richtext-content-bg-color, var(--color-surface, #ffffff));
-        --richtext-container-bg-color: var(--richtext-container-bg-color, var(--color-bg, #ffffff));
-        --richtext-text-color: var(--richtext-text-color, var(--color-text, #000000));
-        --richtext-button-text-color: var(--richtext-button-text-color, var(--color-text, #000000));
-        --richtext-separator-color: var(--richtext-separator-color, var(--richtext-border-color));
-        --richtext-toolbar-bg-color: var(--richtext-toolbar-bg-color, var(--color-bg, #f8f9fa));
-        --richtext-link-color: var(--richtext-link-color, var(--color-link, #3498db));
-        --richtext-blockquote-bg-color: var(--richtext-blockquote-bg-color, var(--blockquote-bg-color, #f9f9f9));
-        --richtext-code-bg-color: var(--richtext-code-bg-color, var(--code-bg-color, #f4f4f4));
-        --richtext-modal-backdrop-color: var(--richtext-modal-backdrop-color, var(--modal-backdrop-color, rgba(0, 0, 0, 0.5)));
-        --richtext-focus-color: var(--richtext-focus-color, var(--focus-color, #1976d2));
-        --richtext-focus-shadow: var(--richtext-focus-shadow, var(--focus-shadow, 0 0 0 2px rgba(25, 118, 210, 0.1)));
-        --richtext-button-hover-bg-color: var(--richtext-button-hover-bg-color, var(--button-hover-bg-color, #e8e8e8));
-        --richtext-modal-button-bg-color: var(--richtext-modal-button-bg-color, var(--modal-button-bg-color, #f8f9fa));
-        --richtext-primary-bg-color: var(--richtext-primary-bg-color, var(--primary-bg-color, #2196F3));
-        --richtext-primary-text-color: var(--richtext-primary-text-color, var(--primary-text-color, #ffffff));
-        --richtext-primary-hover-bg-color: var(--richtext-primary-hover-bg-color, var(--primary-hover-bg-color, #1976D2));
-        --richtext-danger-bg-color: var(--richtext-danger-bg-color, var(--danger-bg-color, #dc3545));
-        --richtext-danger-text-color: var(--richtext-danger-text-color, var(--danger-text-color, #ffffff));
-        --richtext-danger-hover-bg-color: var(--richtext-danger-hover-bg-color, var(--danger-hover-bg-color, #bb2d3b));
-        --richtext-placeholder-color: var(--richtext-placeholder-color, var(--color-text-muted, #999999));
+/**
+ * WYSIWYG chrome + prose. Site tokens (`--font-*`, `--spacing-*`, `--color-*`) plus `--jamsedu-*`.
+ * Never reference `--pdf-*`. Use `variables.css` for sizes and `tokens.css` for `--richtext-*` hooks.
+ */
+.tiny-wysiwyg-container {
+        font-family: var(--font-family-sans);
+        color-scheme: inherit;
 
         background-color: var(--richtext-container-bg-color);
-        border: 1px solid var(--richtext-border-color);
-        border-radius: calc(var(--richtext-border-radius) * 2);
-        box-shadow: var(--richtext-shadow);
-        margin: var(--richtext-margin);
-        overflow: hidden;
+        border: 1px solid var(--richtext-card-border-color);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-elevated);
+        margin: var(--margin-sm) 0;
+        /* Not `overflow: hidden`; outside list markers extend past the list box and must not be clipped. */
+        overflow: visible;
         position: relative;
-        color: var(--richtext-text-color);
+        color: var(--color-text);
 
-        * {
+        & * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -55,83 +26,139 @@
 
         .tw-toolbar {
             display: flex;
-            gap: var(--richtext-gap);
-            padding: calc(var(--richtext-padding) / 1.5);
+            gap: var(--spacing-md);
+            padding: var(--padding-md);
             background-color: var(--richtext-toolbar-bg-color);
-            border-bottom: 1px solid var(--richtext-border-color);
+            border-bottom: 1px solid var(--richtext-toolbar-border-color);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
             flex-wrap: wrap;
 
             button {
-                padding: calc(var(--richtext-padding) / 2);
-                border: 1px solid var(--richtext-border-color);
-                background-color: var(--richtext-content-bg-color);
+                padding: calc(var(--padding-xxs) + 2px);
+                border: none;
+                background-color: var(--richtext-toolbar-button-bg);
                 color: var(--richtext-button-text-color);
-                border-radius: var(--richtext-border-radius);
+                border-radius: var(--radius-xs);
                 cursor: pointer;
-                font-size: var(--richtext-font-size);
-                transition: all var(--richtext-transition-duration);
+                font-size: var(--font-size-editor);
+                transition: background-color var(--transition-base);
                 display: flex;
                 align-items: center;
                 gap: 0;
-                transform: scale(.8);
 
-                &:hover {
-                    background-color: var(--richtext-button-hover-bg-color);
-                    border-color: var(--richtext-border-color);
+                svg {
+                    width: calc(var(--icon-size-xs) + 2px);
+                    height: calc(var(--icon-size-xs) + 2px);
+                    flex-shrink: 0;
+                }
+
+                &:hover, &:focus-visible {
+                    background-color: var(--richtext-toolbar-button-hover-bg);
+                    outline: 2px solid var(--jamsedu-interactive-focus);
                 }
             }
 
             .separator {
                 width: 1px;
                 background-color: var(--richtext-separator-color);
-                margin: 0 2px;
-                transform: scale(.8);
+                margin: 0 var(--richtext-toolbar-separator-margin);
+                transform: scale(0.8);
             }
         }
 
         .tw-content {
-            min-height: calc(var(--richtext-line-height) * var(--richtext-font-size) * 2 + var(--richtext-padding) * 2);
-            padding: var(--richtext-padding);
-            font-size: var(--richtext-font-size);
-            line-height: var(--richtext-line-height);
+            min-height: var(--richtext-content-min-height);
+            padding: var(--padding-md) var(--padding-md) var(--padding-xs);
+            font-size: var(--font-size-editor);
+            line-height: var(--line-height-lg);
             outline: none;
             background-color: var(--richtext-content-bg-color);
-            color: var(--richtext-text-color);
+            color: var(--color-text);
             position: relative;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+
+            & > * {
+                margin: 0 0 var(--spacing-md) 0 !important;
+            }
+
+            /* Tighter gap when a block is followed by a list (list has its own vertical rhythm). */
+            & > *:has(+ :is(ul, ol)) {
+                margin-bottom: var(--spacing-sm) !important;
+            }
+
+            & > :first-child {
+                margin-block-start: var(--spacing-xs) !important;
+            }
+
+            & > :last-child {
+                margin-block-end: var(--spacing-sm) !important;
+            }
 
             a {
-                color: var(--richtext-link-color);
+                color: var(--color-link);
                 text-decoration: none;
                 cursor: pointer;
-                
+                transition: color var(--transition-base);
+
                 &:hover {
-                    text-decoration: underline;
+                    color: var(--color-link-hover);
                 }
             }
 
             blockquote {
-                border-left: 5px solid var(--richtext-border-color);
-                padding: calc(var(--richtext-padding) / 1.5);
-                margin: calc(var(--richtext-margin) / 2) 0;
+                border-left: 5px solid var(--richtext-blockquote-border-color);
+                padding: var(--padding-xs);
                 background-color: var(--richtext-blockquote-bg-color);
             }
 
+            blockquote::before {
+                content: none;
+            }
+
+            p {
+                padding: 0;
+            }
+
             pre {
-                background-color: var(--richtext-code-bg-color);
-                padding: calc(var(--richtext-padding) / 2);
-                border-radius: var(--richtext-border-radius);
-                margin: calc(var(--richtext-margin) / 2) 0;
-                font-family: 'Roboto Mono', 'Fira Code', monospace;
+                background-color: var(--color-code-bg);
+                color: var(--color-code-fg);
+                padding: var(--padding-xs);
+                border-radius: var(--radius-sm);
+                margin: var(--spacing-md) 0;
+                font-family: var(--font-family-mono);
+                font-size: calc(var(--font-size-editor) * 0.92);
+                line-height: var(--line-height-md);
+                overflow-x: auto;
+                border: 1px solid var(--richtext-code-border-color);
+            }
+
+            pre code {
+                font-family: inherit;
+                font-size: inherit;
+                padding: 0;
+                border: none;
+                background: transparent;
+            }
+
+            :not(pre) > code {
+                font-family: var(--font-family-mono);
+                font-size: calc(var(--font-size-editor) * 0.9);
+                color: var(--color-code-fg);
+                padding: var(--code-padding-y) var(--code-padding-x);
+                border-radius: var(--radius-xs);
+                background-color: var(--color-code-bg);
+                border: 1px solid var(--richtext-code-border-color);
             }
 
             h1, h2, h3, h4, h5, h6 {
                 font-weight: bold;
-                font-size: calc(var(--richtext-font-size) * 2);
+                font-size: var(--font-size-xl);
             }
 
-            ul, ol {
-                padding-left: calc(var(--richtext-padding) * 2);
-                margin: calc(var(--richtext-margin) / 2) 0;
+            ul,
+            ol {
+                list-style-position: outside;
+                padding-inline-start: 1.75em;
             }
         }
 
@@ -140,169 +167,185 @@
             color: var(--richtext-placeholder-color);
             pointer-events: none;
             position: absolute;
-            top: var(--richtext-padding);
-            left: var(--richtext-padding);
+            top: var(--padding-md);
+            left: var(--padding-md);
         }
 
-        .tw-content:focus.tw-empty::before {
+        .tw-content:focus.tw-empty::before,
+        .tw-content:focus-within.tw-empty::before {
             display: none;
-        }
-
-        .tw-link-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-
-            .tw-lm-backdrop {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: var(--richtext-modal-backdrop-color);
-                z-index: 9000;
-            }
-
-            .tw-lm-content {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background-color: var(--richtext-content-bg-color);
-                color: var(--richtext-text-color);
-                border-radius: var(--richtext-border-radius);
-                border: 1px solid var(--richtext-border-color);
-                box-shadow: var(--richtext-shadow);
-                font-size: var(--richtext-font-size);
-                padding: var(--richtext-padding);
-                z-index: 1000;
-
-                h1, h2, h3, h4, h5, h6 {
-                    font-size: calc(var(--richtext-font-size) * 1.5);
-                    line-height: calc(var(--richtext-font-size) * 1.6);
-                    margin-bottom: var(--richtext-margin);
-                }
-
-                input {
-                    font-family: inherit;
-                    padding: 4px 8px;
-                    border: 1px solid var(--richtext-border-color);
-                    border-radius: var(--richtext-border-radius);
-                    background: var(--richtext-content-bg-color);
-                    color: var(--richtext-text-color);
-                    transition: border-color var(--richtext-transition-duration), box-shadow var(--richtext-transition-duration);
-                    outline: none;
-
-                    &:focus {
-                        border-color: var(--richtext-focus-color);
-                        box-shadow: var(--richtext-focus-shadow);
-                    }
-                }
-
-                .tw-lm-buttons {
-                    display: flex;
-                    justify-content: center;
-                    gap: calc(var(--richtext-gap) * 2);
-                    margin-top: var(--richtext-margin);
-
-                    button {
-                        padding: calc(var(--richtext-padding) / 2) var(--richtext-padding);
-                        border: 1px solid var(--richtext-border-color);
-                        background-color: var(--richtext-modal-button-bg-color);
-                        color: var(--richtext-button-text-color);
-                        border-radius: var(--richtext-border-radius);
-                        cursor: pointer;
-                        font-size: var(--richtext-font-size);
-                        transition: all var(--richtext-transition-duration);
-
-                        &:hover {
-                            background-color: var(--richtext-button-hover-bg-color);
-                        }
-
-                        &.primary {
-                            background-color: var(--richtext-primary-bg-color);
-                            color: var(--richtext-primary-text-color);
-                            border-color: var(--richtext-primary-bg-color);
-
-                            &:hover {
-                                background-color: var(--richtext-primary-hover-bg-color);
-                                border-color: var(--richtext-primary-hover-bg-color);
-                            }
-                        }
-
-                        &.danger {
-                            background-color: var(--richtext-danger-bg-color);
-                            color: var(--richtext-danger-text-color);
-                            border-color: var(--richtext-danger-bg-color);
-
-                            &:hover {
-                                background-color: var(--richtext-danger-hover-bg-color);
-                                border-color: var(--richtext-danger-hover-bg-color);
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         @media (min-width: 768px) {
             .tw-toolbar {
                 button {
-                    gap: var(--richtext-gap);
+                    gap: var(--spacing-xs);
                     transform: scale(1);
                 }
 
                 .separator {
                     transform: scale(1.1);
-                    margin: calc(var(--richtext-margin) / 4);
+                    margin: var(--richtext-toolbar-separator-margin);
                 }
             }
         }
-    }
 }
 
-@layer theme {
-    @media (prefers-color-scheme: dark) {
-        html:has(#theme-system:checked) .tiny-wysiwyg-container {
-            --richtext-border-color: var(--richtext-border-color, var(--color-border, #444444));
-            --richtext-shadow: var(--richtext-shadow, 0 2px 5px rgba(0, 0, 0, 0.3));
-            --richtext-content-bg-color: var(--richtext-content-bg-color, var(--color-surface, #2a2a2a));
-            --richtext-container-bg-color: var(--richtext-container-bg-color, var(--color-bg, #1e1e1e));
-            --richtext-text-color: var(--richtext-text-color, var(--color-text, #e0e0e0));
-            --richtext-button-text-color: var(--richtext-button-text-color, var(--color-text, #e0e0e0));
-            --richtext-separator-color: var(--richtext-separator-color, var(--richtext-border-color));
-            --richtext-toolbar-bg-color: var(--richtext-toolbar-bg-color, var(--color-bg, #1a1a1a));
-            --richtext-link-color: var(--richtext-link-color, var(--color-link, #5dade2));
-            --richtext-blockquote-bg-color: var(--richtext-blockquote-bg-color, var(--blockquote-bg-color, #333333));
-            --richtext-code-bg-color: var(--richtext-code-bg-color, var(--code-bg-color, #333333));
-            --richtext-modal-backdrop-color: var(--richtext-modal-backdrop-color, var(--modal-backdrop-color, rgba(0, 0, 0, 0.7)));
-            --richtext-button-hover-bg-color: var(--richtext-button-hover-bg-color, var(--button-hover-bg-color, #404040));
-            --richtext-modal-button-bg-color: var(--richtext-modal-button-bg-color, var(--modal-button-bg-color, #333333));
-            --richtext-primary-hover-bg-color: var(--richtext-primary-hover-bg-color, var(--color-accent-hover, #1565c0));
-            --richtext-danger-bg-color: var(--richtext-danger-bg-color, var(--danger-bg-color, #ef5350));
-            --richtext-danger-hover-bg-color: var(--richtext-danger-hover-bg-color, var(--danger-hover-bg-color, #b02a37));
+/**
+ * WYSIWYG link UI — same surface as `.document dialog.doc-link-popover` (`tiny-document.css`).
+ * Dialog mounts on `document.body` (see `tiny-wysiwyg.js`) so it is not clipped by editor overflow.
+ */
+/*
+ * Do not set `position` on `<dialog>`: UA uses absolute + margin auto for viewport centering.
+ * `position: relative` was shifting the modal to the wrong vertical position.
+ */
+dialog.doc-link-popover.jamsedu-tw-link-dialog {
+    margin: auto;
+    border: 1px solid var(--doc-link-popover-border-color);
+    border-radius: var(--doc-border-radius);
+    padding: 0;
+    box-shadow: var(--doc-link-popover-shadow);
+    min-width: 300px;
+    max-width: min(500px, 90vw);
+    font-family: inherit;
+    font-size: var(--doc-font-size);
+    background-color: var(--doc-field-bg-color);
+    color: var(--doc-field-text-color);
+    color-scheme: light;
+    overflow: visible !important;
+    opacity: 1;
+    backdrop-filter: none;
+
+    &::backdrop {
+        background: light-dark(rgb(15 23 42 / 0.35), rgb(0 0 0 / 0.55));
+    }
+
+    & .jamsedu-tw-link-dialog-panel {
+        position: relative;
+        padding: 16px;
+    }
+
+    & .doc-link-popover-heading {
+        margin-bottom: 12px;
+        color: var(--doc-text-color);
+    }
+
+    & .doc-link-popover-input {
+        display: block;
+        width: 100%;
+        border: 1px solid var(--doc-field-border-color);
+        border-radius: var(--doc-border-radius);
+        padding: 8px 10px;
+        font-size: var(--doc-font-size);
+        font-family: inherit;
+        background-color: var(--doc-field-bg-color);
+        color: var(--doc-field-text-color);
+        caret-color: var(--doc-field-text-color);
+        color-scheme: light;
+        margin-bottom: 8px;
+        outline: none;
+        transition: border-color var(--doc-transition-smooth), box-shadow var(--doc-transition-smooth);
+
+        &:focus-visible {
+            border-color: var(--doc-focus-color);
+            box-shadow: var(--doc-focus-shadow);
+        }
+
+        &::placeholder,
+        &::-webkit-input-placeholder {
+            color: var(--doc-field-placeholder-color);
+            -webkit-text-fill-color: var(--doc-field-placeholder-color);
+            opacity: 1;
+        }
+
+        &::-moz-placeholder {
+            color: var(--doc-field-placeholder-color);
+            opacity: 1;
         }
     }
 
-    html:has(#theme-dark:checked) .tiny-wysiwyg-container {
-        --richtext-border-color: var(--richtext-border-color, var(--color-border, #444444));
-        --richtext-shadow: var(--richtext-shadow, 0 2px 5px rgba(0, 0, 0, 0.3));
-        --richtext-content-bg-color: var(--richtext-content-bg-color, var(--color-surface, #2a2a2a));
-        --richtext-container-bg-color: var(--richtext-container-bg-color, var(--color-bg, #1e1e1e));
-        --richtext-text-color: var(--richtext-text-color, var(--color-text, #e0e0e0));
-        --richtext-button-text-color: var(--richtext-button-text-color, var(--color-text, #e0e0e0));
-        --richtext-separator-color: var(--richtext-separator-color, var(--richtext-border-color));
-        --richtext-toolbar-bg-color: var(--richtext-toolbar-bg-color, var(--color-bg, #1a1a1a));
-        --richtext-link-color: var(--richtext-link-color, var(--color-link, #5dade2));
-        --richtext-blockquote-bg-color: var(--richtext-blockquote-bg-color, var(--blockquote-bg-color, #333333));
-        --richtext-code-bg-color: var(--richtext-code-bg-color, var(--code-bg-color, #333333));
-        --richtext-modal-backdrop-color: var(--richtext-modal-backdrop-color, var(--modal-backdrop-color, rgba(0, 0, 0, 0.7)));
-        --richtext-button-hover-bg-color: var(--richtext-button-hover-bg-color, var(--button-hover-bg-color, #353535));
-        --richtext-modal-button-bg-color: var(--richtext-modal-button-bg-color, var(--modal-button-bg-color, #333333));
-        --richtext-primary-hover-bg-color: var(--richtext-primary-hover-bg-color, var(--color-accent-hover, #1565c0));
-        --richtext-danger-bg-color: var(--richtext-danger-bg-color, var(--danger-bg-color, #ef5350));
-        --richtext-danger-hover-bg-color: var(--richtext-danger-hover-bg-color, var(--danger-hover-bg-color, #c62828));
+    & .doc-link-popover-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    & .doc-link-save,
+    & .doc-link-clear {
+        border-radius: var(--doc-border-radius);
+        padding: 6px 16px;
+        margin-top: 0;
+        font-size: var(--font-size-sm);
+        cursor: pointer;
+        font-family: inherit;
+        transition: background-color var(--doc-transition-smooth), border-color var(--doc-transition-smooth), color var(--doc-transition-smooth);
+    }
+
+    & .doc-link-save {
+        border: none;
+        background-color: var(--doc-btn-accent-bg);
+        color: var(--doc-btn-accent-fg);
+
+        &:hover {
+            background-color: var(--doc-btn-accent-bg-hover);
+        }
+    }
+
+    & .doc-link-clear {
+        appearance: none;
+        box-sizing: border-box;
+        border: 1px solid var(--jamsedu-seed-state-error);
+        border-style: solid;
+        background-color: transparent;
+        color: var(--jamsedu-seed-state-error);
+        transition:
+            background-color var(--doc-transition-smooth),
+            border-color var(--doc-transition-smooth),
+            color var(--doc-transition-smooth);
+
+        &:hover {
+            background-color: #fee2e2;
+            border-color: #991b1b;
+            color: #991b1b;
+        }
+    }
+
+    & .doc-link-cancel {
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        appearance: none;
+        box-sizing: border-box;
+        border: 1px solid var(--doc-link-popover-border-color);
+        border-style: solid;
+        border-radius: 50%;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        background-color: var(--doc-field-bg-color);
+        color: var(--doc-field-text-color);
+        display: flex;
+        height: 40px;
+        width: 40px;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        cursor: pointer;
+        transition: background-color var(--doc-transition-smooth), border-color var(--doc-transition-smooth), color var(--doc-transition-smooth);
+        pointer-events: auto;
+
+        &:active {
+            pointer-events: none;
+        }
+
+        &:hover {
+            background-color: #ffffff;
+            border-color: var(--doc-focus-color);
+            color: var(--doc-link-color);
+        }
+
+        & svg {
+            stroke: currentColor;
+        }
     }
 }

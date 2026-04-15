@@ -83,6 +83,7 @@ export const defaultJamsEduConfig = {
     mermaid: {
         useMutationObserver: true,
         version: 'latest',
+        /* Light palette only: dark UI uses `invert` + `hue-rotate` in `jamsedu.css`. Do not set `dark` here. */
         theme: 'default'
     },
     embedPdf: {

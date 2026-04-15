@@ -1,0 +1,216 @@
+<script>
+    const title = 'Built-In Features · JamsEDU';
+    const description = 'Explore JamsEDU built-in features including LaTeX math, Mermaid diagrams, code highlighting, Rich Text editing, interactive forms, PDF viewing, responsive video embeds, and theming.';
+
+    $include('../templates/header.html');
+</script>
+
+<p class="breadcrumb"><a href="/index.html">Home</a> · <a href="/features/index.html">Docs</a> · Built-In Features</p>
+
+<h1>Built-In Features</h1>
+
+<p>
+    JamsEDU comes with a set of built-in features that are always available on every page. You do not need to install, configure, or wire up any frameworks. Just write your HTML using the patterns shown on this page and JamsEDU handles the rest. When you are ready for the full details on any feature, follow the link to its dedicated guide.
+</p>
+
+<p>
+    Beyond what is covered here, JamsEDU also supports repeatable form sections, URL pickers with validation, print and save from structured reports, embedded PDF viewing, responsive video embeds from plain <code>video</code> tags, DOM observation for dynamically injected markup, and theme tokens so every control feels native to your site. Each of these has its own guide under Built-Ins where applicable.
+</p>
+
+<div class="callout notice">
+    <div class="title">Include the Bundle Once</div>
+    <p>
+        Each published page loads <code>/assets/js/main.js</code> as a module one time. After that, JamsEDU finds the patterns on the page and runs the matching built-ins for you.
+    </p>
+</div>
+
+<nav aria-labelledby="built-ins-toc-heading">
+    <h2 id="built-ins-toc-heading">On This Page</h2>
+    <div class="columns two">
+        <ul>
+            <li><a href="#math">Math (KaTeX)</a></li>
+            <li><a href="#diagrams">Diagrams (Mermaid)</a></li>
+            <li><a href="#code-highlighting">Code Highlighting</a></li>
+            <li><a href="#rich-text">Rich Text</a></li>
+            <li><a href="#tiny-doc">Tiny Doc</a></li>
+        </ul>
+        <ul>
+            <li><a href="#embedded-pdf">Embedded PDF</a></li>
+            <li><a href="#responsive-video">Responsive Video</a></li>
+            <li><a href="#frontend-feature-options">Optional Settings</a></li>
+            <li><a href="#theming-and-color">Theming and Color</a></li>
+        </ul>
+    </div>
+</nav>
+
+<section id="math" aria-labelledby="math-heading">
+    <h2 id="math-heading">Math (KaTeX)</h2>
+    <p>
+        LaTeX math formulas can be added inline so they read naturally with your prose or as their own block when you want them to stand out. KaTeX handles the rendering so your equations always look crisp at any size. Here is an inline example: <span class="math inline" data-formula="\sin^2\theta + \cos^2\theta = 1"></span>. And here is a block example:
+    </p>
+    <div class="math" data-formula="\int_{0}^{1} x^2\,dx = \frac{1}{3}"></div>
+    <p>
+        <a href="/features/builtins/katex-math.html">KaTeX Math Guide</a>
+    </p>
+</section>
+
+<section id="diagrams" aria-labelledby="diagrams-heading">
+    <h2 id="diagrams-heading">Diagrams (Mermaid)</h2>
+    <p>
+        Mermaid turns plain text into rendered diagrams. Flowcharts, sequence diagrams, and more can all be written directly in your HTML and JamsEDU will render them on the page for you.
+    </p>
+    <pre class="mermaid">
+flowchart LR
+    Idea[Author writes text] --> Render[JamsEDU renders]
+    Render --> Polish[Theme + layout]
+    </pre>
+    <pre class="mermaid">
+sequenceDiagram
+    participant S as Student
+    participant P as Page
+    S->>P: Updates a field
+    P-->>S: Keeps structure + print-ready layout
+    </pre>
+    <p>
+        <a href="/features/builtins/mermaid-diagrams.html">Mermaid Diagrams Guide</a>
+    </p>
+</section>
+
+<section id="code-highlighting" aria-labelledby="code-highlighting-heading">
+    <h2 id="code-highlighting-heading">Code Highlighting</h2>
+    <p>
+        Wrap a <code>code</code> element in a <code>pre</code> tag and add a language class on the <code>code</code> element (for example <code>html</code> or <code>javascript</code>). Highlight JS Lite will automatically tokenize it with theme-aware colors, optional line numbers, and a copy button when enabled.
+    </p>
+    <pre><code class="javascript">
+        function sum(a, b) {
+            return a + b;
+        }
+
+        const total = sum(10, 32);
+        console.log(total);
+    </code></pre>
+    <p>
+        The same integration can turn a block into an editable mini editor, pin syntax highlighting with a locked language on the <code>code</code> element, and include extra text in the clipboard when you place <code>template</code> elements next to the <code>pre</code>. The guide below spells out the classes and shows each pattern.
+    </p>
+    <pre class="hljsl editor"><code class="javascript">
+        // This block is a mini editor: try editing the code below.
+        const greeting = 'Hello, HLJSL';
+        console.log(greeting);
+    </code></pre>
+    <p>
+        <a href="/features/builtins/highlight-js-lite.html">Highlight JS Lite Guide</a>
+    </p>
+</section>
+
+<section id="rich-text" aria-labelledby="rich-text-heading">
+    <h2 id="rich-text-heading">Rich Text</h2>
+    <p>
+        Any <code>textarea</code> with the class <code>rich</code> becomes a lightweight Rich Text editor with a toolbar for bold, italic, underline, bullet and numbered lists, paragraph and heading levels, blockquote, code blocks, and link insertion. The output stays as HTML in the textarea value and the Rich Text editor inherits your light or dark palette automatically. Per field options are documented in the Rich Text guide.
+    </p>
+    <textarea id="built-ins-rich-demo" class="rich" rows="5" name="built_ins_demo" aria-label="Rich Text demo">&lt;p&gt;What surprised you this week? Use &lt;strong&gt;bold&lt;/strong&gt; for the headline idea.&lt;/p&gt;</textarea>
+    <p>
+        <a href="/features/builtins/rich-text.html">Rich Text Guide</a>
+    </p>
+</section>
+
+<section id="tiny-doc" aria-labelledby="tiny-doc-heading">
+    <h2 id="tiny-doc-heading">Tiny Doc</h2>
+    <p>
+        Tiny Doc is a structured document system built into JamsEDU. It provides sections, headers, repeatable rows, URL pickers, Rich Text areas, and print or save functionality all from within the document itself. This is not the same as embedding an existing PDF for students to read in the page; that is the separate <a href="/features/builtins/embedded-pdf.html">Embedded PDF</a> built-in.
+    </p>
+    <div class="document">
+        <div class="title">Quick Lab Check-In</div>
+        <div class="header">
+            <div><input type="text" placeholder="Name" aria-label="Student name"></div>
+            <div><input type="date" aria-label="Lab date"></div>
+        </div>
+        <div class="section">Hypothesis</div>
+        <p class="instructions">
+            This is an example of an instructions block. It is not included in the exported PDF.
+        </p>
+        <textarea class="rich" rows="3" placeholder="One paragraph is enough for the demo."></textarea>
+    </div>
+    <p>
+        <a href="/features/builtins/tiny-document.html">Tiny Doc Guide</a>
+    </p>
+</section>
+
+<section id="embedded-pdf" aria-labelledby="embedded-pdf-heading">
+    <h2 id="embedded-pdf-heading">Embedded PDF</h2>
+    <p>
+        Put a PDF on the page the same way you would link any other file: one line of HTML with the URL. JamsEDU notices it and swaps in an in-page reader so people can scroll, zoom, and read without leaving your site. Point <code>data-pdf</code> at a path you actually publish (for example under <code>/assets/docs/</code>).
+    </p>
+    <pre><code class="html">
+        &lt;div data-pdf="/assets/docs/your-handout.pdf"&gt;&lt;/div&gt;
+    </code></pre>
+    <p>
+        You can also use a plain <code>embed</code> tag whose <code>src</code> ends in <code>.pdf</code>; sizing, titles, and extra options are on the full guide page.
+    </p>
+    <p>
+        <a href="/features/builtins/embedded-pdf.html">Embedded PDF Guide</a>
+    </p>
+</section>
+
+<section id="responsive-video" aria-labelledby="responsive-video-heading">
+    <h2 id="responsive-video-heading">Responsive Video</h2>
+    <p>
+        JamsEDU can embed videos from supported hosts like YouTube and Vimeo using a simple <code>video</code> element with a <code>src</code> attribute pointing to the video URL. During the build, JamsEDU replaces this with a responsive <code>figure</code> containing the correct embed iframe so the player scales with your layout automatically.
+    </p>
+    <p>
+        You can also include a <code>cite</code> element inside the <code>video</code> tag. JamsEDU will turn the cite text into a link pointing to the same URL as <code>src</code> so readers can open the original video on the host site.
+    </p>
+    <video src="https://youtu.be/NpEaa2P7qZI">
+        <cite>Sample video citation</cite>
+    </video>
+    <pre><code class="html">
+        &lt;video src="https://youtu.be/NpEaa2P7qZI"&gt;
+            &lt;cite&gt;Your visible citation label&lt;/cite&gt;
+        &lt;/video&gt;
+    </code></pre>
+</section>
+
+<section id="theming-and-color" aria-labelledby="theming-heading">
+    <h2 id="theming-heading">Theming and Color</h2>
+    <p>
+        All built-in features read CSS custom properties first, shared tokens second, and sensible defaults last. This means a single palette file can recolor Tiny Doc, Rich Text, the code highlighter, and the embedded PDF viewer so your branding shows up consistently across the entire site.
+    </p>
+    <pre><code class="css">
+        /* Example: adjust built-in surfaces to match your brand */
+        :root {
+            --doc-link-color: #0b57d0;
+            --richtext-border-color: color-mix(in srgb, var(--color-border) 80%, transparent);
+        }
+    </code></pre>
+    <p><a href="/features/builtins/css-theming.html">CSS and Theming Guide</a></p>
+</section>
+
+<section id="frontend-feature-options" aria-labelledby="frontend-feature-options-heading">
+    <h2 id="frontend-feature-options-heading">Optional Settings</h2>
+    <p>
+        Built-ins start on their own when the page contains the markup each loader looks for. To change runtime behavior (CDN URLs, toolbar wording, PDF zoom limits, disabling a loader), edit the plain object passed to <code>initJamsEdu</code> in <code>/assets/js/main.js</code>. In the template it is usually named <code>jamsEduConfig</code>: set only the fields you care about for each built-in; anything you omit keeps the shipped defaults. Set a top-level key to <code>false</code> to turn that loader off entirely. None of this is read from <code>.jamsedu/config.js</code>; that file is only for the <a href="/features/configuration.html">CLI builder</a>.
+    </p>
+    <p>
+        Each top-level key is either an options object (include only the keys described for that feature) or <code>false</code> to skip that loader entirely:
+    </p>
+    <ul>
+        <li><code>tinyDocument</code> — Tiny Doc (<code>.document</code> worksheets)</li>
+        <li><code>tinyWysiwyg</code> — Rich text (<code>textarea.rich</code>); docs call this feature <strong>rich text</strong></li>
+        <li><code>katex</code> — Inline and block math</li>
+        <li><code>mermaid</code> — Diagrams from <code>pre.mermaid</code></li>
+        <li><code>highlightJsLite</code> — Highlighted fenced code</li>
+        <li><code>embedPdf</code> — Embedded PDF <strong>viewer</strong> (not Tiny Doc print or save)</li>
+    </ul>
+    <p>
+        Individual guides call out the keys that matter for that feature (for example <code>jamsEduConfig.embedPdf</code> on the <a href="/features/builtins/embedded-pdf.html">Embedded PDF</a> page). Loaders already attach a <code>MutationObserver</code> when <code>useMutationObserver</code> stays enabled (the default). For your own scripts, the bundle exposes <code>window.DomWatcher</code> in <code>assets/js/jamsedu/dom-watcher.js</code>: use <code>DomWatcher.watch(selector, callback)</code> when you inject matching markup after load (for example after a fetch).
+    </p>
+    <div class="callout notice">
+        <div class="title">Looking for project configuration?</div>
+        <p>
+            Settings like <code>destDir</code>, <code>srcDir</code>, and build hooks are covered on the <a href="/features/configuration.html">Configuration</a> page. Project configuration and browser-side feature options are separate and do not share the same object.
+        </p>
+    </div>
+</section>
+
+<script>
+    $include('../templates/footer.html');
+</script>

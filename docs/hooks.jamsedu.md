@@ -22,14 +22,14 @@ Hooks do **not** return a value. You change the document by calling methods on `
 
 ## The DOM: Simple HTML Parser (SOM)
 
-The DOM your hooks interact with is produced by [simple-html-parser](https://github.com/caboodle-tech/simple-html-parser). It’s a lightweight, DOM-like tree (Simple Object Model, or SOM) for parsing and modifying HTML.
+The DOM your hooks interact with is produced by [simple-html-parser](https://github.com/caboodle-tech/simple-html-parser). It's a lightweight, DOM-like tree (Simple Object Model, or SOM) for parsing and modifying HTML.
 
 - **Parser**: [simple-html-parser](https://github.com/caboodle-tech/simple-html-parser) on GitHub.
 
 `scope.dom` is the root of the parsed document. You use it to query and mutate the tree, then the engine serializes it back to HTML. Key concepts:
 
 - **Node types**: `'root' | 'tag-open' | 'tag-close' | 'text' | 'comment'`
-- **Tree shape**: Opening and closing tags are siblings; element content lives in the opening tag’s `children` array.
+- **Tree shape**: Opening and closing tags are siblings; element content lives in the opening tag's `children` array.
 
 ### Querying
 
@@ -92,7 +92,7 @@ export default {
 };
 ```
 
-Your hooks are merged with JamsEdu’s built-in hooks; they run in addition to them (built-in post hooks include video embedding).
+Your hooks are merged with JamsEdu's built-in hooks; they run in addition to them (built-in post hooks include video embedding).
 
 ## Example: replace elements by selector
 

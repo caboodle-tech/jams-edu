@@ -296,11 +296,11 @@ const jamsEduVideo = (scope) => {
 
         if (citeNode && innerHTML.length > 0) {
             const citeHtml = citeNode.toHtml();
-            const citeText = citeNode.innerHtml();
+            const citeText = `&nbsp;${citeNode.innerHtml()}&nbsp;`;
             const link = `<a href="${url}" target="_blank" rel="noreferrer">${citeText}</a>`;
             figcaption = `<figcaption${figcaptionClass}>${innerHTML.replace(citeHtml, link)}</figcaption>`;
         } else if (citeNode) {
-            const citeText = citeNode.innerHtml();
+            const citeText = `&nbsp;${citeNode.innerHtml()}&nbsp;`;
             figcaption = `<figcaption${figcaptionClass}><a href="${url}" target="_blank" rel="noreferrer">${citeText}</a></figcaption>`;
         } else if (innerHTML.length > 0) {
             figcaption = `<figcaption${figcaptionClass}>${innerHTML}</figcaption>`;

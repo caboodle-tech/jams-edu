@@ -42,7 +42,7 @@ class EmbedPdfLoader {
     viewers = [];
 
     /**
-     * Registry from each viewer’s `.registry` promise; same index as `viewers`, `null` until settled.
+     * Registry from each viewer's `.registry` promise; same index as `viewers`, `null` until settled.
      * @type {unknown[]}
      */
     registries = [];
@@ -447,7 +447,7 @@ class EmbedPdfLoader {
     /**
      * Toolbar fullscreen proxy: uses your `#icons`; opens the document menu if needed, clicks the
      * real `document:fullscreen` control, then closes the menu. Icons follow `fullscreenchange`
-     * for this mount’s container.
+     * for this mount's container.
      *
      * @param {HTMLElement} container
      */

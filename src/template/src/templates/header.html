@@ -2,32 +2,38 @@
     $include('./templates/head.html');
 </script>
 
-<header class="site-header">
-    <div class="site-header__row">
-        <div class="site-header__intro">
+<div class="content-grid">
+<header class="full-width">
+    <div class="inner">
+        <div class="brand">
             <nav>
                 <h1>Welcome to JamsEdu</h1>
                 <p>A simple static site generator</p>
             </nav>
         </div>
-        <fieldset class="color-mode-toggle" aria-label="Color scheme">
-            <legend>Color scheme</legend>
-            <input id="theme-light" name="theme-preference" type="radio" value="light">
-            <label for="theme-light">
-                <span aria-hidden="true">☀️</span>
-                <span class="visually-hidden">Light</span>
-            </label>
-            <input id="theme-dark" name="theme-preference" type="radio" value="dark">
-            <label for="theme-dark">
-                <span aria-hidden="true">🌙</span>
-                <span class="visually-hidden">Dark</span>
-            </label>
-            <input checked id="theme-system" name="theme-preference" type="radio" value="system">
-            <label for="theme-system">
-                <span aria-hidden="true">⚙️</span>
-                <span class="visually-hidden">System default</span>
-            </label>
-        </fieldset>
+        <!-- Duplicate this `details.theme-menu` block (e.g. footer). Default + persisted `checked` state comes from `theme-preference.js`; do not put `checked` on these inputs. -->
+        <details class="theme-menu">
+            <summary class="theme-control">
+                <span class="visually-hidden">Color scheme</span>
+            </summary>
+            <div class="theme-extra" role="group" aria-label="Choose color scheme">
+                <label class="theme-control theme-pick" data-theme-pick="light">
+                    <input name="theme-preference" type="radio" value="light">
+                    <span aria-hidden="true">☀️</span>
+                    <span class="visually-hidden">Light</span>
+                </label>
+                <label class="theme-control theme-pick" data-theme-pick="system">
+                    <input name="theme-preference" type="radio" value="system">
+                    <span aria-hidden="true">⚙️</span>
+                    <span class="visually-hidden">System default</span>
+                </label>
+                <label class="theme-control theme-pick" data-theme-pick="dark">
+                    <input name="theme-preference" type="radio" value="dark">
+                    <span aria-hidden="true">🌖</span>
+                    <span class="visually-hidden">Dark</span>
+                </label>
+            </div>
+        </details>
     </div>
 </header>
 <main>

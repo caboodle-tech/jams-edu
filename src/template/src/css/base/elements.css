@@ -1,107 +1,437 @@
-/* @jamsedu-version: 1.1.0 */
+/* @jamsedu-version: 2.1.13 */
 /* @jamsedu-component: elements-css */
-@layer base {
-    :where(body) {
-        margin: 0;
-        font-family: var(--font-family-sans);
-        font-size: var(--font-size-md);
-        line-height: var(--line-height-lg);
-        color: var(--color-text);
-        background-color: var(--color-bg);
-    }
+/* --- Document surface --- */
+:where(body) {
+    margin: 0;
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-md);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
 
-    :where(a) {
+:where(main) {
+    margin-block: var(--space-gutter);
+    margin-inline: 0;
+
+    @media (min-width: 768px) {
+        margin-block: calc(var(--space-gutter) * 2);
+    }
+}
+
+/* --- Navigation chrome --- */
+:where(.breadcrumb) {
+    margin: 0 0 var(--margin-md) 0;
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-md);
+    color: color-mix(in srgb, var(--color-text) 72%, transparent);
+
+    & a {
         color: var(--color-link);
         text-decoration: none;
+        cursor: pointer;
         transition: color var(--transition-base);
     }
 
-    :where(a:hover) {
+    & a:hover {
         color: var(--color-link-hover);
     }
+}
 
-    :where(h1) {
-        font-size: var(--font-size-4xl);
-        line-height: var(--line-height-4xl);
-    }
+/* --- Links (flat `:where(a)` / `:where(a:hover)` keeps zero specificity) --- */
+:where(a) {
+    color: var(--color-link);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color var(--transition-base);
+}
 
-    :where(h2) {
-        font-size: var(--font-size-3xl);
-        line-height: var(--line-height-3xl);
-    }
+:where(a:hover) {
+    color: var(--color-link-hover);
+}
 
-    :where(h3) {
-        font-size: var(--font-size-2xl);
-        line-height: var(--line-height-2xl);
-    }
+/* --- Icons in prose / chrome --- */
+:where(p, main, footer, header) svg.icon {
+    flex-shrink: 0;
+    display: inline-block;
+    overflow: visible;
+    vertical-align: middle;
+    transform: translateY(calc(-1 * var(--icon-size-xs) / 8));
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+}
 
-    :where(h4) {
-        font-size: var(--font-size-xl);
-        line-height: var(--line-height-xl);
-    }
+/* --- Headings (base, main chrome, scale; keep here) --- */
+:where(h1, h2, h3, h4, h5, h6) {
+    margin-block: 0 var(--margin-md);
+    margin-inline: 0;
+    text-transform: capitalize;
+    text-wrap: balance;
+}
 
-    :where(h5) {
-        font-size: var(--font-size-lg);
-        line-height: var(--line-height-lg);
-    }
+:where(main > h1:first-child) {
+    margin-block: 0 var(--margin-md);
+    padding-block-end: var(--padding-md);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
+}
 
-    :where(h6) {
-        font-size: var(--font-size-md);
-        line-height: var(--line-height-md);
-    }
+/**
+ * Block-start spacing for in-flow headings. Avoid `:first-child` / `:last-child` on the
+ * heading itself: inside `section` / `article` the first (or last) child is often a heading,
+ * which wrongly skipped the old rule and left `margin-block-start: 0` from the base rule above.
+ *
+ * - Direct children of `main` (`h2`–`h6`): skip only when the heading is `main`'s first child.
+ * - Direct children of any `section` under `main` (any `h1`–`h6`): doc sections, not `.card-grid` articles.
+ */
+:where(main > :is(h2, h3, h4, h5, h6):not(:first-child)),
+:where(main section > :is(h1, h2, h3, h4, h5, h6)) {
+    margin-block-start: var(--margin-xl);
 
-    :where(kbd) {
-        background-color: var(--color-surface);
-        border-radius: var(--radius-sm);
-        border: 1px solid var(--color-border);
-        box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
-        font-family: var(--font-family-mono);
-        font-size: var(--font-size-md);
-        font-weight: bold;
-        margin: 0 2px;
-        padding: 2px 5px;
+    @media (min-width: 768px) {
+        margin-block-start: calc(var(--margin-xl) * 2);
     }
+}
 
-    :where(.table-container) {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
+:where(h1) {
+    font-size: var(--font-size-4xl);
+    line-height: var(--line-height-4xl);
+    letter-spacing: -0.02em;
+}
 
-    :where(table) {
-        border-collapse: collapse;
-        width: 100%;
-    }
+:where(h2) {
+    font-size: var(--font-size-3xl);
+    line-height: var(--line-height-3xl);
+    letter-spacing: -0.018em;
+}
 
-    :where(thead th) {
-        font-weight: bold;
-        padding: var(--table-cell-padding-y) var(--table-cell-padding-x)
-            var(--table-cell-padding-y) var(--font-size-xs);
-        text-align: left;
-    }
+:where(h3) {
+    font-size: var(--font-size-2xl);
+    line-height: var(--line-height-2xl);
+    letter-spacing: -0.015em;
+}
 
-    :where(tbody) {
-        border-top: 1px solid var(--color-border);
-        border-bottom: 1px solid var(--color-border);
-    }
+:where(h4) {
+    font-size: var(--font-size-xl);
+    line-height: var(--line-height-xl);
+    letter-spacing: -0.01em;
+}
 
-    :where(tbody tr:nth-child(odd)) {
-        background-color: color-mix(in srgb, var(--color-surface) 88%, var(--color-border));
-    }
+:where(h5) {
+    font-size: var(--font-size-lg);
+    line-height: var(--line-height-lg);
+}
 
-    :where(td) {
-        min-width: 125px;
-        padding: var(--table-cell-padding-y) var(--table-cell-padding-x)
-            var(--table-cell-padding-y) var(--font-size-xs);
-        vertical-align: top;
-        white-space: nowrap;
-    }
+:where(h6) {
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-md);
+}
 
-    :where(code) {
-        background-color: color-mix(in srgb, var(--color-surface) 92%, var(--color-border));
-        padding: 0.2rem 0.4rem;
-        border-radius: var(--radius-sm);
-        color: var(--color-accent-hover);
-        font-family: var(--font-family-mono);
-        font-size: 0.9em;
-    }
+/* --- Lists & paragraphs --- */
+:where(p, ul, ol) {
+    margin-block: 0 var(--margin-md);
+}
+
+:where(ul, ol) {
+    padding-inline-start: 2.4rem;
+    list-style-position: outside;
+}
+
+:where(li) {
+    margin-block: 0 var(--margin-xs);
+}
+
+:where(li:last-child) {
+    margin-block-end: 0;
+}
+
+/**
+ * Definition lists in `main`:
+ * - Default: glossary rows (spaced pairs, indented definitions) for long lists.
+ * - `class="card"` or `class="cards"` on `dl`: each `div` is an inset card (same chrome as blockquotes).
+ * Use one `div` per `dt` + `dd` pair (valid HTML5).
+ */
+:where(main dl) {
+    margin: 0 0 var(--margin-md) 0;
+    padding: 0;
+}
+
+/* --- Card layout (opt-in) --- */
+:where(main dl.card > div),
+:where(main dl.cards > div) {
+    color: var(--color-text);
+    background-color: var(--color-prose-card-bg);
+    border: var(--border-prose-card);
+    border-inline-start: var(--border-inline-accent-width) solid var(--color-border-inline-accent);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    margin-block-end: var(--spacing-lg);
+    padding: var(--padding-sm) var(--padding-md);
+}
+
+:where(main dl.card > div:last-child),
+:where(main dl.cards > div:last-child) {
+    margin-block-end: 0;
+}
+
+/* --- Default glossary layout --- */
+:where(main dl:not(.card):not(.cards) > div) {
+    margin: 0;
+    margin-block-end: var(--spacing-md);
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+:where(main dl:not(.card):not(.cards) > div:last-child) {
+    margin-block-end: 0;
+}
+
+:where(main dl.card > div) dt,
+:where(main dl.cards > div) dt,
+:where(main dl:not(.card):not(.cards) > div) dt {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 var(--spacing-xs) 0;
+}
+
+:where(main dl.card > div) dt small,
+:where(main dl.cards > div) dt small,
+:where(main dl:not(.card):not(.cards) > div) dt small {
+    font-size: smaller;
+    font-weight: 500;
+    margin-inline-start: var(--spacing-xs);
+}
+
+:where(main dl.card > div) dd,
+:where(main dl.cards > div) dd {
+    line-height: var(--line-height-md);
+    margin: 0;
+    padding: 0;
+}
+
+:where(main dl:not(.card):not(.cards) > div) dd {
+    line-height: var(--line-height-md);
+    margin: 0;
+    padding: 0;
+    padding-inline-start: var(--spacing-md);
+}
+
+:where(main dl:not(.card):not(.cards) > dt) {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-block: var(--spacing-md) var(--spacing-xs);
+    margin-inline: 0;
+    padding: 0;
+}
+
+:where(main dl:not(.card):not(.cards) > dt:first-child) {
+    margin-block-start: 0;
+}
+
+:where(main dl:not(.card):not(.cards) > dt) small {
+    font-size: smaller;
+    font-weight: 500;
+    margin-inline-start: var(--spacing-xs);
+}
+
+:where(main dl:not(.card):not(.cards) > dd) {
+    line-height: var(--line-height-md);
+    margin: 0 0 var(--spacing-md) 0;
+    padding: 0;
+    padding-inline-start: var(--spacing-md);
+}
+
+:where(main dl:not(.card):not(.cards) > dd:last-of-type) {
+    margin-block-end: 0;
+}
+
+/* --- Block media --- */
+:where(hr, figure, blockquote, pre) {
+    margin-block: 0 var(--margin-md);
+}
+
+/**
+ * Pull quotes in page prose (`main` only). Rich Text blockquotes keep their own rules under
+ * `.tiny-wysiwyg-container` (see `tiny-wysiwyg.css`).
+ */
+:where(main blockquote) {
+    position: relative;
+    margin-block: 0 var(--margin-md);
+    margin-inline: 0;
+    padding-block: var(--padding-md);
+    padding-inline: var(--padding-md) var(--padding-md);
+    padding-inline-start: calc(var(--padding-lg) + var(--spacing-sm));
+    border-inline-start: var(--border-inline-accent-width) solid var(--color-border-inline-accent);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-prose-card-bg);
+    color: var(--color-text);
+}
+
+:where(main blockquote)::before {
+    content: '\201C';
+    position: absolute;
+    inset-inline-start: var(--spacing-sm);
+    inset-block-start: var(--spacing-xs);
+    font-family: Georgia, 'Times New Roman', ui-serif, serif;
+    font-size: clamp(3rem, 5vw, 4.2rem);
+    line-height: 1;
+    color: color-mix(in srgb, var(--color-text) 18%, var(--color-border));
+    pointer-events: none;
+    user-select: none;
+}
+
+:where(main blockquote) p {
+    margin-block: 0 var(--spacing-sm);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-lg);
+}
+
+:where(main blockquote) p:last-of-type {
+    margin-block-end: 0;
+}
+
+:where(main blockquote) cite {
+    display: block;
+    margin-block-start: var(--spacing-sm);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-sm);
+    font-style: normal;
+    color: var(--color-text-muted);
+}
+
+:where(main blockquote) cite a {
+    color: var(--color-link);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color var(--transition-base);
+}
+
+:where(main blockquote) cite a:hover {
+    color: var(--color-link-hover);
+}
+
+/**
+ * `pre` with `code` is styled by Highlight JS Lite (`hljsl.min.css`). Avoid extra padding or
+ * surfaces that fight the injected block chrome.
+ */
+:where(pre:not(:has(> code))) {
+    padding: var(--padding-md);
+    border-radius: var(--radius-sm);
+    overflow-x: auto;
+}
+
+:where(pre:has(> code)) {
+    padding: 0;
+    border-radius: 4px;
+    overflow-x: auto;
+    background-color: transparent;
+}
+
+:where(kbd) {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-md);
+    font-weight: bold;
+    margin: 0 var(--padding-xxs);
+    padding: var(--padding-xxs) var(--spacing-xs);
+}
+
+/* --- Tables --- */
+:where(.table-container) {
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+/**
+ * Prose tables only. Highlight JS Lite uses `table.hljsl-table` (and `pre.hljsl`); those must
+ * not pick up document table chrome or cell padding from this sheet.
+ */
+:where(table:not(.hljsl-table)) {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+:where(table:not(.hljsl-table) thead th) {
+    font-weight: bold;
+    overflow-wrap: break-word;
+    padding: var(--table-cell-padding-y) var(--table-cell-padding-x)
+        var(--table-cell-padding-y) var(--font-size-md);
+    text-align: left;
+    vertical-align: top;
+    white-space: normal;
+    word-break: break-word;
+}
+
+:where(table:not(.hljsl-table) tbody) {
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+}
+
+:where(table:not(.hljsl-table) tbody tr:nth-child(odd)) {
+    background-color: color-mix(in srgb, var(--color-surface) 88%, var(--color-border));
+}
+
+:where(table:not(.hljsl-table) td) {
+    min-width: 0;
+    overflow-wrap: break-word;
+    padding: var(--table-cell-padding-y) var(--table-cell-padding-x)
+        var(--table-cell-padding-y) var(--font-size-md);
+    vertical-align: top;
+    white-space: normal;
+    word-break: break-word;
+}
+
+/**
+ * Scroll wide prose tables the same way at every viewport: intrinsic column widths
+ * (`table-layout: auto`, `width: max-content`) and horizontal overflow on the wrapper.
+ */
+:where(.table-container) table:not(.hljsl-table) {
+    max-width: none;
+    table-layout: auto;
+    width: max-content;
+}
+
+:where(.table-container) table:not(.hljsl-table) :is(td, th) {
+    min-width: 0;
+    overflow-wrap: break-word;
+    vertical-align: top;
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* --- Code: `pre code` is HLJSL; inline `:not(pre) > code` is prose only (theme `--color-code-*` only). --- */
+:where(pre code) {
+    background-color: transparent;
+    border: 0;
+    border-radius: 0;
+    color: inherit;
+    font-family: var(--font-family-mono);
+    font-size: inherit;
+    line-height: inherit;
+    padding: 0;
+}
+
+:where(:not(pre) > code) {
+    background-color: var(--color-code-bg);
+    border: 1px solid var(--color-code-border);
+    border-radius: 4px;
+    color: var(--color-code-fg);
+    font-family: var(--font-family-mono);
+    font-size: calc(var(--font-size-md) * 0.9);
+    padding: 0 0.25em;
+    white-space: break-spaces;
+}
+
+:where(p) {
+    text-wrap: pretty;
 }

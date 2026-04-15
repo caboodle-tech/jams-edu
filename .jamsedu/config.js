@@ -1,6 +1,6 @@
 export default {
     destDir: 'www/public',
     srcDir: 'www/private',
-    templateDir: 'www/src/templates',
+    templateDir: 'www/private/templates',
     assetsDir: 'assets'
 };

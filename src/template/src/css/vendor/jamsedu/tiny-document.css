@@ -1,45 +1,15 @@
-/* @jamsedu-version: 1.2.0 */
+/* @jamsedu-version: 1.4.0 */
 /* @jamsedu-component: tiny-document */
-@layer base, theme;
-
-@layer base {
-    .document {
+.document {
         position: relative;
-        font-size: 14pt;
-        line-height: 1.5;
+        font-family: var(--doc-font-family);
+        font-size: var(--doc-font-size);
+        line-height: var(--doc-line-height);
         max-width: 8.5in;
+        border-radius: var(--doc-border-radius);
+        box-shadow: var(--doc-box-shadow);
         margin: 0.75in auto;
         padding:0.15in  0.25in;
-
-        /* Shared values; override with `--doc-*` on `.document` or an ancestor */
-        --doc-border-radius: var(--doc-border-radius, var(--radius-sm, 4px));
-        --doc-font-size: var(--doc-font-size, var(--font-size, 14pt));
-        --doc-spacing: var(--doc-spacing, var(--spacing, 14pt));
-        --doc-line-height: var(--doc-line-height, var(--line-height, 1.5));
-
-        --doc-margin: var(--doc-margin, var(--margin, var(--doc-spacing, 14pt)));
-        --doc-padding: var(--doc-padding, var(--padding, var(--doc-spacing, 14pt)));
-
-        --doc-text-color: var(--doc-text-color, var(--color-text, #000000));
-        --doc-bg-color: var(--doc-bg-color, var(--color-surface, #ffffff));
-        --doc-border-color: var(--doc-border-color, var(--color-border, #bdbdbd));
-        --doc-border-color-light: var(--doc-border-color-light, var(--border-color-light, #e0e0e0));
-        --doc-placeholder-color: var(--doc-placeholder-color, var(--color-text-muted, #9e9e9e));
-        --doc-shadow: var(--doc-shadow, var(--shadow-elevated, 0 2px 8px rgba(0, 0, 0, 0.15)));
-        --doc-link-color: var(--doc-link-color, var(--color-link, #1976d2));
-        --doc-focus-color: var(--doc-focus-color, var(--color-accent, #2196f3));
-        --doc-focus-shadow: var(--doc-focus-shadow, var(--focus-shadow, 0 0 0 2px rgba(33, 150, 243, 0.2)));
-        --doc-primary-bg-color: var(--doc-primary-bg-color, var(--color-accent, #2196f3));
-        --doc-primary-text-color: var(--doc-primary-text-color, var(--primary-text-color, #ffffff));
-        --doc-primary-hover-bg-color: var(--doc-primary-hover-bg-color, var(--color-accent-hover, #1976d2));
-        --doc-primary-active-bg-color: var(--doc-primary-active-bg-color, var(--primary-active-bg-color, #1565c0));
-        --doc-danger-color: var(--doc-danger-color, var(--danger-color, #d32f2f));
-        --doc-danger-hover-color: var(--doc-danger-hover-color, var(--danger-hover-color, #b71c1c));
-
-        --doc-transition-smooth: var(--doc-transition-smooth, var(--transition-base, 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)));
-
-        border-radius: var(--doc-border-radius);
-        box-shadow: var(--doc-shadow);
         color: var(--doc-text-color);
 
         /* Box-sizing for all elements */
@@ -59,21 +29,21 @@
 
             &.doc-template-button,
             &.doc-download-button {
-                background: var(--doc-primary-bg-color);
-                color: var(--doc-primary-text-color);
+                background-color: var(--doc-btn-accent-bg, #2563eb);
+                color: var(--doc-btn-accent-fg, #ffffff);
                 border: none;
                 border-radius: var(--doc-border-radius);
                 padding: 7px 14px;
                 font-weight: 500;
-                transition: background var(--doc-transition-smooth), box-shadow var(--doc-transition-smooth);
+                transition: background-color var(--doc-transition-smooth), box-shadow var(--doc-transition-smooth);
 
                 &:hover {
-                    background: var(--doc-primary-hover-bg-color);
-                    box-shadow: var(--doc-shadow);
+                    background-color: var(--doc-btn-accent-bg-hover, #1d4ed8);
+                    box-shadow: var(--doc-box-shadow);
                 }
 
                 &:active {
-                    background: var(--doc-primary-active-bg-color);
+                    background-color: var(--doc-btn-accent-bg-active, #1e40af);
                 }
             }
         }
@@ -88,6 +58,7 @@
             position: relative;
             align-items: center;
             justify-content: center;
+            color: var(--doc-field-text-color, var(--jamsedu-seed-doc-field-ink, #0a0a0a));
 
             .count {
                 position: absolute;
@@ -95,17 +66,21 @@
                 font-size: var(--doc-font-size);
                 font-weight: bold;
                 pointer-events: none;
+                color: inherit;
             }
 
             input {
                 width: 100%;
                 cursor: pointer;
+                color-scheme: light;
             }
 
             svg {
                 position: absolute;
                 right: 5px;
                 pointer-events: none;
+                color: inherit;
+                stroke: currentColor;
             }
 
             &.empty {
@@ -202,7 +177,7 @@
             }
 
             &:hover::after {
-                content: '✕';
+                content: 'G??';
                 position: absolute;
                 top: 50%;
                 left: 50%;
@@ -222,22 +197,21 @@
             font-style: italic;
         }
 
-        .tw-content {
-            position: relative;
+        /* Room for outside markers; do not use `inside` (breaks hanging indent on wrapped `li` text). */
+        :where(ol, ul) {
+            list-style-position: outside;
+            padding-inline-start: 1.75em;
+            margin: 0 0 14pt 0;
+        }
 
-            &.tw-empty::before {
-                content: attr(data-placeholder);
-                color: var(--doc-placeholder-color);
-                pointer-events: none;
-                font-style: italic;
-            }
-
+        /* Rich editor: shell + placeholder live in `tiny-wysiwyg.css`; keep document rhythm here only */
+        .tiny-wysiwyg-container .tw-content {
             p {
-                margin: 0 0 7pt 0 !important;
+                margin: 0 0 var(--spacing-xs, 7pt) 0 !important;
             }
 
             blockquote {
-                margin: calc(var(--doc-margin) / 2) 0 !important;
+                margin: var(--spacing-xs) 0 !important;
             }
 
             h1, h2, h3, h4, h5, h6 {
@@ -255,7 +229,7 @@
         }
 
         a {
-            color: var(--doc-link-color);
+            color: var(--doc-link-color, #2563eb);
             text-decoration: none;
 
             &:hover {
@@ -315,12 +289,16 @@
             font-family: inherit;
             font-size: var(--doc-font-size);
             line-height: var(--doc-line-height);
-            padding: 4px 8px;
-            border: 1px solid var(--doc-border-color);
+            padding: 3px 6px;
+            border: 1px solid var(--doc-field-border-color, #a3a3a3);
             border-radius: var(--doc-border-radius);
-            background: var(--doc-bg-color);
+            background-color: var(--doc-field-bg-color, #f3f4f6);
+            color: var(--doc-field-text-color, #0a0a0a);
+            caret-color: var(--doc-field-text-color, #0a0a0a);
+            color-scheme: light;
             transition: border-color var(--doc-transition-smooth), box-shadow var(--doc-transition-smooth);
             outline: none;
+            /* Do not set -webkit-text-fill-color here; it forces placeholder text to match value color in WebKit */
 
             &:focus-visible {
                 border-color: var(--doc-focus-color);
@@ -329,26 +307,30 @@
         }
 
         input.doc-input[type="date"] {
-            color: var(--doc-text-color);
+            color: var(--doc-field-text-color, #0a0a0a);
         }
 
         input.doc-input[type="file"] {
             color: transparent;
+            -webkit-text-fill-color: transparent;
             border-style: dashed;
             padding: 7px;
 
             &::file-selector-button {
-                background-color: var(--doc-primary-bg-color);
+                background-color: var(--doc-btn-accent-bg, #2563eb);
                 border-radius: var(--doc-border-radius);
                 border: none;
-                color: var(--doc-primary-text-color);
+                color: var(--doc-btn-accent-fg, #ffffff);
+                -webkit-text-fill-color: var(--doc-btn-accent-fg, #ffffff);
                 cursor: pointer;
                 padding: 4px 8px;
-                transition: background var(--doc-transition-smooth);
+                font: inherit;
+                font-weight: 500;
+                transition: background-color var(--doc-transition-smooth);
             }
 
             &:hover::file-selector-button {
-                background-color: var(--doc-primary-hover-bg-color);
+                background-color: var(--doc-btn-accent-bg-hover, #1d4ed8);
             }
 
             &:focus-visible {
@@ -363,14 +345,16 @@
         input.doc-input[type="date"] {
             display: inline-block;
             min-width: 150px;
-            color: var(--doc-text-color);
+            color: var(--doc-field-text-color, #0a0a0a);
         }
 
-        /* Link input with popover */
+        /* Link input with popover (same color axis as .doc-file-wrapper: light scheme + field ink on wells) */
         .doc-link-wrapper {
             display: inline-flex;
             align-items: center;
             position: relative;
+            color-scheme: light;
+            color: var(--doc-field-text-color, var(--jamsedu-seed-doc-field-ink, #0a0a0a));
 
             &:has(.doc-link:not(.filled):not([placeholder])) {
                 .doc-link-icon {
@@ -388,12 +372,14 @@
             pointer-events: none;
             display: flex;
             align-items: center;
-            color: var(--doc-placeholder-color);
+            color: inherit;
             transition: color var(--doc-transition-smooth);
 
             svg {
                 width: 18px;
                 height: 18px;
+                stroke: currentColor;
+                forced-color-adjust: none;
             }
         }
 
@@ -404,29 +390,35 @@
         }
 
         input.doc-input.doc-link.filled {
-            color: var(--doc-link-color);
-            text-decoration: underline;
+            color: var(--doc-link-color, #2563eb);
+            -webkit-text-fill-color: var(--doc-link-color, #2563eb);
+            text-decoration: none;
         }
 
         input.doc-input.doc-link.filled ~ .doc-link-icon {
-            color: var(--doc-link-color);
+            color: var(--doc-link-color, #2563eb);
         }
 
         dialog.doc-link-popover {
-            border: 1px solid var(--doc-border-color);
+            border: 1px solid var(--doc-link-popover-border-color, #6b7280);
             border-radius: var(--doc-border-radius);
             padding: 16px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            box-shadow: var(--doc-link-popover-shadow, var(--doc-box-shadow));
             min-width: 300px;
             max-width: 500px;
             font-family: inherit;
             font-size: var(--doc-font-size);
-            background: var(--doc-bg-color);
-            color: var(--doc-text-color);
-            overflow: visible;
+            background-color: var(--doc-field-bg-color, #f3f4f6);
+            color: var(--doc-field-text-color, #0a0a0a);
+            /* Panel is always a light field well; keeps inherited site `--color-*` from darkening ink on controls */
+            color-scheme: light;
+            /* UA modal dialog can clip; keep offset close control paintable */
+            overflow: visible !important;
+            opacity: 1;
+            backdrop-filter: none;
 
             &::backdrop {
-                background: rgba(0, 0, 0, 0.15);
+                background: light-dark(rgb(15 23 42 / 0.35), rgb(0 0 0 / 0.55));
             }
         }
 
@@ -438,13 +430,15 @@
         .doc-link-popover-input {
             display: block;
             width: 100%;
-            border: 1px solid var(--doc-border-color);
+            border: 1px solid var(--doc-field-border-color, #a3a3a3);
             border-radius: var(--doc-border-radius);
             padding: 8px 10px;
             font-size: var(--doc-font-size);
             font-family: inherit;
-            background: var(--doc-bg-color);
-            color: var(--doc-text-color);
+            background-color: var(--doc-field-bg-color, #f3f4f6);
+            color: var(--doc-field-text-color, #0a0a0a);
+            caret-color: var(--doc-field-text-color, #0a0a0a);
+            color-scheme: light;
             margin-bottom: 8px;
             outline: none;
             transition: border-color var(--doc-transition-smooth), box-shadow var(--doc-transition-smooth);
@@ -464,45 +458,58 @@
 
         .doc-link-save,
         .doc-link-clear {
-            border: none;
             border-radius: var(--doc-border-radius);
             padding: 6px 16px;
             margin-top: 0;
-            font-size: calc(var(--doc-font-size) - 2pt);
+            font-size: var(--font-size-sm);
             cursor: pointer;
             font-family: inherit;
-            transition: background var(--doc-transition-smooth);
+            transition: background-color var(--doc-transition-smooth), border-color var(--doc-transition-smooth), color var(--doc-transition-smooth);
         }
 
         .doc-link-save {
-            background: var(--doc-primary-bg-color);
-            color: var(--doc-primary-text-color);
+            border: none;
+            background-color: var(--doc-btn-accent-bg, #2563eb);
+            color: var(--doc-btn-accent-fg, #ffffff);
 
             &:hover {
-                background: var(--doc-primary-hover-bg-color);
+                background-color: var(--doc-btn-accent-bg-hover, #1d4ed8);
             }
         }
 
         .doc-link-clear {
-            background: transparent;
-            border: 1px solid var(--doc-border-color);
-            color: var(--doc-text-color);
+            /* Native `button` borders are easy to lose cross-browser; outline-style stays visible on the light panel */
+            appearance: none;
+            box-sizing: border-box;
+            border: 1px solid var(--jamsedu-seed-state-error, #dc2626);
+            border-style: solid;
+            background-color: transparent;
+            color: var(--jamsedu-seed-state-error, #dc2626);
+            transition:
+                background-color var(--doc-transition-smooth),
+                border-color var(--doc-transition-smooth),
+                color var(--doc-transition-smooth);
 
             &:hover {
-                border-color: var(--doc-danger-color);
-                color: var(--doc-danger-color);
+                background-color: #fee2e2;
+                border-color: #991b1b;
+                color: #991b1b;
             }
         }
 
         .doc-link-cancel {
             position: absolute;
             top: -40px;
-            right:-40px;
-            border: 1px solid var(--doc-border-color);
+            right: -40px;
+            appearance: none;
+            box-sizing: border-box;
+            /* Match the light field well (same as inputs); do not use `--doc-bg-color` / `--doc-text-color` (site dark mode inks the wrong branch) */
+            border: 1px solid var(--doc-link-popover-border-color, #6b7280);
+            border-style: solid;
             border-radius: 50%;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-            background: var(--doc-bg-color);
-            color: var(--doc-text-color);
+            background-color: var(--doc-field-bg-color, #f3f4f6);
+            color: var(--doc-field-text-color, #0a0a0a);
             display: flex;
             height: 40px;
             width: 40px;
@@ -511,7 +518,7 @@
             margin: 0;
             padding: 0;
             cursor: pointer;
-            transition: background var(--doc-transition-smooth);
+            transition: background-color var(--doc-transition-smooth), border-color var(--doc-transition-smooth), color var(--doc-transition-smooth);
             pointer-events: auto;
 
             &:active {
@@ -519,7 +526,13 @@
             }
 
             &:hover {
-                background: var(--doc-border-color-light);
+                background-color: #ffffff;
+                border-color: var(--doc-focus-color, #2563eb);
+                color: var(--doc-link-color, #2563eb);
+            }
+
+            svg {
+                stroke: currentColor;
             }
         }
 
@@ -530,12 +543,18 @@
             max-width: 100%;
             margin: 6pt 0 14pt 0;
             cursor: pointer;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-color: var(--doc-field-bg-color, #f3f4f6);
+            color: var(--doc-field-text-color, #0a0a0a);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231a1a1a' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
             padding-right: 36px;
-            color: var(--doc-text-color);
             appearance: none;
+
+            option {
+                color: var(--doc-field-text-color, #0a0a0a);
+                background-color: var(--doc-field-bg-color, #ffffff);
+            }
 
             &:focus-visible {
                 border-color: var(--doc-focus-color);
@@ -549,12 +568,12 @@
 
         textarea.doc-textarea {
             width: 100%;
+            display: block;
             margin: 0 0 14pt 0;
             padding: 12px;
-            resize: vertical;
             min-height: 150px;
-            resize: none;
-            overflow: hidden;
+            resize: vertical;
+            overflow: auto;
         }
 
         /* Minimal responsive adjustments */
@@ -578,7 +597,7 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: var(--doc-font-family);
         }
 
         .document {
@@ -698,7 +717,7 @@
                 border: 1px solid #c5c5c5;
                 border-left: 4pt solid #c5c5c5;
                 background-color: #f4f4f4;
-                padding: 6pt 6pt 6pt calc(18pt + 20px);
+                padding: var(--doc-print-blockquote-padding);
                 margin: 12pt 0;
                 
                 &::before{
@@ -723,7 +742,7 @@
                 padding: 6pt;
                 border-radius: 2pt;
                 margin: 12pt 0;
-                font-family: 'Roboto Mono', 'Courier New', monospace;
+                font-family: var(--doc-font-family-mono);
                 font-size: 11pt;
                 border: 1px solid #c5c5c5;
                 white-space: pre-wrap;
@@ -731,59 +750,36 @@
             }
         }
     }
+
+.document input.doc-input[type="date"] {
+    color: var(--doc-field-text-color, #0a0a0a);
+    accent-color: var(--doc-link-color, #2563eb);
+    color-scheme: light;
 }
 
-@layer theme {
-    @media (prefers-color-scheme: dark) {
-        html:has(#theme-system:checked) .document {
-            --doc-text-color: var(--doc-text-color, var(--color-text, #e0e0e0));
-            --doc-bg-color: var(--doc-bg-color, var(--color-surface, #2a2a2a));
-            --doc-border-color: var(--doc-border-color, var(--color-border, #555555));
-            --doc-border-color-light: var(--doc-border-color-light, var(--border-color-light, #444444));
-            --doc-placeholder-color: var(--doc-placeholder-color, var(--color-text-muted, #888888));
-            --doc-shadow: var(--doc-shadow, 0 2px 8px rgba(0, 0, 0, 0.3));
-            --doc-link-color: var(--doc-link-color, var(--color-link, #5dade2));
-            --doc-focus-color: var(--doc-focus-color, var(--color-accent, #42a5f5));
-            --doc-focus-shadow: var(--doc-focus-shadow, var(--focus-shadow, 0 0 0 2px rgba(66, 165, 245, 0.3)));
-            --doc-primary-bg-color: var(--doc-primary-bg-color, var(--color-accent, #42a5f5));
-            --doc-primary-hover-bg-color: var(--doc-primary-hover-bg-color, var(--color-accent-hover, #1e88e5));
-            --doc-primary-active-bg-color: var(--doc-primary-active-bg-color, var(--primary-active-bg-color, #1565c0));
-            --doc-danger-color: var(--doc-danger-color, var(--danger-color, #ef5350));
-            --doc-danger-hover-color: var(--doc-danger-hover-color, var(--danger-hover-color, #c62828));
+.document input.doc-input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.85;
+}
 
-            background: var(--doc-bg-color);
-            color: var(--doc-text-color);
+/*
+ * Native placeholder styling: must stay lighter than `--doc-field-text-color`.
+ * Parent `-webkit-text-fill-color` on the control forces placeholder to match value color in WebKit; we omit it on inputs (see block above) and reinforce pseudos here for global sheet order.
+ */
+.document input.doc-input:not([type="file"])::placeholder,
+.document input.doc-input:not([type="file"])::-webkit-input-placeholder,
+.document textarea.doc-textarea::placeholder,
+.document textarea.doc-textarea::-webkit-input-placeholder,
+.document .doc-link-popover-input::placeholder,
+.document .doc-link-popover-input::-webkit-input-placeholder {
+    color: var(--doc-field-placeholder-color, #9ca3af);
+    -webkit-text-fill-color: var(--doc-field-placeholder-color, #9ca3af);
+    opacity: 1;
+}
 
-            input.doc-input[type="date"] {
-                color: var(--doc-text-color);
-                accent-color: var(--doc-text-color);
-
-                &::-webkit-calendar-picker-indicator {
-                    accent-color: var(--doc-text-color);
-                    cursor: pointer;
-                    filter: invert(100%);
-                }
-            }
-        }
-    }
-
-    html:has(#theme-dark:checked) .document {
-        --doc-text-color: var(--doc-text-color, var(--color-text, #e0e0e0));
-        --doc-bg-color: var(--doc-bg-color, var(--color-surface, #2a2a2a));
-        --doc-border-color: var(--doc-border-color, var(--color-border, #555555));
-        --doc-border-color-light: var(--doc-border-color-light, var(--border-color-light, #444444));
-        --doc-placeholder-color: var(--doc-placeholder-color, var(--color-text-muted, #888888));
-        --doc-shadow: var(--doc-shadow, 0 2px 8px rgba(0, 0, 0, 0.3));
-        --doc-link-color: var(--doc-link-color, var(--color-link, #5dade2));
-        --doc-focus-color: var(--doc-focus-color, var(--color-accent, #42a5f5));
-        --doc-focus-shadow: var(--doc-focus-shadow, var(--focus-shadow, 0 0 0 2px rgba(66, 165, 245, 0.3)));
-        --doc-primary-bg-color: var(--doc-primary-bg-color, var(--color-accent, #42a5f5));
-        --doc-primary-hover-bg-color: var(--doc-primary-hover-bg-color, var(--color-accent-hover, #1e88e5));
-        --doc-primary-active-bg-color: var(--doc-primary-active-bg-color, var(--primary-active-bg-color, #1565c0));
-        --doc-danger-color: var(--doc-danger-color, var(--danger-color, #ef5350));
-        --doc-danger-hover-color: var(--doc-danger-hover-color, var(--danger-hover-color, #c62828));
-
-        background: var(--doc-bg-color);
-        color: var(--doc-text-color);
-    }
+.document input.doc-input:not([type="file"])::-moz-placeholder,
+.document textarea.doc-textarea::-moz-placeholder,
+.document .doc-link-popover-input::-moz-placeholder {
+    color: var(--doc-field-placeholder-color, #9ca3af);
+    opacity: 1;
 }

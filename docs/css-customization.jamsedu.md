@@ -207,7 +207,7 @@ Override only for specific components:
 
 ## Dark Mode Support
 
-Vendor chrome follows the same theme as `tokens/colors.css`: `#theme-system` with `prefers-color-scheme: dark`, or `#theme-dark` on the header theme radios.
+Vendor chrome follows the same theme as `tokens/colors.css`. That sheet keys off the theme radios: `name="theme-preference"` with `value` set to `system`, `dark`, or `light`. Choosing `system` uses dark when `prefers-color-scheme` is dark; `dark` or `light` override the OS. You can duplicate the `.theme-menu` block (header and footer) because selectors use `name`/`value`, not element `id`s.
 
 You can customize dark mode colors (for example):
 

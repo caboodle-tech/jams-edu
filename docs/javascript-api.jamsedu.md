@@ -24,7 +24,7 @@ import { DomWatcher, TinyDocument, TinyWysiwyg } from './jamsedu/index.js';
 
 ## TinyDocument
 
-TinyDocument creates interactive document editors from elements with the `.document` class. For a comprehensive guide on all supported elements, attributes, and document authoring patterns, see the [TinyDocument Guide](./tiny-document_jamsedu.md).
+TinyDocument creates interactive document editors from elements with the `.document` class. For a comprehensive guide on all supported elements, attributes, and document authoring patterns, see the [TinyDocument Guide](./tiny-documents.jamsedu.md).
 
 ### Auto-Initialization
 

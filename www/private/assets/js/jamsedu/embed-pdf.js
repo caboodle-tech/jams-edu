@@ -1,4 +1,4 @@
-// @jamsedu-version: 1.2.5
+// @jamsedu-version: 1.6.1
 // @jamsedu-component: embed-pdf-js
 
 import './dom-watcher.js';
@@ -346,7 +346,7 @@ class EmbedPdfLoader {
     }
 
     /**
-     * Reads semantic `--_*` tokens from a mounted `.embed-pdf-container` for EmbedPDF `theme`.
+     * Reads `--pdf-*` tokens from a mounted `.embed-pdf-container` for EmbedPDF `theme`.
      *
      * @param {Element} el
      * @returns {Record<string, unknown>}
@@ -354,47 +354,47 @@ class EmbedPdfLoader {
     #themeFragmentFromElement(el) {
         const style = getComputedStyle(el);
         const accent = {
-            primary: this.#var(style, '--_accent-primary'),
-            primaryHover: this.#var(style, '--_accent-primary-hover'),
-            primaryActive: this.#var(style, '--_accent-primary-active'),
-            primaryLight: this.#var(style, '--_accent-primary-light'),
-            primaryForeground: this.#var(style, '--_accent-primary-foreground')
+            primary: this.#var(style, '--pdf-accent-primary'),
+            primaryHover: this.#var(style, '--pdf-accent-primary-hover'),
+            primaryActive: this.#var(style, '--pdf-accent-primary-active'),
+            primaryLight: this.#var(style, '--pdf-accent-primary-light'),
+            primaryForeground: this.#var(style, '--pdf-accent-primary-foreground')
         };
         const background = {
-            app: this.#var(style, '--_background-app'),
-            surface: this.#var(style, '--_background-surface'),
-            surfaceAlt: this.#var(style, '--_background-surface-alt'),
-            elevated: this.#var(style, '--_background-elevated'),
-            overlay: this.#var(style, '--_background-overlay'),
-            input: this.#var(style, '--_background-input')
+            app: this.#var(style, '--pdf-background-app'),
+            surface: this.#var(style, '--pdf-background-surface'),
+            surfaceAlt: this.#var(style, '--pdf-background-surface-alt'),
+            elevated: this.#var(style, '--pdf-background-elevated'),
+            overlay: this.#var(style, '--pdf-background-overlay'),
+            input: this.#var(style, '--pdf-background-input')
         };
         const foreground = {
-            primary: this.#var(style, '--_foreground-primary'),
-            secondary: this.#var(style, '--_foreground-secondary'),
-            muted: this.#var(style, '--_foreground-muted'),
-            disabled: this.#var(style, '--_foreground-disabled'),
-            onAccent: this.#var(style, '--_foreground-on-accent')
+            primary: this.#var(style, '--pdf-foreground-primary'),
+            secondary: this.#var(style, '--pdf-foreground-secondary'),
+            muted: this.#var(style, '--pdf-foreground-muted'),
+            disabled: this.#var(style, '--pdf-foreground-disabled'),
+            onAccent: this.#var(style, '--pdf-foreground-on-accent')
         };
         const interactive = {
-            hover: this.#var(style, '--_interactive-hover'),
-            active: this.#var(style, '--_interactive-active'),
-            selected: this.#var(style, '--_interactive-selected'),
-            focus: this.#var(style, '--_interactive-focus')
+            hover: this.#var(style, '--pdf-interactive-hover'),
+            active: this.#var(style, '--pdf-interactive-active'),
+            selected: this.#var(style, '--pdf-interactive-selected'),
+            focus: this.#var(style, '--pdf-interactive-focus')
         };
         const border = {
-            default: this.#var(style, '--_border-default'),
-            subtle: this.#var(style, '--_border-subtle'),
-            strong: this.#var(style, '--_border-strong')
+            default: this.#var(style, '--pdf-border-default'),
+            subtle: this.#var(style, '--pdf-border-subtle'),
+            strong: this.#var(style, '--pdf-border-strong')
         };
         const state = {
-            error: this.#var(style, '--_state-error'),
-            errorLight: this.#var(style, '--_state-error-light'),
-            warning: this.#var(style, '--_state-warning'),
-            warningLight: this.#var(style, '--_state-warning-light'),
-            success: this.#var(style, '--_state-success'),
-            successLight: this.#var(style, '--_state-success-light'),
-            info: this.#var(style, '--_state-info'),
-            infoLight: this.#var(style, '--_state-info-light')
+            error: this.#var(style, '--pdf-state-error'),
+            errorLight: this.#var(style, '--pdf-state-error-light'),
+            warning: this.#var(style, '--pdf-state-warning'),
+            warningLight: this.#var(style, '--pdf-state-warning-light'),
+            success: this.#var(style, '--pdf-state-success'),
+            successLight: this.#var(style, '--pdf-state-success-light'),
+            info: this.#var(style, '--pdf-state-info'),
+            infoLight: this.#var(style, '--pdf-state-info-light')
         };
         return this.#pruneDeep({
             accent,
@@ -403,6 +403,205 @@ class EmbedPdfLoader {
             interactive,
             border,
             state
+        });
+    }
+
+    /**
+     * Snippet Tailwind uses `--text-*` and `--spacing` in `rem`, both tied to **document** `html`.
+     * With `font-size: 62.5%`, toolbar labels and icon sizes (`h-*`, `gap-*`) collapse. We set a
+     * **single** scale on the **first** shadow host under the mount (main viewer shell only), not
+     * every nested shadow, so we do not stack extra width. Skip `--container-sm` (modal min-widths).
+     *
+     * @param {HTMLElement} container
+     */
+    #compensateSnippetTailwindRootRem(container) {
+        const props = [
+            ['--spacing', '0.4rem'],
+            ['--text-xs', '1.2rem'],
+            ['--text-sm', '1.4rem'],
+            ['--text-base', '1.6rem'],
+            ['--text-lg', '1.8rem'],
+            ['--text-xl', '2rem']
+        ];
+        const stamp = 'data-jamsedu-epdf-toolbar-rem';
+        const apply = () => {
+            if (!container.isConnected) {
+                return;
+            }
+            /** @type {Element[]} */
+            const queue = [...container.children];
+            while (queue.length) {
+                const el = queue.shift();
+                if (el instanceof HTMLElement) {
+                    if (el.shadowRoot) {
+                        const { host } = el.shadowRoot;
+                        if (host instanceof HTMLElement && !host.hasAttribute(stamp)) {
+                            host.setAttribute(stamp, '');
+                            for (const [key, value] of props) {
+                                host.style.setProperty(key, value);
+                            }
+                        }
+                        return;
+                    }
+                    for (let i = 0; i < el.children.length; i++) {
+                        const c = el.children[i];
+                        if (c instanceof Element) {
+                            queue.push(c);
+                        }
+                    }
+                }
+            }
+        };
+        apply();
+        [16, 80, 250, 600].forEach((ms) => {
+            setTimeout(apply, ms);
+        });
+    }
+
+    /**
+     * Snippet `bg-bg-app` is the main app surface. Default: vertical reading → `overflow-y: auto`,
+     * `overflow-x: hidden`. When the user switches to horizontal / spread layout, the first
+     * `display:flex` descendant under `bg-bg-app` typically becomes `flex-direction: row`; then use
+     * `overflow: auto` so horizontal panning works. MutationObserver on subtree/class/style only;
+     * no ResizeObserver on this node (resize from scrollbars re-applied overflow and broke thumb drag).
+     * Inline overflow is updated only when row vs column mode changes.
+     *
+     * @param {HTMLElement} container
+     */
+    #attachPdfBgAppOverflowSync(container) {
+        /** @type {MutationObserver | null} */
+        let mo = null;
+        let attached = false;
+        /** @type {string} */
+        let lastOverflowMode = '';
+
+        const disconnect = () => {
+            if (mo) {
+                mo.disconnect();
+                mo = null;
+            }
+            attached = false;
+            lastOverflowMode = '';
+        };
+
+        /**
+         * @param {Element} el
+         * @returns {boolean}
+         */
+        const isFlex = (el) => {
+            return el instanceof HTMLElement && getComputedStyle(el).display === 'flex';
+        };
+
+        /**
+         * @returns {HTMLElement | null}
+         */
+        const findBgApp = () => {
+            /** @type {(Element | ShadowRoot)[]} */
+            const q = [container];
+            while (q.length) {
+                const n = q.shift();
+                if (n instanceof Element) {
+                    if (n.classList.contains('bg-bg-app')) {
+                        return n;
+                    }
+                    if (n.shadowRoot) {
+                        q.push(n.shadowRoot);
+                    }
+                    for (let i = 0; i < n.children.length; i++) {
+                        q.push(n.children[i]);
+                    }
+                } else if (n instanceof ShadowRoot) {
+                    for (let i = 0; i < n.children.length; i++) {
+                        q.push(n.children[i]);
+                    }
+                }
+            }
+            return null;
+        };
+
+        /**
+         * @param {HTMLElement} rootEl
+         * @returns {HTMLElement | null}
+         */
+        const findFirstFlexDescendant = (rootEl) => {
+            /** @type {(Element | ShadowRoot)[]} */
+            const q = [];
+            for (let i = 0; i < rootEl.children.length; i++) {
+                q.push(rootEl.children[i]);
+            }
+            while (q.length) {
+                const n = q.shift();
+                if (n instanceof Element) {
+                    if (isFlex(n)) {
+                        return n;
+                    }
+                    if (n.shadowRoot) {
+                        q.push(n.shadowRoot);
+                    }
+                    for (let i = 0; i < n.children.length; i++) {
+                        q.push(n.children[i]);
+                    }
+                } else if (n instanceof ShadowRoot) {
+                    for (let i = 0; i < n.children.length; i++) {
+                        q.push(n.children[i]);
+                    }
+                }
+            }
+            return null;
+        };
+
+        const applyOverflow = () => {
+            if (!container.isConnected) {
+                disconnect();
+                return;
+            }
+            const bgApp = findBgApp();
+            if (!bgApp) {
+                return;
+            }
+            const flexEl = findFirstFlexDescendant(bgApp);
+            const dir = flexEl ? getComputedStyle(flexEl).flexDirection : '';
+            const rowish = dir === 'row' || dir === 'row-reverse';
+            const mode = !flexEl ? 'col' : rowish ? 'row' : 'col';
+            if (mode === lastOverflowMode) {
+                return;
+            }
+            lastOverflowMode = mode;
+            bgApp.style.overflow = '';
+            bgApp.style.overflowX = '';
+            bgApp.style.overflowY = '';
+            if (mode === 'row') {
+                bgApp.style.overflow = 'auto';
+            } else {
+                bgApp.style.overflowX = 'hidden';
+                bgApp.style.overflowY = 'auto';
+            }
+        };
+
+        const tryAttach = () => {
+            if (!container.isConnected || attached) {
+                return;
+            }
+            const bgApp = findBgApp();
+            if (!bgApp) {
+                return;
+            }
+            disconnect();
+            attached = true;
+            mo = new MutationObserver(() => {
+                requestAnimationFrame(applyOverflow);
+            });
+            mo.observe(bgApp, {
+                subtree: true,
+                childList: true,
+                attributes: true,
+                attributeFilter: ['class', 'style']
+            });
+            applyOverflow();
+        };
+
+        [0, 50, 150, 400, 1000, 2500].forEach((ms) => {
+            setTimeout(tryAttach, ms);
         });
     }
 
@@ -673,7 +872,7 @@ class EmbedPdfLoader {
                     btn.before(tooltip);
 
                     // Show the tooltip
-                    tooltip.style.transform = 'translateX(-25px)';
+                    tooltip.style.transform = 'translateX(-30px)';
                     const tooltipArrow = tooltip.querySelector('div');
                     if (tooltipArrow instanceof HTMLElement) {
                         tooltipArrow.style.left = '80%';
@@ -812,6 +1011,8 @@ class EmbedPdfLoader {
                 });
 
                 void this.#attachFullscreenProxy(container);
+                this.#compensateSnippetTailwindRootRem(container);
+                this.#attachPdfBgAppOverflowSync(container);
             } catch (err) {
                 console.error('[jamsedu/embed-pdf] EmbedPDF.init failed:', err);
                 if (kind === 'embed') {

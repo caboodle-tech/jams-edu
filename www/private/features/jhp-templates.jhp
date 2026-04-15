@@ -1,0 +1,118 @@
+<script>
+    const title = 'JHP Templates · JamsEDU';
+    const description = 'Author pages as .jhp files using compile time scripts, shared templates, output buffering, conditionals, and more with the JHP templating engine.';
+
+    $include('../templates/header.html');
+</script>
+
+<p class="breadcrumb"><a href="/index.html">Home</a> · <a href="/features/index.html">Docs</a> · JHP Templates</p>
+
+<h1>JHP Templates</h1>
+
+<p>
+    JamsEDU turns each <code>.jhp</code> file into static <code>.html</code> during the build. All <code>&lt;script&gt;</code> blocks without attributes are treated as JHP blocks and processed at compile time on the machine running the builder. They are never sent to the browser. If you need a script tag to reach the browser as actual front end JavaScript, add at least one attribute to it such as <code>&lt;script type="text/javascript"&gt;</code> and JHP will leave it alone.
+</p>
+<p>
+    JHP blocks are where you set page variables, pull in shared templates from your <code>templateDir</code> (see <a href="/features/configuration.html">Configuration</a>), use conditionals, buffer output, and emit values into your markup. The rest of the file is ordinary HTML with JHP directives mixed in where needed.
+</p>
+
+<section aria-labelledby="jhp-page-heading">
+    <h2 id="jhp-page-heading">Shape of a typical page</h2>
+    <p>
+        A common pattern is an opening script block that sets constants and includes your head and header templates, followed by your visible page content, and then a closing script that includes the footer. Variables declared with <code>const</code> or <code>let</code> in any JHP block are available to templates and to later <code>$echo</code> calls on the same page.
+    </p>
+    <pre><code class="html">
+        &lt;script&gt;
+            const title = 'Home';
+            const description = 'Welcome';
+            $include('./templates/header.html');
+        &lt;/script&gt;
+
+        &lt;h1&gt;Welcome&lt;/h1&gt;
+        &lt;p&gt;Page body.&lt;/p&gt;
+
+        &lt;script&gt;
+            $include('./templates/footer.html');
+        &lt;/script&gt;
+    </code></pre>
+    <p>
+        Paths inside <code>$include('…')</code> are resolved relative to the <strong>current</strong> <code>.jhp</code> file. A page under <code>features/</code> would typically reach shared templates with <code>$include('../templates/header.html')</code>, while a page at the project root would use <code>$include('./templates/header.html')</code>. Keep this consistent so includes stay predictable when you move files around.
+    </p>
+</section>
+
+<section aria-labelledby="jhp-partials-heading">
+    <h2 id="jhp-partials-heading">Partials and shared templates</h2>
+    <p>
+        Reusable fragments like your site header, footer, head wrapper, and navigation typically live under your template directory (<code>templateDir</code> in your configuration). These can be plain <code>.html</code> files or <code>.jhp</code> files if they need their own processing logic. The <code>.jhp</code> extension simply tells JamsEDU to process the file through JHP rather than treating it as a static asset. Each page includes the pieces it needs, so you edit shared markup in one place and every page that references it picks up the change on the next build.
+    </p>
+</section>
+
+<section aria-labelledby="jhp-directives-heading">
+    <h2 id="jhp-directives-heading">Built in directives</h2>
+    <p>
+        JHP provides a set of <code>$</code> functions that are available inside any JHP script block. Below are the most commonly used directives. For the full list of available directives and advanced usage, see the JS Hypertext Preprocessor <a href="https://github.com/caboodle-tech/jhp" rel="noopener noreferrer" target="_blank">(JHP) documentation</a>.
+    </p>
+    <dl>
+        <div>
+            <dt><code>$echo(content)</code></dt>
+            <dd>Outputs content directly into the compiled page at the point where it is called.</dd>
+        </div>
+        <div>
+            <dt><code>$include(path)</code></dt>
+            <dd>Inlines another file and processes it within the current context. Paths are relative to the file containing the call. Use it for layout wrappers and any shared fragment you want on multiple pages.</dd>
+        </div>
+        <div>
+            <dt><code>$define(key, value)</code></dt>
+            <dd>Defines a true constant. Displays an error if you attempt to redefine it in any context.</dd>
+        </div>
+        <div>
+            <dt><code>$if(condition)</code> / <code>$elseif(condition)</code> / <code>$else()</code> / <code>$end()</code></dt>
+            <dd>Conditional blocks that let you show or hide sections of markup based on variables or expressions. Every conditional chain must end with <code>$end()</code>.</dd>
+        </div>
+    </dl>
+    <p>Example of feeding a value into markup:</p>
+    <pre><code class="html">
+        &lt;script&gt;
+            const title = 'About us';
+        &lt;/script&gt;
+        &lt;title&gt;&lt;script&gt;$echo(title);&lt;/script&gt;&lt;/title&gt;
+    </code></pre>
+
+    <p>Example of conditional blocks:</p>
+    <pre><code class="html">
+        &lt;script&gt;
+            const status = 'draft';
+
+            $if(status === 'published');
+        &lt;/script&gt;
+
+        &lt;p&gt;This article was published and is available to all readers.&lt;/p&gt;
+
+        &lt;script&gt;
+            $elseif(status === 'draft');
+        &lt;/script&gt;
+
+        &lt;p class="notice"&gt;This article is still a draft and may change before publishing.&lt;/p&gt;
+
+        &lt;script&gt;
+            $else();
+        &lt;/script&gt;
+
+        &lt;p class="warning"&gt;This article has been archived and may contain outdated information.&lt;/p&gt;
+
+        &lt;script&gt;
+            $end();
+        &lt;/script&gt;
+    </code></pre>
+</section>
+
+<section aria-labelledby="jhp-upstream-heading">
+    <h2 id="jhp-upstream-heading">Full JHP documentation</h2>
+    <p>
+        JHP is maintained as its own project separate from JamsEDU. If you want to dive deeper into its full syntax, advanced features, and processing internals, you can find everything in the <a href="https://github.com/caboodle-tech/jhp" rel="noopener noreferrer" target="_blank">JHP repository</a>.
+    </p>
+</section>
+
+<script>
+    $include('../templates/footer.html');
+</script>

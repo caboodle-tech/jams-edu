@@ -1,4 +1,4 @@
-/* @jamsedu-version: 1.1.0 */
+/* @jamsedu-version: 1.3.0 */
 /* @jamsedu-component: main-css */
 @layer tokens, base, layout, components, utilities, vendor;
 
@@ -11,7 +11,6 @@
 @import './layout/primary.css' layer(layout);
 @import './layout/content-grid.css' layer(layout);
 @import './layout/columns-grid.css' layer(layout);
-@import './layout/header.css' layer(layout);
 @import './layout/footer.css' layer(layout);
 
 @import './components/callouts.css' layer(components);

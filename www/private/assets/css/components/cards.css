@@ -1,0 +1,87 @@
+/* @jamsedu-version: 1.2.1 */
+/* @jamsedu-component: link-cards-css */
+/**
+ * Docs-style grid: `<div class="card-grid">` plus either `<a class="link-card">` (whole tile links) or
+ * `<article class="content-card">` (title + paragraph; links only inside copy).
+ */
+.card-grid {
+    display: grid;
+    gap: var(--spacing-xl);
+    grid-template-columns: 1fr;
+    margin: 0 0 var(--spacing-lg) 0;
+
+    @media (min-width: 480px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media (min-width: 960px) {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.link-card {
+    display: block;
+    padding: var(--spacing-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    color: var(--color-text);
+    cursor: pointer;
+    background-color: var(--color-surface-muted);
+    box-shadow: var(--shadow-callout);
+    transition:
+        border-color var(--transition-base),
+        box-shadow var(--transition-base),
+        transform var(--transition-base),
+        color var(--transition-base);
+
+    &:hover {
+        border-color: var(--color-border-accent-hover);
+        box-shadow: var(--shadow-md);
+        transform: translateY(-1px);
+    }
+
+    & h2 {
+        margin: 0 0 var(--spacing-md) 0;
+        font-size: var(--font-size-lg);
+        line-height: var(--line-height-lg);
+        color: var(--color-link);
+    }
+
+    & p {
+        margin: 0;
+        font-size: var(--font-size-md);
+        line-height: var(--line-height-md);
+        color: var(--color-text-muted);
+    }
+
+    &:hover h2 {
+        color: var(--color-link-hover);
+    }
+}
+
+/**
+ * Same grid cell look as link cards, but for `<article class="content-card">` with in-flow links only.
+ */
+.content-card {
+    padding: var(--spacing-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-surface-muted);
+    box-shadow: var(--shadow-callout);
+
+    & h3 {
+        margin: 0 0 var(--spacing-md) 0;
+        font-size: var(--font-size-lg);
+        line-height: var(--line-height-lg);
+        font-weight: 600;
+        color: var(--color-text);
+    }
+
+    & p {
+        margin: 0;
+        font-size: var(--font-size-md);
+        line-height: var(--line-height-md);
+        color: var(--color-text-muted);
+    }
+}

@@ -1,144 +1,171 @@
-/* @jamsedu-version: 1.1.0 */
+/* @jamsedu-version: 1.2.0 */
 /* @jamsedu-component: color-mode-toggle-css */
 /**
- * Theme control: `.theme-hit` uses solid `--theme-toggle-*` tokens from `tokens/colors.css`.
- * `details.theme-menu` is shrink-wrapped so only the summary tile paints a frame, not the whole row.
+ * Theme control: `.theme-control` is the shared tile for the disclosure trigger and menu options.
+ * Scoped to `details.theme-menu` so this sheet does not depend on load order vs `details.css`.
  */
-@layer components {
-    /* Shrink-wrap: no full-width block box around the trigger. */
-    details.theme-menu {
-        position: relative;
-        display: inline-block;
-        width: max-content;
-        max-width: 100%;
-        margin: 0;
-        padding: 0;
-        border: none;
-        background: transparent;
-        flex-shrink: 0;
+
+/* Shrink-wrap: no full-width block box around the trigger. */
+details.theme-menu {
+    position: relative;
+    display: inline-block;
+    width: max-content;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    flex-shrink: 0;
+    box-shadow: none;
+    overflow: visible;
+    color: inherit;
+}
+
+details.theme-menu:focus,
+details.theme-menu:focus-visible {
+    outline: none;
+}
+
+/* Reset disclosure chrome leaked by older/other rules (chevron, panel frame). */
+details.theme-menu > summary.theme-control {
+    text-transform: none;
+    font-weight: normal;
+}
+
+details.theme-menu > summary.theme-control::after {
+    content: none;
+    display: none;
+    mask: none;
+    -webkit-mask: none;
+    width: 0;
+    height: 0;
+    margin: 0;
+}
+
+.theme-control {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    margin: 0;
+    padding: 0.35rem;
+    font-size: 1.35rem;
+    line-height: 1;
+    color: var(--header-text);
+    background-color: var(--theme-toggle-bg);
+    border: 1px solid var(--theme-toggle-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition:
+        background-color var(--transition-base),
+        border-color var(--transition-base);
+}
+
+.theme-control:hover {
+    background-color: var(--theme-toggle-bg-hover);
+    border-color: var(--theme-toggle-border-hover);
+}
+
+summary.theme-control {
+    list-style: none;
+    width: max-content;
+}
+
+summary.theme-control::-webkit-details-marker {
+    display: none;
+}
+
+summary.theme-control::marker {
+    content: '';
+}
+
+summary.theme-control:focus {
+    outline: none;
+}
+
+summary.theme-control:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+summary.theme-control::before {
+    content: '⚙️';
+}
+
+html:has(input[name='theme-preference'][value='light']:checked)
+    .theme-menu
+    summary.theme-control::before {
+    content: '☀️';
+}
+
+html:has(input[name='theme-preference'][value='dark']:checked)
+    .theme-menu
+    summary.theme-control::before {
+    content: '🌖';
+}
+
+.theme-extra {
+    position: absolute;
+    z-index: 50;
+    top: 100%;
+    margin-top: var(--spacing-xs);
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--spacing-xs);
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+}
+
+details.theme-menu:not([open]) > .theme-extra {
+    display: none;
+}
+
+details.theme-menu[open] > .theme-extra {
+    animation: theme-extra-reveal 0.2s ease-out;
+}
+
+@keyframes theme-extra-reveal {
+    from {
+        transform: translateY(-0.4rem);
     }
 
-    details.theme-menu:focus,
-    details.theme-menu:focus-visible {
-        outline: none;
+    to {
+        transform: translateY(0);
     }
+}
 
-    /* One visual tile: summary is only the button (emoji from ::before). */
-    .theme-hit {
-        box-sizing: border-box;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 2.75rem;
-        min-height: 2.75rem;
-        margin: 0;
-        padding: 0.35rem;
-        font-size: 1.35rem;
-        line-height: 1;
-        color: var(--header-text);
-        background-color: var(--theme-toggle-bg);
-        border: 1px solid var(--theme-toggle-border);
-        border-radius: var(--radius-sm);
-        cursor: pointer;
-        transition:
-            background-color var(--transition-base),
-            border-color var(--transition-base);
-    }
+.theme-pick {
+    position: relative;
+}
 
-    .theme-hit:hover {
-        background-color: var(--theme-toggle-bg-hover);
-        border-color: var(--theme-toggle-border-hover);
-    }
+.theme-pick input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+    pointer-events: none;
+}
 
-    summary.theme-hit {
-        list-style: none;
-        width: max-content;
-    }
+.theme-pick:has(input:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
 
-    summary.theme-hit::-webkit-details-marker {
-        display: none;
-    }
-
-    summary.theme-hit::marker {
-        content: '';
-    }
-
-    summary.theme-hit:focus {
-        outline: none;
-    }
-
-    summary.theme-hit:focus-visible {
-        outline: 2px solid var(--color-accent);
-        outline-offset: 2px;
-    }
-
-    summary.theme-hit::before {
-        content: '⚙️';
-    }
-
-    html:has(#theme-light:checked) .theme-menu summary.theme-hit::before {
-        content: '☀️';
-    }
-
-    html:has(#theme-dark:checked) .theme-menu summary.theme-hit::before {
-        content: '🌖';
-    }
-
-    .theme-extra {
-        position: absolute;
-        z-index: 50;
-        top: calc(100% + 0.35rem);
-        right: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 0.35rem;
-        padding: 0;
-        margin: 0;
-        background: none;
-        border: none;
-        box-shadow: none;
-    }
-
-    details.theme-menu:not([open]) > .theme-extra {
-        display: none;
-    }
-
-    details.theme-menu[open] > .theme-extra {
-        animation: theme-extra-reveal 0.2s ease-out;
-    }
-
-    @keyframes theme-extra-reveal {
-        from {
-            transform: translateY(-0.4rem);
-        }
-
-        to {
-            transform: translateY(0);
-        }
-    }
-
-    .theme-pick {
-        position: relative;
-    }
-
-    .theme-pick input {
-        position: absolute;
-        opacity: 0;
-        width: 0;
-        height: 0;
-        margin: 0;
-        pointer-events: none;
-    }
-
-    .theme-pick:has(input:focus-visible) {
-        outline: 2px solid var(--color-accent);
-        outline-offset: 2px;
-    }
-
-    details.theme-menu:has(#theme-light:checked) .theme-pick[data-theme-pick="light"],
-    details.theme-menu:has(#theme-system:checked) .theme-pick[data-theme-pick="system"],
-    details.theme-menu:has(#theme-dark:checked) .theme-pick[data-theme-pick="dark"] {
-        display: none;
-    }
+html:has(input[name='theme-preference'][value='light']:checked)
+    details.theme-menu
+    .theme-pick[data-theme-pick='light'],
+html:has(input[name='theme-preference'][value='system']:checked)
+    details.theme-menu
+    .theme-pick[data-theme-pick='system'],
+html:has(input[name='theme-preference'][value='dark']:checked)
+    details.theme-menu
+    .theme-pick[data-theme-pick='dark'] {
+    display: none;
 }

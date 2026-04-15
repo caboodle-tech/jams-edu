@@ -165,7 +165,7 @@ TinyDocument maintains the `selected` attribute on the active `<option>` so the 
 </select>
 ```
 
-The control has `doc-select` in the browser. The print copy shows the selected option’s visible label as text.
+The control has `doc-select` in the browser. The print copy shows the selected option's visible label as text.
 
 ### Textarea
 
@@ -259,7 +259,7 @@ Place repeatable markup inside `<template>`. The **immediate next sibling** must
 </ul>
 ```
 
-Each activation clones the template into a wrapper that includes a delete control; nested content is initialized the same way as the rest of the document. For nested repetition, include another `<template>` / `button.template` pair inside the outer template’s content.
+Each activation clones the template into a wrapper that includes a delete control; nested content is initialized the same way as the rest of the document. For nested repetition, include another `<template>` / `button.template` pair inside the outer template's content.
 
 The print copy removes add buttons, delete controls, and raw `<template>` elements. Only user-added blocks remain.
 

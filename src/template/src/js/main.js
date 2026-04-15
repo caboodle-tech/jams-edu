@@ -18,6 +18,27 @@ const jamsEduConfig = {
 
 initJamsEdu(jamsEduConfig);
 
+DomWatcher.watch(
+    '.theme-menu',
+    (elem) => {
+        const labels = elem.querySelectorAll('label.theme-control');
+
+        labels.forEach((label) => {
+            label.addEventListener('click', (evt) => {
+                evt.preventDefault();
+                try {
+                    localStorage.setItem('theme-preference', label.dataset.themePick);
+                } catch {
+                    /* ignore */
+                }
+                label.querySelector('input').checked = true;
+                elem.open = false;
+            });
+        });
+    },
+    500
+);
+
 /**
  * `DomWatcher` is also on `window` (see `dom-watcher.js`).
  *

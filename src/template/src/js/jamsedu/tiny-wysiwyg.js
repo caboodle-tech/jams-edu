@@ -131,6 +131,7 @@ class TinyWysiwyg {
         clearTimeout(this.cleanupDebounceTimer);
         this.cleanupDebounceTimer = setTimeout(() => {
             this.cleanHTML(this.editor);
+            this.syncEditorEmptyClass();
         }, 300);
     }
 
@@ -149,6 +150,31 @@ class TinyWysiwyg {
         selection.addRange(range);
     }
 
+    /**
+     * True when the editable region has no visible text (placeholder pseudo may show).
+     */
+    isEditorVisuallyEmpty() {
+        if (!this.editor) {
+            return true;
+        }
+        const text = this.editor.textContent.replace(/\u200b/g, '').replace(/\ufeff/g, '').trim();
+        return text.length === 0;
+    }
+
+    /**
+     * Toggles `tw-content` placeholder class; keeps CSS `::before` and `:focus` rules in sync.
+     */
+    syncEditorEmptyClass() {
+        if (!this.editor) {
+            return;
+        }
+        if (this.isEditorVisuallyEmpty()) {
+            this.editor.classList.add('tw-empty');
+        } else {
+            this.editor.classList.remove('tw-empty');
+        }
+    }
+
     createEditorStructure() {
         // Create container
         this.container = document.createElement('div');
@@ -164,8 +190,16 @@ class TinyWysiwyg {
         this.editor.contentEditable = 'true';
         this.editor.setAttribute('role', 'textbox');
         this.editor.setAttribute('aria-multiline', 'true');
-        this.editor.innerHTML = `<p>${this.textarea.value || this.textarea.placeholder || ''}</p>`;
+        this.editor.dataset.placeholder = this.textarea.placeholder || '';
+
+        const raw = (this.textarea.value || '').trim();
+        if (raw) {
+            this.editor.innerHTML = this.textarea.value;
+        } else {
+            this.editor.innerHTML = '<p><br></p>';
+        }
         this.container.appendChild(this.editor);
+        this.syncEditorEmptyClass();
 
         // Create reusable link modal (hidden by default)
         this.createLinkModal();
@@ -1308,6 +1342,7 @@ class TinyWysiwyg {
 
         // Record initial state
         this.recordHistory();
+        this.syncToTextarea();
 
         this.textarea.dataset.jamseduTw = '1';
     }
@@ -1384,6 +1419,8 @@ class TinyWysiwyg {
             selection.removeAllRanges();
             selection.addRange(range);
         }
+
+        this.syncToTextarea();
     }
 
     insertText(text) {
@@ -1401,6 +1438,8 @@ class TinyWysiwyg {
         range.collapse(true);
         selection.removeAllRanges();
         selection.addRange(range);
+
+        this.syncToTextarea();
     }
 
     recordHistory() {
@@ -1690,6 +1729,7 @@ class TinyWysiwyg {
 
     syncToTextarea() {
         this.textarea.value = this.editor.innerHTML;
+        this.syncEditorEmptyClass();
     }
 
     undo() {

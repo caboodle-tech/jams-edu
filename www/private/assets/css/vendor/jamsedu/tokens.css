@@ -1,0 +1,189 @@
+/* @jamsedu-version: 1.7.8 */
+/* @jamsedu-component: jamsedu-vendor-tokens */
+/**
+ * JamEdu vendor tokens (`www/private/assets/css/vendor/jamsedu/tokens.css`).
+ *
+ * Rule: **Do not reference `--pdf-*` from `--doc-*` / `--richtext-*` or from `tiny-wysiwyg.css`.**
+ * Shared surfaces, borders, and interaction paint live under **`--jamsedu-*`**. `--pdf-*` remains the public
+ * EmbedPDF API but aliases those shared values where they match.
+ */
+
+:root {
+    /*
+     * --- Seeds ---
+     */
+    --jamsedu-seed-pdf-canvas: #525659;
+    --jamsedu-seed-pdf-surface: #eeeeee;
+    --jamsedu-seed-doc-border: #bdbdbd;
+    --jamsedu-seed-doc-border-light: #e0e0e0;
+    --jamsedu-seed-doc-field-bg: #f3f4f6;
+    --jamsedu-seed-doc-field-border: #a3a3a3;
+    --jamsedu-seed-doc-field-ink: #0a0a0a;
+    --jamsedu-seed-paper: #ffffff;
+    --jamsedu-seed-shell: #f8fafc;
+    --jamsedu-seed-edge: #e2e8f0;
+    --jamsedu-seed-ink-muted: #64748b;
+    --jamsedu-seed-state-error: #dc2626;
+    --jamsedu-seed-state-warning: #d97706;
+    --jamsedu-seed-state-success: #16a34a;
+
+    /*
+     * --- JamEdu shared chrome (PDF, WYSIWYG, other vendors). Do not cross-link `--pdf` into richtext. ---
+     */
+    --jamsedu-surface-pane: light-dark(var(--jamsedu-seed-pdf-surface), var(--color-bg));
+    --jamsedu-surface-elevated: light-dark(var(--jamsedu-seed-paper), var(--color-surface));
+    --jamsedu-overlay: light-dark(rgb(0 0 0 / 0.45), rgb(0 0 0 / 0.65));
+    --jamsedu-ink-primary: var(--color-text);
+    --jamsedu-accent-primary: var(--color-accent);
+    --jamsedu-accent-primary-hover: var(--color-accent-hover);
+    --jamsedu-interactive-hover: color-mix(in srgb, var(--jamsedu-ink-primary) 7%, var(--jamsedu-surface-pane));
+    --jamsedu-interactive-active: color-mix(in srgb, var(--jamsedu-ink-primary) 11%, var(--jamsedu-surface-pane));
+    --jamsedu-interactive-selected: color-mix(in srgb, var(--jamsedu-accent-primary) 14%, var(--jamsedu-surface-pane));
+    --jamsedu-interactive-focus: var(--jamsedu-accent-primary);
+    --jamsedu-border-default: var(--color-border);
+    --jamsedu-border-subtle: color-mix(in srgb, var(--jamsedu-ink-primary) 5%, var(--jamsedu-surface-pane));
+
+    /*
+     * --- PDF: layout (public `--pdf-*` for EmbedPDF) ---
+     */
+    --pdf-width: 100%;
+    --pdf-height: 600px;
+    --pdf-min-height: 600px;
+    --pdf-margin: var(--margin-sm) 0;
+    --pdf-border-radius: var(--radius-md);
+    --pdf-shadow: var(--shadow-elevated);
+    --pdf-transition: var(--transition-base);
+
+    /*
+     * --- PDF: theme (aliases shared `--jamsedu-*` where aligned) ---
+     */
+    --pdf-background-app: light-dark(
+        var(--jamsedu-seed-pdf-canvas),
+        color-mix(in srgb, var(--color-text) 14%, var(--color-bg))
+    );
+    --pdf-background-surface: var(--jamsedu-surface-pane);
+    --pdf-snippet-host-fill: var(--pdf-background-surface);
+    --pdf-background-elevated: var(--jamsedu-surface-elevated);
+    --pdf-background-overlay: var(--jamsedu-overlay);
+    --pdf-background-input: var(--pdf-background-elevated);
+
+    --pdf-foreground-primary: var(--jamsedu-ink-primary);
+    --pdf-foreground-secondary: color-mix(in srgb, var(--pdf-foreground-primary) 78%, var(--pdf-background-elevated));
+    --pdf-foreground-muted: var(--color-text-muted);
+    --pdf-foreground-disabled: color-mix(in srgb, var(--pdf-foreground-muted) 65%, var(--pdf-background-surface));
+
+    --pdf-background-surface-alt: color-mix(in srgb, var(--pdf-foreground-primary) 6%, var(--pdf-background-surface));
+
+    --pdf-accent-primary: var(--jamsedu-accent-primary);
+    --pdf-accent-primary-hover: var(--jamsedu-accent-primary-hover);
+    --pdf-accent-primary-active: color-mix(in srgb, var(--pdf-accent-primary-hover) 88%, var(--pdf-accent-primary));
+    --pdf-accent-primary-light: color-mix(in srgb, var(--pdf-accent-primary) 18%, var(--pdf-background-elevated));
+    --pdf-accent-primary-foreground: light-dark(#ffffff, #e2e8f0);
+    --pdf-foreground-on-accent: light-dark(#ffffff, #e2e8f0);
+
+    --pdf-interactive-hover: var(--jamsedu-interactive-hover);
+    --pdf-interactive-active: var(--jamsedu-interactive-active);
+    --pdf-interactive-selected: var(--jamsedu-interactive-selected);
+    --pdf-interactive-focus: var(--jamsedu-interactive-focus);
+
+    --pdf-border-default: var(--jamsedu-border-default);
+    --pdf-border-subtle: var(--jamsedu-border-subtle);
+    --pdf-border-strong: color-mix(in srgb, var(--pdf-foreground-primary) 18%, var(--pdf-background-surface));
+    --pdf-card-border-color: light-dark(#64748b, #78716c);
+
+    --pdf-state-error: light-dark(var(--jamsedu-seed-state-error), oklch(from var(--jamsedu-seed-state-error) calc(l + 0.22) calc(c * 0.92) h));
+    --pdf-state-error-light: color-mix(in srgb, var(--pdf-state-error) 12%, var(--pdf-background-elevated));
+    --pdf-state-warning: light-dark(var(--jamsedu-seed-state-warning), oklch(from var(--jamsedu-seed-state-warning) calc(l + 0.2) calc(c * 0.95) h));
+    --pdf-state-warning-light: color-mix(in srgb, var(--pdf-state-warning) 14%, var(--pdf-background-elevated));
+    --pdf-state-success: light-dark(var(--jamsedu-seed-state-success), oklch(from var(--jamsedu-seed-state-success) calc(l + 0.2) calc(c * 0.95) h));
+    --pdf-state-success-light: color-mix(in srgb, var(--pdf-state-success) 12%, var(--pdf-background-elevated));
+    --pdf-state-info: color-mix(in srgb, var(--pdf-accent-primary) 92%, var(--pdf-foreground-primary));
+    --pdf-state-info-light: color-mix(in srgb, var(--pdf-accent-primary) 10%, var(--pdf-background-elevated));
+
+    /*
+     * --- Tiny document ---
+     */
+    --doc-font-family: var(--font-family-sans);
+    --doc-font-family-mono: var(--font-family-mono);
+    --doc-font-size: var(--font-size-editor);
+    --doc-spacing: var(--spacing-sm);
+    --doc-line-height: var(--line-height-lg);
+    --doc-field-stack-gap: var(--spacing-sm);
+    --doc-field-padding-block: var(--padding-xs);
+    --doc-field-padding-inline: var(--padding-sm);
+    --doc-border-radius: var(--radius-sm);
+    --doc-margin: var(--doc-spacing);
+    --doc-padding: var(--doc-spacing);
+    --doc-transition-smooth: var(--transition-smooth);
+
+    --jamsedu-accent-fallback: var(--color-accent);
+    --jamsedu-accent-hover-fallback: var(--color-accent-hover);
+
+    --doc-text-color: var(--color-text);
+    --doc-bg-color: var(--color-surface);
+    --doc-border-color: var(--color-border);
+    --doc-border-color-light: light-dark(var(--jamsedu-seed-doc-border-light), oklch(from var(--jamsedu-seed-doc-border-light) calc(l * 0.32) calc(c * 0.55) h));
+    --doc-placeholder-color: var(--color-text-muted);
+    --doc-box-shadow: var(--shadow-elevated);
+    --doc-link-color: var(--color-link);
+    --doc-focus-color: var(--color-accent);
+    --doc-focus-shadow: 0 0 0 2px color-mix(in srgb, var(--doc-focus-color) 35%, transparent);
+    --doc-danger-color: var(--color-danger);
+    --doc-danger-hover-color: var(--color-danger-hover);
+    --doc-link-popover-border-color: light-dark(#3f3f46, #a1a1aa);
+    --doc-link-popover-shadow-default: 0 2px 12px light-dark(rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.3)),
+        0 0 0 1px light-dark(rgb(0 0 0 / 0.05), rgb(255 255 255 / 0.08));
+    --doc-link-popover-shadow: var(--doc-link-popover-shadow-default);
+
+    --doc-field-bg-color: var(--jamsedu-seed-doc-field-bg);
+    --doc-field-border-color: var(--jamsedu-seed-doc-field-border);
+    --doc-field-text-color: var(--jamsedu-seed-doc-field-ink);
+    --doc-field-placeholder-color: color-mix(in srgb, var(--jamsedu-seed-doc-field-ink) 22%, var(--jamsedu-seed-doc-field-bg));
+
+    --doc-btn-accent-bg: var(--color-btn-accent-bg);
+    --doc-btn-accent-fg: var(--color-btn-accent-fg);
+    --doc-btn-accent-bg-hover: var(--color-btn-accent-bg-hover);
+    --doc-btn-accent-bg-active: var(--color-btn-accent-bg-active);
+
+    --doc-btn-danger-outline-bg: var(--color-btn-danger-outline-bg);
+    --doc-btn-danger-outline-bg-hover: var(--color-btn-danger-outline-bg-hover);
+    --doc-btn-danger-outline-border: var(--color-btn-danger-outline-border);
+    --doc-btn-danger-outline-border-hover: var(--color-btn-danger-outline-border-hover);
+    --doc-btn-danger-outline-fg: var(--color-btn-danger-outline-fg);
+
+    --doc-btn-neutral-bg: var(--doc-field-bg-color);
+    --doc-btn-neutral-bg-hover: color-mix(in srgb, var(--color-accent) 12%, var(--doc-field-bg-color));
+    --doc-btn-neutral-border: var(--doc-link-popover-border-color);
+    --doc-btn-neutral-border-hover: color-mix(in srgb, var(--color-accent) 38%, var(--doc-field-border-color));
+    --doc-btn-neutral-fg: var(--doc-field-text-color);
+
+    --doc-print-blockquote-padding: 6pt 6pt 6pt calc(18pt + 20px);
+
+    /*
+     * --- Rich text (WYSIWYG): composed from `--jamsedu-*` and site `--color-*`; never `--pdf-*` ---
+     */
+    --richtext-content-min-height: calc(2 * var(--line-height-lg) + 2 * var(--padding-sm));
+    --richtext-toolbar-separator-margin: 0.25rem;
+
+    --richtext-card-border-color: var(--color-border);
+    --richtext-toolbar-border-color: var(--jamsedu-border-default);
+    --richtext-content-bg-color: var(--jamsedu-surface-elevated);
+    --richtext-container-bg-color: var(--jamsedu-surface-pane);
+    --richtext-toolbar-bg-color: var(--jamsedu-surface-pane);
+    --richtext-toolbar-button-bg: transparent;
+    --richtext-toolbar-button-hover-bg: var(--jamsedu-interactive-hover);
+    --richtext-toolbar-button-border: transparent;
+    --richtext-separator-color: var(--jamsedu-border-subtle);
+    --richtext-button-text-color: var(--jamsedu-ink-primary);
+    --richtext-blockquote-border-color: var(--color-border);
+    --richtext-blockquote-bg-color: color-mix(in srgb, var(--color-text) 4%, var(--richtext-content-bg-color));
+    --richtext-code-border-color: var(--color-code-border);
+    --richtext-placeholder-color: color-mix(in srgb, var(--color-text-muted) 52%, var(--richtext-content-bg-color));
+
+    --richtext-btn-accent-bg: var(--color-btn-accent-bg);
+    --richtext-btn-accent-fg: var(--color-btn-accent-fg);
+    --richtext-btn-accent-bg-hover: var(--color-btn-accent-bg-hover);
+    --richtext-danger-bg-color: var(--color-danger);
+    --richtext-danger-text-color: var(--color-btn-danger-fg);
+    --richtext-danger-hover-bg-color: color-mix(in srgb, var(--richtext-danger-bg-color) 88%, var(--color-text));
+}

@@ -1,9 +1,54 @@
-﻿/* @jamsedu-version: 1.0.2 */
+/* @jamsedu-version: 1.6.3 */
 /* @jamsedu-component: jamsedu-css */
-@import './tiny-document.css';
-@import './tiny-wysiwyg.css';
-@import './embed-pdf.css';
+@import './tokens.css' layer(vendor);
+@import './tiny-document.css' layer(vendor);
+@import './embed-pdf.css' layer(vendor);
+@import './tiny-wysiwyg.css' layer(vendor);
 
-:where(pre.mermaid, div.math) {
+/**
+ * Non-`:where()` so these beat `.tiny-wysiwyg-container * { padding: 0 }`
+ * (vendor layer; zero-specificity selectors lose).
+ */
+pre.mermaid,
+div.math {
     text-align: center;
+}
+
+/**
+ * KaTeX block: slight scale.
+ */
+div.math {
+    font-size: 1.07em;
+}
+
+/**
+ * Inline math: code-like surface on the host (`.math` + `.inline`).
+ * Non-`:where()` beats `.tiny-wysiwyg-container *`.
+ */
+:is(.math.inline, .inline.math) {
+    font-size: 1.07em;
+    background-color: color-mix(in srgb, var(--color-surface) 92%, var(--color-border));
+    padding: var(--code-padding-y) var(--code-padding-x);
+    border-radius: var(--radius-sm);
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+}
+
+/**
+ * Mermaid uses the light `default` theme from JS. In dark UI, invert + hue-rotate on the rendered SVG
+ * approximates a dark diagram (see `defaultJamsEduConfig.mermaid.theme` in `jamsedu/index.js`).
+ * `:has(svg)` applies the filter only after render, not to plain `pre` source.
+ */
+@media (prefers-color-scheme: dark) {
+    html:has(input[name='theme-preference'][value='system']:checked) {
+        & pre.mermaid:has(svg) {
+            filter: invert(1) hue-rotate(180deg);
+        }
+    }
+}
+
+html:has(input[name='theme-preference'][value='dark']:checked) {
+    & pre.mermaid:has(svg) {
+        filter: invert(1) hue-rotate(180deg);
+    }
 }
