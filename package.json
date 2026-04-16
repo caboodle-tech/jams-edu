@@ -1,6 +1,6 @@
 {
     "name": "@caboodle-tech/jamsedu",
-    "version": "5.0.1",
+    "version": "5.1.0",
     "bin": {
         "jamsedu": "bin/cli.js"
     },
@@ -13,7 +13,7 @@
         "watch:debug": "node bin/cli.js --watch --verbose"
     },
     "dependencies": {
-        "@caboodle-tech/jhp": "^3.6.0",
+        "@caboodle-tech/jhp": "^3.7.0",
         "@caboodle-tech/node-simple-server": "^4.3.0"
     },
     "devDependencies": {

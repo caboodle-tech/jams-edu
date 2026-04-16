@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@caboodle-tech/jhp':
-        specifier: ^3.6.0
-        version: 3.6.0
+        specifier: ^3.7.0
+        version: 3.7.0
       '@caboodle-tech/node-simple-server':
         specifier: ^4.3.0
         version: 4.3.0
@@ -30,8 +30,8 @@ importers:
 
 packages:
 
-  '@caboodle-tech/jhp@3.6.0':
-    resolution: {integrity: sha512-KYS2HjZoqhHVjrbLeieXtI7AawDX/obZIuPghf05tv1zKMoAI2XKiZ4V/GKZFxWiB9K2z9Py5ZvzjlqQcQkkeg==}
+  '@caboodle-tech/jhp@3.7.0':
+    resolution: {integrity: sha512-78uaAEKONDyhBQwG9O0tf/kvk33EZ028/jKJ2HRizor5ZEBG89PJGlKIlMr61HmazPu4n7zGqy3C+d5iQznXwg==}
 
   '@caboodle-tech/node-simple-server@4.3.0':
     resolution: {integrity: sha512-r9aBk3Crwmh746wQzDC0S2j0m5s3c+0ojDBdKX6X8mhFg828S40U+dNVvKbfpoX34mQJUqw2bZ6dUkZqBFDGLQ==}
@@ -437,7 +437,7 @@ packages:
 
 snapshots:
 
-  '@caboodle-tech/jhp@3.6.0':
+  '@caboodle-tech/jhp@3.7.0':
     dependencies:
       '@caboodle-tech/simple-html-parser': 2.7.0
       acorn-loose: 8.5.2
