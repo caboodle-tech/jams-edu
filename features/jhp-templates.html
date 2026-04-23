@@ -80,18 +80,18 @@
         &lt;script&gt;
             const title = 'Home';
             const description = 'Welcome';
-            $include('./templates/header.html');
+            $include('/header.html');
         &lt;/script&gt;
 
         &lt;h1&gt;Welcome&lt;/h1&gt;
         &lt;p&gt;Page body.&lt;/p&gt;
 
         &lt;script&gt;
-            $include('./templates/footer.html');
+            $include('/footer.html');
         &lt;/script&gt;
     </code></pre>
     <p>
-        Paths inside <code>$include('…')</code> are resolved relative to the <strong>current</strong> <code>.jhp</code> file. A page under <code>features/</code> would typically reach shared templates with <code>$include('../templates/header.html')</code>, while a page at the project root would use <code>$include('./templates/header.html')</code>. Keep this consistent so includes stay predictable when you move files around.
+        JamsEdu uses JHP 3.9+ and passes an ordered <code>includeSearchRoots</code> list (your <code>templateDir</code>, then <code>srcDir</code>) so a path that starts with <code>/</code> loads from those directories without long <code>../</code> chains. A path with no leading slash still resolves from the <strong>current</strong> <code>.jhp</code> file first, then the search roots. A path that starts with <code>../</code> is resolved only from the including file&rsquo;s directory. A page under <code>features/</code> can still use <code>$include('../templates/header.html')</code> if you prefer explicit relatives; see the JHP &ldquo;Include paths&rdquo; section for full detail.
     </p>
 </section>
 <section aria-labelledby="jhp-partials-heading">
@@ -112,7 +112,7 @@
         </div>
         <div>
             <dt><code>$include(path)</code></dt>
-            <dd>Inlines another file and processes it within the current context. Paths are relative to the file containing the call. Use it for layout wrappers and any shared fragment you want on multiple pages.</dd>
+            <dd>Inlines another file and processes it within the current context. With JamsEdu, a leading <code>/</code> is resolved from your <code>templateDir</code> and <code>srcDir</code> (in that order). Other forms follow the current file&rsquo;s location and JHP&rsquo;s include rules. Use it for layout wrappers and any shared fragment you want on multiple pages.</dd>
         </div>
         <div>
             <dt><code>$define(key, value)</code></dt>

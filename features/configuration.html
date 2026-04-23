@@ -112,7 +112,7 @@
         </div>
         <div>
             <dt><code>templateDir</code> <small>Required</small></dt>
-            <dd>Directory the compiler searches when resolving shared HTML templates and includes. Typically a <code>templates</code> folder inside <code>srcDir</code>.</dd>
+            <dd>Directory for shared HTML partials (include-only). JamsEdu passes it to JHP as the <strong>first</strong> <code>includeSearchRoot</code> (before <code>srcDir</code>) so <code>$include('/…')</code> can resolve here. Typically a <code>templates</code> folder inside <code>srcDir</code>.</dd>
         </div>
         <div>
             <dt><code>websiteUrl</code> <small>Optional</small></dt>
