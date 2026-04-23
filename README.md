@@ -107,6 +107,10 @@ export default {
 | `post`        | No       | Array of hook functions run after the template process.                     |
 | `doNotCopy`   | No       | Array of file extensions to exclude from build output.                      |
 
+#### JHP `$include` paths (3.9+)
+
+JamsEdu depends on **@caboodle-tech/jhp** 3.9 or newer. On each build, it passes JHP the **`includeSearchRoots`** list derived from your config: your **`templateDir`** (when set and not identical to `srcDir`), then your **`srcDir`**. That lines up with a leading `/` in `$include('/partials.html')` searching those directories in order, after JHP’s own rules for the current file and for paths starting with `../`. You can still pass a custom `includePathResolver` through JamsEdu in the future if a project needs a different policy; the default is documented in [docs/jhp-templates.jamsedu.md](./docs/jhp-templates.jamsedu.md) and in the [JHP “Include paths”](https://github.com/caboodle-tech/jhp) section.
+
 ### Configuration Options
 
 #### `doNotCopy` (array)

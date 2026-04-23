@@ -62,18 +62,18 @@ By default, CSS, JS, and images are written under `destDir` with the same struct
 
 ### JHP Files
 
-Files with `.jhp` extension are processed by JHP and converted to `.html`:
+Files with `.jhp` extension are processed by JHP and converted to `.html`. JamsEdu passes an ordered `includeSearchRoots` list to JHP (See [JHP Templates Guide](./docs/jhp-templates.jamsedu.md#include-paths-in-jamsedu)). At the site root you can use root-style includes; inside deep folders you can still use relative paths.
 
 ```html
 <!-- src/index.jhp -->
 <script>
-    $include('./templates/header.html');
+    $include('/header.html');
 </script>
 
 <h1>Welcome</h1>
 
 <script>
-    $include('./templates/footer.html');
+    $include('/footer.html');
 </script>
 ```
 
@@ -111,5 +111,5 @@ Override JamsEdu components using CSS variables:
 - Check the [GitHub repository](https://github.com/caboodle-tech/jams-edu) for issues and discussions
 - Run `jamsedu --help` for CLI options
 
-Happy building! 🚀
+Happy building.
 

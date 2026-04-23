@@ -3,7 +3,7 @@
     const description =
         'JamsEDU builds static sites from JHP pages, compile-time hooks, and built-in features for math formulas, diagrams, editable text areas, code blocks, PDF viewing, and theming.';
 
-    $include('./templates/header.html');
+    $include('/header.html');
 </script>
 
 <h1>Welcome to JamsEDU</h1>
@@ -67,5 +67,5 @@
 </p>
 
 <script>
-    $include('./templates/footer.html');
+    $include('/footer.html');
 </script>

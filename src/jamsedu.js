@@ -44,7 +44,6 @@ export default class JamsEdu {
 
     #pendingWatchEvents = [];
 
-
     /**
      * Absolute path to the folder where include-only partials live (.jhp or HTML used only via
      * `$include`). Build and watch skip these files so nothing under this path is copied or emitted
@@ -196,8 +195,8 @@ export default class JamsEdu {
         }
         if (useCatchAll) {
             // Source may already be under assets (e.g. src/assets/css/...) so avoid double-prepending
-            const assetsPrefix = this.#assetsDir + Path.sep;
-            const assetsPrefixSlash = this.#assetsDir + '/';
+            const assetsPrefix = `${this.#assetsDir}${Path.sep}`;
+            const assetsPrefixSlash = `${this.#assetsDir}/`;
             if (normalized.startsWith(assetsPrefix) || normalized.startsWith(assetsPrefixSlash)) {
                 return Path.join(this.#destDir, normalized);
             }
@@ -268,8 +267,29 @@ export default class JamsEdu {
     #determineRelativePath(src) {
         const depth = Path.relative(this.#srcDir, Path.dirname(src))
             .split(Path.sep)
-            .reduce((count, part) => count + (part ? 1 : 0), 0);
+            .reduce((count, part) => {
+                return count + (part ? 1 : 0);
+            }, 0);
         return depth === 0 ? '' : '../'.repeat(depth);
+    }
+
+    /**
+     * Ordered roots for JHP 3.9+ built-in `$include` resolution (see `includeSearchRoots` in @caboodle-tech/jhp).
+     * Tries `templateDir` (partials) before `srcDir` when both differ.
+     *
+     * @returns {string[]} Non-empty list of absolute directory paths
+     */
+    #getIncludeSearchRoots() {
+        const src = Path.resolve(this.#srcDir);
+        const roots = [];
+        if (this.#templateDir) {
+            const t = Path.resolve(this.#templateDir);
+            if (t !== src) {
+                roots.push(t);
+            }
+        }
+        roots.push(src);
+        return roots;
     }
 
     /**
@@ -312,7 +332,11 @@ export default class JamsEdu {
             const cwd = Path.dirname(src);
             const relPath = this.#determineRelativePath(src);
             const content = Fs.readFileSync(src, 'utf8');
-            const processed = this.#JHP.process(content, { cwd, relPath });
+            const processed = this.#JHP.process(content, {
+                cwd,
+                relPath,
+                includeSearchRoots: this.#getIncludeSearchRoots()
+            });
             this.#writeFile(dest, processed);
         } else {
             this.#copyFile(src, dest);
@@ -368,9 +392,9 @@ export default class JamsEdu {
         Print.success('JamsEdu is now watching for changes and will reload automatically.');
         Print.warn('Press Ctrl+C to stop.');
         Print.info('Access your site at the following address(es):');
-        const addresses = this.#NSS.getAddresses().filter((addr) =>
-            addr.startsWith('http://localhost') || addr.startsWith('http://127.')
-        );
+        const addresses = this.#NSS.getAddresses().filter((addr) => {
+            return addr.startsWith('http://localhost') || addr.startsWith('http://127.');
+        });
         Print.info(`• ${addresses.join('\n• ')}`);
         Print.info('These addresses are meant for local network use only.');
     }

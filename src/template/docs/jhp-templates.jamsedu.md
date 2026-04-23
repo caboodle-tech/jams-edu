@@ -1,4 +1,4 @@
-<!-- @jamsedu-version: 5.0.0 -->
+<!-- @jamsedu-version: 5.1.0 -->
 <!-- @jamsedu-component: docs-jhp-templates -->
 # JHP Templates Guide
 
@@ -12,27 +12,58 @@ JHP (JavaScript HTML Processor) is the template engine that powers JamsEdu. It p
 2. **Processing**: JHP processes the file and outputs `.html` in your `destDir`
 3. **Template Variables**: You can use variables and includes in your `.jhp` files
 
+JamsEdu uses **@caboodle-tech/jhp** 3.9 or newer. The CLI passes **`includeSearchRoots`** to each `JHP` `process()` call: an **ordered** list of absolute directories, **`templateDir` first** (when it differs from `srcDir`), then **`srcDir`**. That list only affects **built-in** `$include` resolution; for full control, JHP also supports a custom `includePathResolver` (rare in JamsEdu projects).
+
+## Include paths in JamsEdu
+
+These rules describe how **`$include('…')`** is resolved with JamsEdu’s default setup (no custom resolver):
+
+| Path form | What happens |
+|------------|----------------|
+| Starts with `../` | Resolve **only** from the **including file’s directory** (JHP: parent-directory includes; no search roots). |
+| Starts with `/` (root-semantic) | Try the path **without the leading `/`** under each `includeSearchRoot` in order: **`templateDir`**, then **`srcDir`**. |
+| Other relative (e.g. `partials/x.html` or starts with `./`) | JHP tries the **current file’s directory** first, then the search roots, then a legacy fallback to the **page working directory** (`#rootDir`). |
+| `../` in the middle of a path | Normal path resolution; still constrained by the rules above. |
+
+**Practical takeaways:**
+
+- From **any** page, **`$include('/header.html')`** looks for `header.html` under your configured `templateDir` first, then under `srcDir`, so you do not have to count `../` segments for site-wide partials.
+- For pages in subfolders, you can still use **explicit relatives** (e.g. `$include('../templates/header.html')`) if you prefer; that resolves from the current file’s directory first.
+- Partials in **`templateDir`** (often `<your-src-dir>/templates/`) are the usual home for `header.html`, `footer.html`, and `head.html`.
+
+For the exact algorithm and options (`includeSearchRoots`, `includePathResolver`), see the [JHP repository](https://github.com/caboodle-tech/jhp) README, **Include paths** section.
+
 ## Basic Usage
 
 ### Creating a JHP File
 
-Create a file with `.jhp` extension in your configured `srcDir`:
+Create a file with `.jhp` extension in your configured `srcDir`.
+
+**Option A – root-style includes from `templateDir` / `srcDir` (good for a top-level `index.jhp`):**
 
 ```html
 <!-- <your-src-dir>/index.jhp -->
 <script>
-    $include('./templates/header.html');
+    $include('/header.html');
 </script>
 
 <h1>Welcome to My Site</h1>
 <p>This is my homepage.</p>
 
 <script>
-    $include('./templates/footer.html');
+    $include('/footer.html');
 </script>
 ```
 
-When you run `jamsedu --build`, this becomes `destDir/index.html`.
+**Option B – paths relative to the current file (same as always):**
+
+```html
+<script>
+    $include('./templates/header.html');
+</script>
+```
+
+When you run `jamsedu --build`, this becomes `destDir/index.html` (or the matching path under `destDir`).
 
 ## Template Partials
 
@@ -42,11 +73,11 @@ Use `$include()` to include partial files (header, footer, etc.):
 
 ```html
 <script>
-    $include('./templates/header.html');
+    $include('/header.html');
 </script>
 ```
 
-**Important**: The path is relative to the current `.jhp` file's location.
+Choose **`/name.html`** for includes that should follow **`templateDir` → `srcDir`**, or a **relative** path when you want resolution from the current file’s location first.
 
 ### Creating Partials
 
@@ -117,8 +148,9 @@ Your templates should be organized in your `templateDir` (configured in `.jamsed
 
 1. **Organize Partials**: Keep reusable components in your configured `templateDir`
 2. **Use Variables**: Define variables at the top of your `.jhp` files
-3. **Relative Paths**: Use relative paths for `$include()` based on file location
-4. **Naming**: Use `.jhp` extension for all template files
+3. **Root-style includes**: Use paths starting with `/` (e.g. `/header.html`) when you want the same include from many folders without `../` chains
+4. **Relative paths**: Use `./` and `../` when you want resolution strictly from the current file’s tree first
+5. **Naming**: Use the `.jhp` extension for pages that need JHP processing; partials are often plain `.html`
 
 ## Example: Complete Page
 
@@ -127,12 +159,12 @@ Your templates should be organized in your `templateDir` (configured in `.jamsed
 <script>
     const title = 'Home Page';
     const description = 'Welcome to my site';
-    
-    $include('./templates/head.html');
+
+    $include('/head.html');
 </script>
 
 <script>
-    $include('./templates/header.html');
+    $include('/header.html');
 </script>
 
 <main>
@@ -141,11 +173,10 @@ Your templates should be organized in your `templateDir` (configured in `.jamsed
 </main>
 
 <script>
-    $include('./templates/footer.html');
+    $include('/footer.html');
 </script>
 ```
 
 ## Learn More
 
 For more advanced JHP features, visit the [JHP documentation](https://github.com/caboodle-tech/jhp).
-
