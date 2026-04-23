@@ -1,6 +1,6 @@
 .github/
-.jamsedu/
-.vscode/
-docs/
+/.jamsedu/
+/.vscode/
+/docs/
 node_modules/
 www/public/
