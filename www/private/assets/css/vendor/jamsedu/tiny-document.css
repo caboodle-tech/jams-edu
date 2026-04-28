@@ -243,6 +243,13 @@
             vertical-align: baseline;
         }
 
+        :where(
+            input.doc-input.inline:not([type="hidden"]),
+            p input.doc-input:not([type="hidden"])
+        ) {
+            line-height: 1;
+        }
+
         .doc-link-wrapper.inline,
         .doc-file-wrapper.inline {
             display: inline-flex;
@@ -413,6 +420,16 @@
             display: inline-block;
             min-width: 150px;
             color: var(--doc-field-text-color);
+        }
+
+        /*
+         * Keep sentence-flow text inputs compact.
+         * This lives after the base input block so it wins the cascade.
+         */
+        input.doc-input.inline:not([type="hidden"]),
+        p input.doc-input:not([type="hidden"]) {
+            padding-block: 0;
+            line-height: 1;
         }
 
         /* Link input with popover (same color axis as .doc-file-wrapper: light scheme + field ink on wells) */
@@ -630,6 +647,34 @@
                 border-color: var(--doc-focus-color);
                 box-shadow: var(--doc-focus-shadow);
             }
+        }
+
+        select.doc-select.inline,
+        p select.doc-select {
+            display: inline-block;
+            margin: 0;
+            min-width: 150px;
+            max-width: min(100%, 320px);
+            padding-block: 0;
+            line-height: 1.2;
+            vertical-align: baseline;
+        }
+
+        select.doc-select option[data-doc-placeholder] {
+            color: var(--doc-field-placeholder-color);
+        }
+
+        select.doc-select:has(option[data-doc-placeholder]:checked) {
+            color: var(--doc-field-placeholder-color);
+            -webkit-text-fill-color: var(--doc-field-placeholder-color);
+        }
+
+        input.doc-select-alt-input.inline,
+        p input.doc-select-alt-input {
+            display: inline-block;
+            margin: 0 0 0 6px;
+            vertical-align: baseline;
+            min-width: 140px;
         }
 
         strong {

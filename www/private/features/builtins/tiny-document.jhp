@@ -87,6 +87,11 @@
                 <td>(preserved)</td>
                 <td>Keeps the field inline with sentence text</td>
             </tr>
+            <tr>
+                <td><code>bold</code> (field modifier)</td>
+                <td>(preserved)</td>
+                <td>Wraps exported value in <code>&lt;strong&gt;</code></td>
+            </tr>
         </tbody>
     </table>
     <p>
@@ -144,6 +149,26 @@
         <div class="section">Notes (Rich Text)</div>
         <textarea class="rich" rows="3" aria-label="Rich text notes" placeholder="Use the toolbar for basic formatting."></textarea>
 
+        <div class="section">Video Link Verification</div>
+        <p>
+            I chose to study and teach about:
+            <input class="bold" type="text" placeholder="Topic Title">.
+            I have uploaded my video to
+            <select class="bold" placeholder="Select a platform...">
+                <option>Dropbox</option>
+                <option>Google Drive</option>
+                <option>Loom</option>
+                <option>OneDrive</option>
+                <option>YouTube</option>
+                <option class="alt">Other (please specify)</option>
+            </select>
+            and verified in a private browsing window that anyone with the link can view it without needing to request access or sign in.
+        </p>
+        <p>
+            You may view the video online at:
+            <input type="url" prompt="Video URL" placeholder="https://..." data-raw>
+        </p>
+
         <div class="section">Optional Photo</div>
         <input type="file" accept="image/*" aria-label="Optional image attachment">
 
@@ -154,7 +179,7 @@
 <section id="field-reference" aria-labelledby="field-reference-heading">
     <h2 id="field-reference-heading">Field and option reference</h2>
     <p>
-        Copy the shapes below into your own <code>.document</code> and adjust labels. URL fields share one element type; attributes choose how the dialog and display behave.
+        Copy the shapes below into your own <code>.document</code> and adjust labels. URL fields share one element type; attributes choose how the dialog and display behave. Text and select fields can also use <code>inline</code> and <code>bold</code> for sentence-flow forms.
     </p>
 
     <h3>URL inputs</h3>
@@ -242,6 +267,28 @@
             </p>
         </div>
     </details>
+
+    <h3>Inline text and select fields</h3>
+    <p>
+        Tiny Doc treats fields inside a paragraph as inline by default, and explicit <code>inline</code> also works on text, URL, and select fields. Add <code>bold</code> when you want final PDF output wrapped in <code>&lt;strong&gt;</code>.
+    </p>
+    <pre>
+        <code class="html">
+            &lt;p&gt;
+                I chose to study:
+                &lt;input class="bold" type="text" placeholder="Topic title"&gt;
+                and uploaded to
+                &lt;select class="bold inline" placeholder="Select a platform..."&gt;
+                    &lt;option&gt;Dropbox&lt;/option&gt;
+                    &lt;option&gt;Google Drive&lt;/option&gt;
+                    &lt;option class="alt"&gt;Other (please specify)&lt;/option&gt;
+                &lt;/select&gt;
+            &lt;/p&gt;
+        </code>
+    </pre>
+    <p>
+        When <code>placeholder</code> is present on a select, Tiny Doc inserts a placeholder option first. If it remains selected, export treats the field as <code>[Not Provided]</code>. If an option has class <code>alt</code>, Tiny Doc adds a companion text input while that option is selected and removes it when the user changes away.
+    </p>
 
     <h3>Repeatable blocks</h3>
     <p>

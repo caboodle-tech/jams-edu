@@ -1,4 +1,4 @@
-// @jamsedu-version: 1.5.0
+// @jamsedu-version: 1.6.0
 // @jamsedu-component: tiny-doc
 
 import './dom-watcher.js';
@@ -53,6 +53,15 @@ class TinyDocument {
 
     #setupInput(elem, _) {
         elem.classList.add('doc-input', 'doc-text');
+    }
+
+    #wrapWithStrongIfNeeded(node, sourceElem) {
+        if (!sourceElem.classList.contains('bold')) {
+            return node;
+        }
+        const strong = document.createElement('strong');
+        strong.appendChild(node);
+        return strong;
     }
 
     /**
@@ -268,6 +277,23 @@ class TinyDocument {
     #setupSelects(elem, _) {
         elem.classList.add('doc-select');
 
+        let hasPlaceholderOption = false;
+        if (elem.hasAttribute('placeholder') && !elem.querySelector('option[data-doc-placeholder]')) {
+            const placeholderOption = document.createElement('option');
+            placeholderOption.value = '';
+            placeholderOption.textContent = elem.getAttribute('placeholder');
+            placeholderOption.dataset.docPlaceholder = 'true';
+            elem.insertBefore(placeholderOption, elem.firstElementChild || null);
+            hasPlaceholderOption = true;
+        } else if (elem.querySelector('option[data-doc-placeholder]')) {
+            hasPlaceholderOption = true;
+        }
+
+        if (hasPlaceholderOption) {
+            elem.value = '';
+            elem.selectedIndex = 0;
+        }
+
         // Ensure one option always has the 'selected' attribute
         if (elem.selectedIndex < 0) {
             elem.selectedIndex = 0;
@@ -289,9 +315,42 @@ class TinyDocument {
                     option.removeAttribute('selected');
                 }
             });
+            this.#syncAltSelectInput(elem);
         };
 
+        this.#syncAltSelectInput(elem);
         elem.addEventListener('change', updateSelected);
+    }
+
+    #syncAltSelectInput(select) {
+        const selectedOption = select.options[select.selectedIndex];
+        const existingAlt = select.parentElement?.querySelector(':scope > input.doc-select-alt-input') || null;
+        const isAlt = Boolean(selectedOption?.classList?.contains('alt'));
+
+        if (!isAlt) {
+            if (existingAlt) {
+                existingAlt.remove();
+            }
+            return;
+        }
+
+        if (existingAlt) {
+            return;
+        }
+
+        const altInput = document.createElement('input');
+        altInput.type = 'text';
+        altInput.classList.add('doc-input', 'doc-text', 'doc-select-alt-input');
+        altInput.placeholder = 'Please specify';
+
+        if (select.classList.contains('inline') || select.closest('p')) {
+            altInput.classList.add('inline');
+        }
+        if (select.classList.contains('bold')) {
+            altInput.classList.add('bold');
+        }
+
+        select.insertAdjacentElement('afterend', altInput);
     }
 
     #setupTextareas(elem, _) {
@@ -756,19 +815,21 @@ class TinyDocument {
                     a.href = url;
                     a.textContent = text || url;
                     a.target = '_blank';
+                    const node = this.#wrapWithStrongIfNeeded(a, input);
                     if (wrapper) {
-                        parent.replaceChild(a, wrapper);
+                        parent.replaceChild(node, wrapper);
                     } else {
-                        parent.replaceChild(a, input);
+                        parent.replaceChild(node, input);
                     }
                 } else {
                     const span = document.createElement('span');
                     span.className = 'not-provided';
                     span.textContent = '[Not Provided]';
+                    const node = this.#wrapWithStrongIfNeeded(span, input);
                     if (wrapper) {
-                        parent.replaceChild(span, wrapper);
+                        parent.replaceChild(node, wrapper);
                     } else {
-                        parent.replaceChild(span, input);
+                        parent.replaceChild(node, input);
                     }
                 }
                 return;
@@ -787,12 +848,18 @@ class TinyDocument {
                     span.textContent = '[Not Provided]';
                 }
 
-                input.parentNode.replaceChild(span, input);
+                const node = this.#wrapWithStrongIfNeeded(span, input);
+                input.parentNode.replaceChild(node, input);
                 return;
             }
 
             // Handle file inputs (skip, handled separately)
             if (input.type === 'file') {
+                return;
+            }
+
+            // Alt select companion inputs are handled by select processing
+            if (input.classList.contains('doc-select-alt-input')) {
                 return;
             }
 
@@ -807,7 +874,8 @@ class TinyDocument {
                 span.textContent = '[Not Provided]';
             }
 
-            input.parentNode.replaceChild(span, input);
+            const node = this.#wrapWithStrongIfNeeded(span, input);
+            input.parentNode.replaceChild(node, input);
         });
     }
 
@@ -829,15 +897,37 @@ class TinyDocument {
         selects.forEach((select) => {
             const span = document.createElement('span');
             const selectedOption = select.options[select.selectedIndex];
+            const isPlaceholder = Boolean(
+                selectedOption &&
+                (
+                    selectedOption.dataset.docPlaceholder === 'true' ||
+                    selectedOption.value === ''
+                )
+            );
+            const isAlt = Boolean(selectedOption && selectedOption.classList.contains('alt'));
+            const altInput = select.parentElement?.querySelector(':scope > input.doc-select-alt-input') || null;
 
-            if (selectedOption && selectedOption.value) {
-                span.textContent = selectedOption.text;
-            } else {
+            if (!selectedOption || isPlaceholder) {
                 span.className = 'not-provided';
                 span.textContent = '[Not Provided]';
+            } else if (isAlt) {
+                const altValue = altInput ? altInput.value.trim() : '';
+                if (altValue) {
+                    span.textContent = altValue;
+                } else {
+                    span.className = 'not-provided';
+                    span.textContent = '[Not Provided]';
+                }
+            } else {
+                span.textContent = selectedOption.text;
             }
 
-            select.parentNode.replaceChild(span, select);
+            if (altInput) {
+                altInput.remove();
+            }
+
+            const node = this.#wrapWithStrongIfNeeded(span, select);
+            select.parentNode.replaceChild(node, select);
         });
     }
 
@@ -873,7 +963,8 @@ class TinyDocument {
                 }
             }
 
-            ta.parentNode.replaceChild(div, ta);
+            const node = this.#wrapWithStrongIfNeeded(div, ta);
+            ta.parentNode.replaceChild(node, ta);
         });
     }
 
