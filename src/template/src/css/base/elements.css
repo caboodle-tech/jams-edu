@@ -1,4 +1,4 @@
-/* @jamsedu-version: 2.1.13 */
+/* @jamsedu-version: 2.1.14 */
 /* @jamsedu-component: elements-css */
 
 /* --- Document surface --- */
@@ -307,6 +307,7 @@
  */
 :where(table:not(.hljsl-table)) {
     border-collapse: collapse;
+    margin-block: 0 var(--margin-md);
     width: 100%;
 }
 

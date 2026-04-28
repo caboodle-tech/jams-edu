@@ -1,4 +1,4 @@
-/* @jamsedu-version: 1.5.2 */
+/* @jamsedu-version: 1.6.0 */
 /* @jamsedu-component: tiny-document */
 
 .document {
@@ -115,6 +115,11 @@
             margin-left: 0.25in;
         }
 
+        .doc-context {
+            font-style: normal;
+            opacity: 1;
+        }
+
         .doc-spacer {
             display: block;
             margin-bottom: 18pt;
@@ -219,6 +224,61 @@
         .doc-file-wrapper :where(input, select, textarea),
         .doc-link-wrapper input.doc-input {
             margin-block-end: 0;
+        }
+
+        /*
+         * Inline fields keep worksheet controls in sentence flow.
+         * The smaller block padding helps controls fit the surrounding line-height.
+         */
+        :where(
+            input.doc-input.inline:not([type="hidden"]),
+            select.doc-select.inline,
+            textarea.doc-textarea.inline
+        ) {
+            display: inline-block;
+            width: auto;
+            margin-block-end: 0;
+            padding-block: 0;
+            line-height: 1.2;
+            vertical-align: baseline;
+        }
+
+        .doc-link-wrapper.inline,
+        .doc-file-wrapper.inline {
+            display: inline-flex;
+            margin-block-end: 0;
+            vertical-align: baseline;
+        }
+
+        .doc-link-wrapper.inline input.doc-input.doc-link {
+            padding-block: 0;
+            line-height: 1.2;
+        }
+
+        /*
+         * Paragraph context implies sentence-flow fields, even without explicit `.inline`.
+         * Keep controls visually aligned with prose line-height.
+         */
+        p :where(
+            input.doc-input:not([type="hidden"]),
+            select.doc-select,
+            textarea.doc-textarea
+        ) {
+            width: auto;
+            margin-block-end: 0;
+            padding-block: 0;
+            line-height: 1.2;
+            vertical-align: baseline;
+        }
+
+        p :where(.doc-link-wrapper, .doc-file-wrapper) {
+            margin-block-end: 0;
+            vertical-align: baseline;
+        }
+
+        p .doc-link-wrapper input.doc-input.doc-link {
+            padding-block: 0;
+            line-height: 1.2;
         }
 
         /* Room for outside markers; do not use `inside` (breaks hanging indent on wrapped `li` text). */
@@ -602,6 +662,10 @@
         }
     }
 
+.document.reduce-margin {
+    margin: 0.375in auto;
+}
+
     /* Print styles */
     @media print {
         body {
@@ -714,6 +778,11 @@
                 margin-bottom: 18pt;
                 clear: both;
                 min-height: 1px;
+            }
+
+            .doc-context {
+                font-style: italic;
+                opacity: 0.92;
             }
 
             .center {
