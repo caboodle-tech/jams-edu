@@ -10,6 +10,7 @@ class TinyDocument {
     #document;
 
     #elements = {
+        '.context': this.#setupGenericElement.bind(this),
         '.header': this.#setupGenericElement.bind(this),
         '.indent': this.#setupGenericElement.bind(this),
         '.instructions': this.#setupGenericElement.bind(this),
@@ -129,7 +130,7 @@ class TinyDocument {
 
     #generateStyleSheet() {
         /* eslint-disable max-len */
-        return `<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif}.document{margin:0;padding:.5in;max-width:100%;ol,ul{margin:0 0 14pt 0;padding-left:.5in}li{margin:6pt 0}a{color:#1976d2;text-decoration:none;cursor:pointer;&:hover{color:#0d47a1}}div,p{page-break-inside:avoid}.doc-header,.doc-subsection,.doc-template-wrapper{page-break-inside:avoid}.doc-section{page-break-after:avoid}.doc-preview{display:block;.doc-preview-item{display:block;img{max-width:100%;height:auto;margin:12pt auto}}}.doc-instructions,.doc-download,.tiny-wysiwyg-container,.doc-template-button,.doc-file-wrapper,.doc-download-button,.doc-trash-button,.doc-remove,.doc-link-icon{display:none!important}.doc-title{font-size:24pt;font-weight:700;text-align:center;margin:0 0 24pt 0}.doc-header{display:flex;justify-content:space-between;margin-bottom:24pt}.doc-section{font-size:16pt;font-weight:700;margin:24pt 0 14pt 0;border-bottom:1px solid #000;padding-bottom:3pt}.doc-subsection{font-size:14pt;font-weight:700;margin:18pt 0 6pt 0}.doc-indent{margin-left:.25in}.doc-spacer{display:block;margin-bottom:18pt;clear:both;min-height:1px}.center{text-align:center}.not-provided{color:#757575}blockquote{position:relative;border:1px solid #c5c5c5;border-left:4pt solid #c5c5c5;background-color:#f4f4f4;padding:6pt 6pt 6pt calc(18pt + 20px);margin:12pt 0;&::before{font-family:Arial;content:"\\201C";color:#c5c5c5;font-size:48pt;position:absolute;left:10px;top:-2px}}h1,h2,h3,h4,h5,h6{font-size:14pt;font-weight:700;margin:18pt 0 6pt 0}pre{background-color:#f4f4f4;padding:6pt;border-radius:2pt;margin:12pt 0;font-family:'Roboto Mono','Courier New',monospace;font-size:11pt;border:1px solid #c5c5c5;white-space:pre-wrap;word-wrap:break-word}}</style>`;
+        return `<style>body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif}.document{margin:0;padding:.5in;max-width:100%;ol,ul{margin:0 0 14pt 0;padding-left:.5in}li{margin:6pt 0}a{color:#1976d2;text-decoration:none;cursor:pointer;&:hover{color:#0d47a1}}div,p{page-break-inside:avoid}.doc-header,.doc-subsection,.doc-template-wrapper{page-break-inside:avoid}.doc-section{page-break-after:avoid}.doc-preview{display:block;.doc-preview-item{display:block;img{max-width:100%;height:auto;margin:12pt auto}}}.doc-instructions,.doc-download,.tiny-wysiwyg-container,.doc-template-button,.doc-file-wrapper,.doc-download-button,.doc-trash-button,.doc-remove,.doc-link-icon{display:none!important}.doc-title{font-size:24pt;font-weight:700;text-align:center;margin:0 0 24pt 0}.doc-header{display:flex;justify-content:space-between;margin-bottom:24pt}.doc-section{font-size:16pt;font-weight:700;margin:24pt 0 14pt 0;border-bottom:1px solid #000;padding-bottom:3pt}.doc-subsection{font-size:14pt;font-weight:700;margin:18pt 0 6pt 0}.doc-indent{margin-left:.25in}.doc-context{font-style:italic;opacity:.92}.doc-spacer{display:block;margin-bottom:18pt;clear:both;min-height:1px}.center{text-align:center}.not-provided{color:#757575}blockquote{position:relative;border:1px solid #c5c5c5;border-left:4pt solid #c5c5c5;background-color:#f4f4f4;padding:6pt 6pt 6pt calc(18pt + 20px);margin:12pt 0;&::before{font-family:Arial;content:"\\201C";color:#c5c5c5;font-size:48pt;position:absolute;left:10px;top:-2px}}h1,h2,h3,h4,h5,h6{font-size:14pt;font-weight:700;margin:18pt 0 6pt 0}pre{background-color:#f4f4f4;padding:6pt;border-radius:2pt;margin:12pt 0;font-family:'Roboto Mono','Courier New',monospace;font-size:11pt;border:1px solid #c5c5c5;white-space:pre-wrap;word-wrap:break-word}}</style>`;
         /* eslint-enable max-len */
     }
 
@@ -146,6 +147,9 @@ class TinyDocument {
         // Create a wrapper for the file input and add icons
         const wrapper = document.createElement('div');
         wrapper.classList.add('doc-file-wrapper', 'empty');
+        if (elem.classList.contains('inline')) {
+            wrapper.classList.add('inline');
+        }
         wrapper.innerHTML = `<span class="count">0</span>${this.#icons.img}${this.#icons.imgUpload}`;
 
         // Move the file input into the wrapper
@@ -313,13 +317,21 @@ class TinyDocument {
             elem.dataset.prompt = elem.getAttribute('prompt');
             elem.removeAttribute('prompt');
         }
+        if (elem.hasAttribute('fixed-text')) {
+            elem.dataset.fixedText = elem.getAttribute('fixed-text');
+            elem.removeAttribute('fixed-text');
+        }
 
         const prompt = elem.dataset.prompt || '';
         const originalPlaceholder = elem.placeholder || '';
+        const forcedLabel = String(elem.dataset.fixedText || '').trim();
 
         // Wrap input in a container for icon positioning
         const wrapper = document.createElement('span');
         wrapper.classList.add('doc-link-wrapper');
+        if (elem.classList.contains('inline')) {
+            wrapper.classList.add('inline');
+        }
         elem.parentNode.replaceChild(wrapper, elem);
         wrapper.appendChild(elem);
 
@@ -335,16 +347,20 @@ class TinyDocument {
 
         // If data attributes are pre-populated, set initial state
         if (elem.dataset.url) {
-            elem.value = elem.dataset.text || elem.dataset.url;
+            const value = elem.dataset.text || forcedLabel || elem.dataset.url;
+            if (forcedLabel && !elem.dataset.text) {
+                elem.dataset.text = forcedLabel;
+            }
+            elem.value = value;
             elem.classList.add('filled');
         }
 
         elem.addEventListener('click', () => {
-            this.#openLinkPopover(elem, isRaw, originalPlaceholder, prompt);
+            this.#openLinkPopover(elem, isRaw, originalPlaceholder, prompt, forcedLabel);
         });
 
         icon.addEventListener('click', () => {
-            this.#openLinkPopover(elem, isRaw, originalPlaceholder, prompt);
+            this.#openLinkPopover(elem, isRaw, originalPlaceholder, prompt, forcedLabel);
         });
     }
 
@@ -369,8 +385,9 @@ class TinyDocument {
      * @param {boolean} isRaw If true, only store a single value (no separate label).
      * @param {string} originalPlaceholder Input placeholder before dialog.
      * @param {string} prompt Optional copy for the dialog title.
+     * @param {string} forcedLabel Locked display label when text must not be edited.
      */
-    #openLinkPopover(elem, isRaw, originalPlaceholder, prompt) {
+    #openLinkPopover(elem, isRaw, originalPlaceholder, prompt, forcedLabel = '') {
         // Don't open multiple
         if (this.#document.querySelector('dialog.doc-link-popover')) {
             return;
@@ -379,10 +396,13 @@ class TinyDocument {
         const trimmedPrompt = prompt && String(prompt).trim() ? String(prompt).trim() : '';
         const hasPlaceholder = Boolean(originalPlaceholder && String(originalPlaceholder).trim());
         const labelPlaceholder = hasPlaceholder ? String(originalPlaceholder).trim() : 'Link Text';
+        const hasForcedLabel = !isRaw && Boolean(String(forcedLabel).trim());
 
         let headingText;
         if (trimmedPrompt) {
             headingText = this.#formatLinkPopoverHeading(trimmedPrompt);
+        } else if (hasForcedLabel) {
+            headingText = this.#formatLinkPopoverHeading(String(forcedLabel).trim());
         } else if (isRaw) {
             if (hasPlaceholder) {
                 headingText = this.#formatLinkPopoverHeading(String(originalPlaceholder).trim());
@@ -409,7 +429,7 @@ class TinyDocument {
         urlField.value = elem.dataset.url || '';
 
         let textField = null;
-        if (!isRaw) {
+        if (!isRaw && !hasForcedLabel) {
             textField = document.createElement('input');
             textField.type = 'text';
             textField.placeholder = labelPlaceholder;
@@ -440,7 +460,7 @@ class TinyDocument {
         actions.appendChild(saveBtn);
 
         dialog.appendChild(heading);
-        if (!isRaw) {
+        if (!isRaw && !hasForcedLabel) {
             dialog.appendChild(textField);
         }
         dialog.appendChild(urlField);
@@ -464,7 +484,7 @@ class TinyDocument {
         // Save handler
         saveBtn.addEventListener('click', () => {
             const url = urlField.value.trim();
-            const text = textField ? textField.value.trim() : '';
+            const text = hasForcedLabel ? String(forcedLabel).trim() : (textField ? textField.value.trim() : '');
 
             if (url) {
                 elem.dataset.url = url;
