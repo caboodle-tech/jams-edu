@@ -1,3 +1,5 @@
-.jamsedu/backups/
+/.cursor/
+/.jamsedu/backups/
+/.quarto/
+/www/public/
 node_modules/
-www/public/

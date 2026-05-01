@@ -8,6 +8,7 @@ import Path from 'path';
 import Print from '../src/imports/print.js';
 import URL from 'url';
 import { ArgParser, getRootPaths } from '../src/imports/helpers.js';
+import { persistQuartoDefaultsIntoConfigJsIfEligible } from '../src/imports/quarto-default-config.js';
 import { exit } from 'process';
 
 // Parsing command line arguments.
@@ -151,6 +152,14 @@ config.srcDir = resolveUserPath(USERS_ROOT, config.srcDir, 'src');
 config.pre = [...(JamsEduHooks.pre || []), ...(config.pre || [])];
 // eslint-disable-next-line no-extra-parens
 config.post = [...(JamsEduHooks.post || []), ...(config.post || [])];
+
+if (args.watch || args.build) {
+    persistQuartoDefaultsIntoConfigJsIfEligible({
+        usersRoot: USERS_ROOT,
+        configFileAbsPath: configFile,
+        config
+    });
+}
 
 // Handle update command (requires config file to know srcDir)
 if (args.update) {

@@ -14,6 +14,7 @@ import {
     parseVersionFromFile,
     stripJamseduComments
 } from './imports/strip-jamsedu-comments.js';
+import { joinConfigRelPosixPath } from './imports/quarto-default-config.js';
 
 class Initializer {
 
@@ -177,6 +178,8 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         /** @type {Record<string, string> | null} */
         let assetPaths = null;
         let useExistingConfig = false;
+        /** When a new config is written, include quarto.template and related keys (default off; auto-patch can add later). */
+        let includeQuartoInConfig = false;
 
         const existingConfig = this.findExistingUserConfig(cwd);
         if (existingConfig) {
@@ -244,6 +247,25 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
 
             const templateDirDefault = `${tmpSrcDir}/templates`;
             userTemplateDir = await this.getResponse(`JHP partials directory\n\nReusable HTML partials (head, header, footer) are copied here. This path is saved as templateDir in .jamsedu/config.js; use the same path in your \$include() calls (e.g. ./templates/ from a page in src root). It is not part of the assets folder (css, js, images).\n\nPress [enter] to accept the default: ${templateDirDefault}`, templateDirDefault);
+
+            const includeQuartoAnswer = await this.getResponse(
+                'Include Quarto in config\n\n' +
+                    'If yes, JamsEdu writes a quarto block (template path, assetsDir, workingDir) into .jamsedu/config.js for .qmd pages. ' +
+                    'Most projects do not need this in the file up front. If you skip this, the same defaults are added ' +
+                    'automatically the first time you build or watch with .qmd sources under srcDir.\n\n' +
+                    'Include Quarto in config? (y/n) [n]',
+                'n'
+            );
+            includeQuartoInConfig = /^y(es)?$/i.test(includeQuartoAnswer.trim());
+            if (includeQuartoInConfig) {
+                const quartoGuideUrl = 'https://jamsedu.com/features/builtins/quarto-jamsedu.html';
+                Print.out('');
+                Print.info(
+                    `Quarto settings will be written to your config. Guide to using Quarto with JamsEDU:\n${quartoGuideUrl}`
+                );
+                Print.out('');
+                await promptLine('Press [enter] to continue.');
+            }
         }
 
         const layoutConfig = { assetsDir, assetPaths, templateDir: userTemplateDir };
@@ -293,11 +315,25 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
         }
         const configFilePath = Path.join(jamseduDir, 'config.js');
         if (!useExistingConfig) {
-            const configFileContent = `export default {
-    destDir: '${destDir}',
-    srcDir: '${srcDir}',
-    templateDir: '${userTemplateDir}'${assetsDir ? `,\n    assetsDir: '${assetsDir}'` : ''}${cleanedWebsiteUrl ? `,\n    websiteUrl: '${cleanedWebsiteUrl}'` : ''}
-};\n`;
+            const configLines = [
+                `    destDir: '${destDir}'`,
+                `    srcDir: '${srcDir}'`,
+                `    templateDir: '${userTemplateDir}'`
+            ];
+            if (assetsDir) {
+                configLines.push(`    assetsDir: '${assetsDir}'`);
+            }
+            if (cleanedWebsiteUrl) {
+                configLines.push(`    websiteUrl: '${cleanedWebsiteUrl}'`);
+            }
+            if (includeQuartoInConfig) {
+                const templateDirFwd = String(userTemplateDir || '').replace(/\\/g, '/');
+                const relativeQuartoTpl = joinConfigRelPosixPath(templateDirFwd, 'quarto.jhp');
+                configLines.push(
+                    `    quarto: {\n        template: ${JSON.stringify(relativeQuartoTpl)},\n        assetsDir: 'quarto-assets',\n        workingDir: '.quarto'\n    }`
+                );
+            }
+            const configFileContent = `export default {\n${configLines.join(',\n')}\n};\n`;
             Fs.writeFileSync(configFilePath, configFileContent);
         } else if (existingConfig) {
             const rel = Path.relative(cwd, existingConfig.absPath).replace(/\\/g, '/');

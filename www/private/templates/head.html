@@ -1,6 +1,6 @@
 <script>
     /**
-     * Default values for meta tags if not provided
+     * Set basic defaults for the page title and description if they are not set.
      */
     if (!title) {
         const title = 'JamsEdu';
@@ -17,7 +17,18 @@
         <link href="/assets/css/main.css" rel="stylesheet">
         <title><script>$echo(title);</script></title>
         <script>
-            $echo(`<meta name="description" content="${description}">`);
+            if (description) {
+                $echo(`<meta name="description" content="${description}">`);
+            }
+            if (author) {
+                $echo(`<meta name="author" content="${author}">`);
+            }
+            if (date) {
+                $echo(`<meta name="date" content="${date}">`);
+            }
+            if (keywords) {
+                $echo(`<meta name="keywords" content="${keywords}">`);
+            }
         </script>
         <script type="module" src="/assets/js/main.js"></script>
         <script src="/assets/js/theme-preference.js"></script>

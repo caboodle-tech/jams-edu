@@ -2,6 +2,7 @@
 // @jamsedu-component: main-js
 
 import { DomWatcher, initJamsEdu } from './jamsedu/index.js';
+import './jamsedu/site-search.js';
 
 /**
  * Change settings here. Only add keys you care about; everything else uses `defaultJamsEduConfig`

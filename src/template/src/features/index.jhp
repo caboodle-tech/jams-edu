@@ -1,6 +1,6 @@
 <script>
     const title = 'Docs · JamsEDU';
-    const description = 'Documentation for JamsEDU covering installation, configuration, page authoring, build hooks, built-in features, and theming.';
+    const description = 'Documentation for JamsEDU covering installation, configuration, page authoring, build hooks, built-in features, masthead search, sitemaps, and theming.';
 
     $include('../templates/header.html');
 </script>
@@ -11,6 +11,9 @@
 
 <p>
     This is the full reference for JamsEDU. If you have not already, start with <a href="/features/getting-started.html">Getting Started</a> and <a href="/features/configuration.html">Configuration</a> from the main navigation before diving into the topics below.
+</p>
+<p>
+    A full <strong><code>jamsedu --build</code></strong> emits <code>sitemap.json</code> for the built-in masthead search. Put <strong><code>websiteUrl</code></strong> in <strong><code>.jamsedu/config.js</code></strong> when you also want <code>sitemap.xml</code> emitted under <code>destDir</code>. <strong><code>--watch</code></strong> rebuilds pages incrementally and does not rewrite those index files on every save, so run <code>--build</code> before deploy or when you need indexes to match the whole tree. See <a href="/features/configuration.html">Configuration</a>.
 </p>
 
 <section id="authoring" aria-labelledby="authoring-heading">
@@ -23,6 +26,10 @@
         <div>
             <dt><a href="/features/hooks.html">Build Hooks</a></dt>
             <dd>Run your own JavaScript during the build to modify HTML structure, inject markup, or normalize content across pages.</dd>
+        </div>
+        <div>
+            <dt><a href="/features/builtins/quarto-jamsedu.html">Quarto Live Demos</a></dt>
+            <dd>If you are used to authoring in Quarto (<code>.qmd</code>), JamsEDU makes it easy to use your existing skills and workflow.</dd>
         </div>
     </dl>
 </section>

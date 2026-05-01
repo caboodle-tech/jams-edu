@@ -1,0 +1,7 @@
+project:
+  type: default
+
+engine: markdown
+
+filters:
+  - _extensions/jamsedu/jamsedu-blocks.lua
