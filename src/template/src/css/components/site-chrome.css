@@ -1,7 +1,17 @@
+/* @jamsedu-version: 3.5.7 */
+/* @jamsedu-component: site-chrome-css */
 
+/**
+ * Masthead chrome for `.content-grid > header`: mobile nav drawer, primary links, brand, theme menu, and the
+ * slide-down site search strip.
+ *
+ * Logo `<img>` elements pair `mobile` or `desktop` with `dark` or `light`. Media ranges choose one pair:
+ * below 768px use mobile logos; from 768px up use desktop logos.
+ *
+ * Theme radios live in `details.theme-menu`. `html:has(...)` rules swap logo variants. For system choice,
+ * honor `prefers-color-scheme`.
+ */
 
-
-/** Masthead: `<header>` only. `.site-logo` marks: `mobile` or `desktop`, plus `dark` or `light`. Viewport uses `width < 768px` / `width >= 768px` so only one slot shows at the breakpoint. Theme radios flip `dark` vs `light` via `html:has(…)` and nested `prefers-color-scheme` for system. */
 .content-grid > header {
     background-color: var(--header-bg);
     color: var(--header-text);
@@ -213,8 +223,8 @@
         }
 
         /**
-         * One tile toggles magnifier vs multiplication sign emoji. Panel wiring uses `:has`:
-         * checkbox lives beside this subtree.
+         * Search trigger shows magnifier or multiplication emoji. The slide panel uses
+         * `header:has(#site-search-toggle:checked)`; the checkbox lives in this toolbar row.
          */
         .site-search-trigger {
             box-sizing: border-box;
@@ -433,7 +443,7 @@
             padding: 0;
             display: flex;
             flex-direction: column;
-            gap: var(--spacing-xs);
+            gap: var(--spacing-md);
 
             li {
                 display: flex;

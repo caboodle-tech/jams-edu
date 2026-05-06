@@ -5,7 +5,7 @@
 
 /** Extensions for files we treat as text and strip comments from (build copy). */
 const TEXT_EXTENSIONS = new Set([
-    'css', 'htm', 'html', 'js', 'json', 'mjs', 'cjs', 'md', 'svg', 'xml'
+    'css', 'htm', 'html', 'js', 'json', 'mjs', 'cjs', 'md', 'qmd', 'svg', 'xml'
 ]);
 
 const LINE_END = String.raw`(?:\r\n|\n|\r)`;

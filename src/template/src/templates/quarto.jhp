@@ -1,3 +1,6 @@
+<!-- @jamsedu-version: 1.0.0 -->
+<!-- @jamsedu-component: templates-quarto -->
+
 <script>
     $include('/header.html');
     $echo(quartoHtml);

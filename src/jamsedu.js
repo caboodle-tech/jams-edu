@@ -78,6 +78,10 @@ const REGEX = Object.freeze({
     quartoHtmlSrcRelativeFiles: /(src=["'])([^"']*_files(?:\/|\\)[^"']*)(["'])/gi,
     quartoMarkdownImage: /!\[[^\]]*]\(([^)"']+)\)/gi,
     quartoMarkdownLinkRelativeFiles: /(!?\[[^\]]*]\()([^)"']*_files(?:\/|\\)[^)"']*)(\))/g,
+    qprotectInlineLinkImage: /(!?\[[^\]]*])\(([^)\r\n]+)\)/g,
+    qprotectReferenceDef: /^(\s*\[[^\]]+]:\s*)(<[^>]+>|[^ \t\r\n]+)([^\r\n]*)$/gm,
+    qprotectHtmlAttr: /\b(src|href)=(["'])(\/[^"']*)(\2)/gi,
+    regexSpecialChars: /[.*+?^${}()|[\]\\]/g,
     quartoWrappedSourceDivPreCode: new RegExp(
         '<div\\b([^>]*\\bsourceCode\\b[^>]*)>\\s*<pre\\b([^>]*)>\\s*<code\\b([^>]*)>([\\s\\S]*?)' +
             '<\\/code>\\s*<\\/pre>\\s*<\\/div>',
@@ -98,7 +102,7 @@ const REGEX = Object.freeze({
     windowsSlash: /\\/g
 });
 
-/** Allowed tag names for jams-rich warnings; mirrors archived `jamsedu-blocks.archived.lua`. */
+/** Allowed tag names for jams-rich warnings; kept in sync with Quarto rich-text handling. */
 const JAMS_RICH_ALLOWED_HTML_TAGS = new Set([
     'p',
     'ul',
@@ -370,6 +374,12 @@ export default class JamsEdu {
         }
     }
 
+    /**
+     * Removes any nested `.quarto` cache directories under `startDir`.
+     *
+     * @param {string} startDir
+     * @returns {void}
+     */
     #removeAllStraySrcQuartoCaches(startDir) {
         if (!Fs.existsSync(startDir)) {
             return;
@@ -387,13 +397,17 @@ export default class JamsEdu {
         }
     }
 
+    /**
+     * Deletes the contents of `dir` recursively, without following symlinks.
+     *
+     * @param {string} dir
+     * @returns {void}
+     */
     #clearDirectory(dir) {
-        // Safety check: ensure directory path is valid
         if (!dir || typeof dir !== 'string') {
             throw new Error('Invalid directory path');
         }
 
-        // If directory doesn't exist, nothing to clear
         if (!Fs.existsSync(dir)) {
             return;
         }
@@ -403,7 +417,7 @@ export default class JamsEdu {
         for (const entry of entries) {
             const fullPath = Path.join(dir, entry.name);
 
-            // CRITICAL: Skip symlinks - never follow or delete them
+            // Critical: never follow or delete symlinks.
             if (entry.isSymbolicLink()) {
 
                 continue;
@@ -413,7 +427,6 @@ export default class JamsEdu {
                 this.#clearDirectory(fullPath);
                 Fs.rmdirSync(fullPath); // Remove the now-empty directory
             } else {
-                // Remove regular files
                 Fs.unlinkSync(fullPath);
             }
         }
@@ -454,7 +467,6 @@ export default class JamsEdu {
         extras.push(Path.join(bundled, 'extension.yml'));
         extras.push(Path.join(bundled, 'jamsedu.lua'));
         extras.push(Path.join(bundled, 'jamsedu-blocks.lua'));
-        extras.push(Path.join(bundled, 'jamsedu-blocks.archived.lua'));
         extras.push(Path.join(bundled, 'project.yml'));
         if (this.#quarto.templatePath) {
             extras.push(Path.resolve(this.#quarto.templatePath));
@@ -956,6 +968,13 @@ export default class JamsEdu {
         }
     }
 
+    /**
+     * Copies one file, stripping JamsEDU HTML comments for text assets.
+     *
+     * @param {string} src
+     * @param {string} dest
+     * @returns {void}
+     */
     #copyFile(src, dest) {
         try {
             Fs.mkdirSync(Path.dirname(dest), { recursive: true });
@@ -982,6 +1001,13 @@ export default class JamsEdu {
         }
     }
 
+    /**
+     * Recursively copies a directory into `destDir`.
+     *
+     * @param {string} srcDir
+     * @param {string} destDir
+     * @returns {void}
+     */
     #copyDirectory(srcDir, destDir) {
         const entries = Fs.readdirSync(srcDir, { withFileTypes: true });
         for (const entry of entries) {
@@ -996,6 +1022,12 @@ export default class JamsEdu {
         }
     }
 
+    /**
+     * Computes the relative prefix used in templates for linking back to the site root.
+     *
+     * @param {string} src Absolute source path under `srcDir`.
+     * @returns {string}
+     */
     #determineRelativePath(src) {
         const depth = Path.relative(this.#srcDir, Path.dirname(src))
             .split(Path.sep)
@@ -1068,6 +1100,7 @@ export default class JamsEdu {
      * Recursively copies a source subtree into `destDir` with the same relative layout, applying
      * `#shouldCopyFile` and skipping `.quarto` directories.
      * @param {string} srcRoot
+     * @returns {void}
      */
     #copySourceTreeWithCopyRules(srcRoot) {
         let entries = [];
@@ -1099,6 +1132,12 @@ export default class JamsEdu {
         }
     }
 
+    /**
+     * Normalizes config arrays of strings into trimmed, lowercased tokens.
+     *
+     * @param {unknown} value
+     * @returns {string[]}
+     */
     #normalizeConfigStringArray(value) {
         if (!Array.isArray(value)) {
             return [];
@@ -1115,11 +1154,24 @@ export default class JamsEdu {
             });
     }
 
+    /**
+     * Returns true when `targetPath` is outside `basePath`.
+     *
+     * @param {string} basePath
+     * @param {string} targetPath
+     * @returns {boolean}
+     */
     #isPathOutside(basePath, targetPath) {
         const rel = Path.relative(Path.resolve(basePath), Path.resolve(targetPath));
         return rel.startsWith('..') || Path.isAbsolute(rel);
     }
 
+    /**
+     * Builds allow and deny sets for asset copying.
+     *
+     * @param {Record<string, unknown>} config
+     * @returns {void}
+     */
     #initializeCopyRules(config) {
         const legacyDoNotCopy = this.#normalizeConfigStringArray(config.doNotCopy);
         for (const token of legacyDoNotCopy) {
@@ -1146,6 +1198,12 @@ export default class JamsEdu {
         }
     }
 
+    /**
+     * Initializes Quarto configuration from the JamsEDU config object.
+     *
+     * @param {Record<string, unknown>} config
+     * @returns {void}
+     */
     #initializeQuartoConfig(config) {
         const quartoConfig = WhatIs(config.quarto) === 'object' ? config.quarto : {};
         this.#quarto.assetsDir = typeof quartoConfig.assetsDir === 'string' && quartoConfig.assetsDir.trim() ?
@@ -1158,6 +1216,13 @@ export default class JamsEdu {
         this.#quarto.templatePath = this.#resolveQuartoTemplatePath(config, quartoConfig);
     }
 
+    /**
+     * Resolves the JHP wrapper template used for all `.qmd` pages.
+     *
+     * @param {Record<string, unknown>} config
+     * @param {Record<string, unknown>} quartoConfig
+     * @returns {string}
+     */
     #resolveQuartoTemplatePath(config, quartoConfig) {
         const candidates = [];
         if (typeof quartoConfig.template === 'string' && quartoConfig.template.trim() !== '') {
@@ -1175,6 +1240,13 @@ export default class JamsEdu {
         return '';
     }
 
+    /**
+     * Returns true when a source file should be copied into `destDir`.
+     *
+     * @param {string} relativePath POSIX relative path under `srcDir`.
+     * @param {string} ext Extension without dot.
+     * @returns {boolean}
+     */
     #shouldCopyFile(relativePath, ext) {
         const normalizedRel = relativePath.replace(REGEX.windowsSlash, '/').toLowerCase();
         if (normalizedRel.split('/').includes('.quarto')) {
@@ -1203,6 +1275,14 @@ export default class JamsEdu {
         return true;
     }
 
+    /**
+     * Runs a command synchronously and returns stdout, or throws with stdout and stderr attached.
+     *
+     * @param {string} command
+     * @param {string[]} args
+     * @param {{ cwd?: string; env?: Record<string, string>; input?: string }} [options]
+     * @returns {string}
+     */
     #runCommand(command, args, options = {}) {
         const envOverrides = WhatIs(options.env) === 'object' ? options.env : {};
         const result = Process.spawnSync(command, args, {
@@ -1248,6 +1328,11 @@ export default class JamsEdu {
         }
     }
 
+    /**
+     * Removes temporary Quarto session directories under the Quarto working dir.
+     *
+     * @returns {void}
+     */
     #removeQuartoSessionTempDirs() {
         const quartoInternalDir = Path.join(this.#quarto.rootDir, '.quarto');
         if (!Fs.existsSync(quartoInternalDir)) {
@@ -1261,6 +1346,11 @@ export default class JamsEdu {
         }
     }
 
+    /**
+     * Removes stray `.md` and `.qmd` artifacts under the Quarto working dir root.
+     *
+     * @returns {void}
+     */
     #removeQuartoRootMarkdownArtifacts() {
         if (!Fs.existsSync(this.#quarto.rootDir)) {
             return;
@@ -1273,6 +1363,11 @@ export default class JamsEdu {
         }
     }
 
+    /**
+     * Returns a list of commands to try for invoking Quarto.
+     *
+     * @returns {string[]}
+     */
     #getQuartoCommandCandidates() {
         const candidates = ['quarto'];
         const envQuartoPath = typeof process.env.QUARTO_PATH === 'string' ?
@@ -1302,6 +1397,11 @@ export default class JamsEdu {
         return [...new Set(candidates)];
     }
 
+    /**
+     * Resolves and caches the Quarto CLI command, or null when not found.
+     *
+     * @returns {string|null}
+     */
     #resolveQuartoCommand() {
         if (this.#quarto.checked) {
             return this.#quarto.command;
@@ -1327,10 +1427,20 @@ export default class JamsEdu {
         return null;
     }
 
+    /**
+     * @returns {boolean}
+     */
     #isQuartoAvailable() {
         return this.#resolveQuartoCommand() !== null;
     }
 
+    /**
+     * Writes text only when content has changed, normalizing line endings.
+     *
+     * @param {string} targetPath
+     * @param {string} content
+     * @returns {void}
+     */
     #writeTextFileIfChanged(targetPath, content) {
         const next = String(content).replace(REGEX.lineEndingsCrlf, '\n');
         if (Fs.existsSync(targetPath)) {
@@ -1343,6 +1453,11 @@ export default class JamsEdu {
         Fs.writeFileSync(targetPath, next, 'utf8');
     }
 
+    /**
+     * Loads bundled Quarto extension files from the installed JamsEDU module.
+     *
+     * @returns {{ extensionYml: string; jamseduLua: string; jamseduBlocksLua: string; projectYml: string }}
+     */
     #getBundledQuartoExtensionPayloads() {
         if (this.#bundledQuartoExtensionPayloads !== null) {
             return this.#bundledQuartoExtensionPayloads;
@@ -1500,6 +1615,11 @@ export default class JamsEdu {
         }
     }
 
+    /**
+     * Ensures the Quarto project has the bundled JamsEDU extension installed under the working dir.
+     *
+     * @returns {void}
+     */
     #ensureManagedQuartoExtension() {
         /* Quarto only loads extension metadata from project-local paths with its required names. */
         const extensionDir = Path.join(this.#quarto.rootDir, '_extensions', 'jamsedu');
@@ -1514,6 +1634,12 @@ export default class JamsEdu {
         this.#writeTextFileIfChanged(projectYmlPath, this.#buildManagedQuartoProjectYml());
     }
 
+    /**
+     * Splits a Markdown document into frontmatter and body.
+     *
+     * @param {string} markdown
+     * @returns {{ frontmatter: string; body: string }}
+     */
     #splitFrontmatter(markdown) {
         const match = markdown.match(REGEX.frontmatter);
         if (!match) {
@@ -1541,6 +1667,12 @@ export default class JamsEdu {
         return text.slice(0, headLen) + this.#convertMarkdownMathToJamsHtml(text.slice(headLen));
     }
 
+    /**
+     * Parses YAML frontmatter from Quarto output.
+     *
+     * @param {string} frontmatter
+     * @returns {Record<string, unknown>}
+     */
     #extractQmdMeta(frontmatter) {
         if (!frontmatter) {
             return {};
@@ -1582,6 +1714,13 @@ export default class JamsEdu {
         return null;
     }
 
+    /**
+     * Rewrites relative `*_files` paths to published Quarto asset paths.
+     *
+     * @param {string} pathPart
+     * @param {string} assetsPrefix
+     * @returns {string|null}
+     */
     #rewriteQuartoFilesPathSegment(pathPart, assetsPrefix) {
         if (pathPart.startsWith('/') || pathPart.startsWith('http://') || pathPart.startsWith('https://')) {
             return null;
@@ -1599,6 +1738,13 @@ export default class JamsEdu {
         return String(maybePath || '').replace(REGEX.windowsSlash, '/');
     }
 
+    /**
+     * Stages a partial `.qmd` under the Quarto working dir so `{{< include >}}` can resolve it.
+     *
+     * @param {string} srcPath
+     * @param {string} relativePath
+     * @returns {void}
+     */
     #stageQmdPartialForQuarto(srcPath, relativePath) {
         const sourceContent = Fs.readFileSync(srcPath, 'utf8');
         const normalizedContent = this.#normalizeQuartoIncludesForRender(srcPath, sourceContent);
@@ -1609,6 +1755,12 @@ export default class JamsEdu {
         Fs.writeFileSync(stagedQmdPath, stagedPayload, 'utf8');
     }
 
+    /**
+     * Returns true when a `.qmd` path is treated as a partial (snippets or partials folders).
+     *
+     * @param {string} relativePath
+     * @returns {boolean}
+     */
     #isQmdPartialPath(relativePath) {
         const normalizedRel = this.#toPosixPath(relativePath).toLowerCase();
         return normalizedRel.includes('/snippets/') ||
@@ -1617,6 +1769,12 @@ export default class JamsEdu {
             normalizedRel.startsWith('_partials/');
     }
 
+    /**
+     * Fast frontmatter check for standalone `.qmd` compilation.
+     *
+     * @param {string} srcPath
+     * @returns {{ hasYaml: boolean; hasRequired: boolean }}
+     */
     #qmdHasRequiredFrontmatterKeyFast(srcPath) {
         let handle;
         try {
@@ -1661,6 +1819,13 @@ export default class JamsEdu {
         }
     }
 
+    /**
+     * Returns true when a `.qmd` should be compiled as a standalone page.
+     *
+     * @param {string} srcPath
+     * @param {string} relativePath
+     * @returns {boolean}
+     */
     #shouldCompileQmdStandalone(srcPath, relativePath) {
         if (this.#isQmdPartialPath(relativePath)) {
             return false;
@@ -1771,11 +1936,10 @@ export default class JamsEdu {
     }
 
     /**
-     * Quarto `render --to markdown` rewrites root-absolute targets like `/x/y` into document-relative `.\x\y` on Windows.
-     * This happens before we see an AST and even applies to raw inlines. QPROTECT works around it by swapping root
-     * targets with non-path placeholders before render, then restoring them after Quarto emits markdown.
+     * Quarto `render --to markdown` rewrites root targets like `/x/y` into `.\x\y` on Windows.
+     * QPROTECT swaps root targets with safe placeholders before render, then restores them after Quarto emits markdown.
      *
-     * Scope: only targets that start with `/` (including `//host/...` protocol-relative URLs).
+     * Scope: only targets that start with `/`.
      *
      * @param {string} qmdPayload Full staged `.qmd` payload (may include YAML frontmatter).
      * @returns {{ payload: string; map: Array<{ placeholder: string; target: string }> }}
@@ -1821,8 +1985,7 @@ export default class JamsEdu {
 
         // Inline markdown links/images: [text](/path "title") and ![alt](/path)
         // Note: keep this conservative; we only rewrite when the first URL token starts with `/`.
-        const inlineLinkImage = /(!?\[[^\]]*])\(([^)\r\n]+)\)/g;
-        let out = String(markdownBody || '').replace(inlineLinkImage, (full, label, inner) => {
+        let out = String(markdownBody || '').replace(REGEX.qprotectInlineLinkImage, (full, label, inner) => {
             const raw = String(inner || '').trim();
             if (raw === '') {
                 return full;
@@ -1849,8 +2012,7 @@ export default class JamsEdu {
         });
 
         // Reference definitions: [id]: /path "title"
-        const refDef = /^(\s*\[[^\]]+]:\s*)(<[^>]+>|[^ \t\r\n]+)([^\r\n]*)$/gm;
-        out = out.replace(refDef, (full, lead, urlToken, tail) => {
+        out = out.replace(REGEX.qprotectReferenceDef, (full, lead, urlToken, tail) => {
             const token = String(urlToken || '').trim();
             if (token.startsWith('<') && token.endsWith('>')) {
                 const url = token.slice(1, -1);
@@ -1866,8 +2028,7 @@ export default class JamsEdu {
         });
 
         // Raw HTML attribute targets.
-        const htmlAttr = /\b(src|href)=(["'])(\/[^"']*)(\2)/gi;
-        out = out.replace(htmlAttr, (_full, attr, quote, value, q2) => {
+        out = out.replace(REGEX.qprotectHtmlAttr, (_full, attr, quote, value, q2) => {
             const v = String(value || '');
             if (!v.startsWith('/')) {
                 return `${attr}=${quote}${v}${q2}`;
@@ -1892,12 +2053,19 @@ export default class JamsEdu {
             if (!entry || typeof entry.placeholder !== 'string' || typeof entry.target !== 'string') {
                 continue;
             }
-            const placeholder = entry.placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const placeholder = entry.placeholder.replace(REGEX.regexSpecialChars, '\\$&');
             out = out.replace(new RegExp(placeholder, 'g'), entry.target);
         }
         return out;
     }
 
+    /**
+     * Rewrites Quarto `*_files` references in emitted markdown to published asset URLs.
+     *
+     * @param {string} markdownBody
+     * @param {string} relativePath
+     * @returns {string}
+     */
     #rewriteQuartoAssetPaths(markdownBody, relativePath) {
         const sourceDir = this.#toPosixPath(Path.dirname(relativePath));
         const sourcePrefix = sourceDir === '.' ? '' : `${sourceDir}/`;
@@ -1924,6 +2092,12 @@ export default class JamsEdu {
         return body;
     }
 
+    /**
+     * Escapes a string for safe use in a double-quoted HTML attribute.
+     *
+     * @param {string} value
+     * @returns {string}
+     */
     #escapeHtmlAttribute(value) {
         return String(value)
             .replace(REGEX.escapeAmp, '&amp;')
@@ -1966,20 +2140,16 @@ export default class JamsEdu {
 
     /**
      * Turn `$…$` / `$$…$$` in Quarto markdown into JamsEDU math HTML **before** Pandoc.
-     * Skips fenced code blocks using the same fence stack as elsewhere (any backtick or tilde run length ≥ 3), not only
-     * `` ```…``` ``. A naive triple-backtick-only split breaks on outer ` `````` ` fences: it treats inner `` ```{=html} ``
-     * as a fence end, leaves `{=html}` “outside,” and Pandoc’s `+raw_attribute` pass then emits stray `{=html}` in HTML.
-     * Single-backtick `` `...` `` spans are still respected inside outside segments. Display math emits a bare
-     * `<div class="math">` (never raw-HTML fences): fences break paragraphs and list items mid-line.
-     * Built with string concat only so LaTeX backslashes are never mangled by JS template literals.
+     * Skips fenced code blocks (any backtick or tilde fence run length ≥ 3), including outer 4+ fences that contain inner
+     * `` ```{=html} `` fences. Inline code spans are still respected outside fences.
+     *
+     * Output uses `<div class="math">` blocks and `<span class="math inline">` spans so Pandoc can safely pass through.
      */
     #convertMarkdownMathToJamsHtml(markdownBody) {
         const lines = String(markdownBody || '').split(/\r?\n/);
-        /** @type {{ tickChar: string; tickLen: number }[]} */
         const stack = [];
         const outPieces = [];
         const outside = [];
-        /** @type {string[] | null} */
         let fenceLines = null;
 
         const flushOutside = () => {
@@ -2057,6 +2227,12 @@ export default class JamsEdu {
         return parts.join('');
     }
 
+    /**
+     * Parses a braced fenced-div attribute list (for example `{.a .b}`) into class tokens.
+     *
+     * @param {string} attrText
+     * @returns {string[]}
+     */
     #parseFencedDivClasses(attrText) {
         const raw = String(attrText || '').trim();
         if (!raw) {
@@ -2206,7 +2382,6 @@ export default class JamsEdu {
         const lines = String(markdownBody).split(/\r?\n/);
         const out = [];
         let i = 0;
-        /** @type {{ tickChar: string; tickLen: number }[]} */
         const codeFenceStack = [];
         while (i < lines.length) {
             const line = lines[i];
@@ -2308,10 +2483,8 @@ export default class JamsEdu {
         if (openColonLen == null) {
             return null;
         }
-        /** @type {number[]} */
         const divColonStack = [openColonLen];
         let j = openIdx + 1;
-        /** @type {{ tickChar: string; tickLen: number }[]} */
         const codeFenceStack = [];
         while (j < lines.length) {
             const line = lines[j];
@@ -2524,9 +2697,7 @@ export default class JamsEdu {
     #extractJamsEduBlocksFromQuartoIntermediateMarkdown(markdownBody) {
         const lines = String(markdownBody || '').split(/\r?\n/);
         const out = [];
-        /** @type {Array<{ kind: 'fenced-div'; classes: string[]; inner: string; openLine: string }>} */
         const stash = [];
-        /** @type {{ tickChar: string; tickLen: number }[]} */
         const codeFenceStack = [];
         let i = 0;
         while (i < lines.length) {
@@ -2703,6 +2874,12 @@ export default class JamsEdu {
         }
     }
 
+    /**
+     * Converts markdown to an HTML fragment using Quarto's Pandoc.
+     *
+     * @param {string} markdownBody
+     * @returns {string}
+     */
     #pandocToHtmlFragment(markdownBody) {
         const quartoCommand = this.#resolveQuartoCommand();
         if (!quartoCommand) {
@@ -2770,6 +2947,14 @@ export default class JamsEdu {
         return String(stringifiedContext || '').replace(/\$/g, '&#36;');
     }
 
+    /**
+     * Renders a Quarto HTML fragment using the configured Quarto wrapper template.
+     *
+     * @param {string} relativePath
+     * @param {string} htmlFragment
+     * @param {Record<string, unknown>} meta
+     * @returns {string}
+     */
     #renderQmdWithTemplate(relativePath, htmlFragment, meta) {
         if (!this.#quarto.templatePath) {
             throw new Error(
@@ -2804,6 +2989,12 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
         });
     }
 
+    /**
+     * Builds an HTML fallback page when Quarto is missing.
+     *
+     * @param {string} relativePath
+     * @returns {string}
+     */
     #renderMissingQuartoPage(relativePath) {
         const normalizedRelativePath = relativePath.replace(REGEX.windowsSlash, '/');
         const escaped = normalizedRelativePath.replace(REGEX.escapeLt, '&lt;').replace(REGEX.escapeGt, '&gt;');
@@ -2836,12 +3027,26 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
         });
     }
 
+    /**
+     * Writes the Quarto missing fallback page.
+     *
+     * @param {string} dest
+     * @param {string} relativePath
+     * @returns {void}
+     */
     #writeMissingQuartoPage(dest, relativePath) {
         const renderedFallback = this.#renderMissingQuartoPage(relativePath);
         const qmdSrc = Path.join(this.#srcDir, relativePath);
         this.#writeFile(dest, renderedFallback, qmdSrc);
     }
 
+    /**
+     * Returns local include paths that could not be resolved.
+     *
+     * @param {string} src
+     * @param {string} qmdContent
+     * @returns {string[]}
+     */
     #findMissingQuartoIncludes(src, qmdContent) {
         const missing = [];
         const matches = qmdContent.matchAll(REGEX.includeShortcode);
@@ -2859,6 +3064,13 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
         return missing;
     }
 
+    /**
+     * Rewrites include shortcodes so Quarto can resolve them from the staged working directory.
+     *
+     * @param {string} src
+     * @param {string} qmdContent
+     * @returns {string}
+     */
     #normalizeQuartoIncludesForRender(src, qmdContent) {
         const sourceDir = Path.dirname(src);
         return qmdContent.replace(REGEX.includeShortcode, (full, includePathRaw) => {
@@ -2882,6 +3094,12 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
         });
     }
 
+    /**
+     * Produces a short, user-facing summary for common Quarto failures.
+     *
+     * @param {unknown} errorMessage
+     * @returns {string}
+     */
     #summarizeQuartoError(errorMessage) {
         if (typeof errorMessage !== 'string' || !errorMessage.trim()) {
             return 'Quarto failed while compiling this page.';
@@ -2898,6 +3116,12 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
         return 'Quarto failed while compiling this page.';
     }
 
+    /**
+     * Builds an HTML fallback page when Quarto fails to render.
+     *
+     * @param {string} relativePath
+     * @returns {string}
+     */
     #renderFailedQuartoPage(relativePath) {
         const normalizedRelativePath = relativePath.replace(REGEX.windowsSlash, '/');
         const escapedPath = normalizedRelativePath.replace(REGEX.escapeLt, '&lt;').replace(REGEX.escapeGt, '&gt;');
@@ -2916,6 +3140,14 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
         });
     }
 
+    /**
+     * Writes the Quarto render failure fallback page.
+     *
+     * @param {string} dest
+     * @param {string} relativePath
+     * @param {unknown} errorMessage
+     * @returns {void}
+     */
     #writeFailedQuartoPage(dest, relativePath, errorMessage) {
         const safePath = relativePath.replace(REGEX.windowsSlash, '/');
         const summary = this.#summarizeQuartoError(errorMessage);
@@ -3079,6 +3311,118 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
         this.#copyDirectory(filesDir, assetsDest);
     }
 
+    /**
+     * Runs Quarto `render --to markdown` for one staged `.qmd` file.
+     *
+     * @param {string} quartoCommand
+     * @param {{
+     *   stagedQmdBaseName: string;
+     *   stagedMdBaseName: string;
+     *   stagedQmdDir: string;
+     * }} staged
+     * @returns {void}
+     */
+    #runQuartoMarkdownRenderSync(quartoCommand, staged) {
+        this.#runCommand(quartoCommand, [
+            'render',
+            staged.stagedQmdBaseName,
+            '--to',
+            'markdown',
+            '--output',
+            staged.stagedMdBaseName,
+            '--no-execute',
+            '--execute-dir',
+            this.#quarto.rootDir
+        ], {
+            cwd: staged.stagedQmdDir,
+            env: {
+                QUARTO_PROJECT_DIR: this.#quarto.rootDir
+            }
+        });
+    }
+
+    /**
+     * Runs Quarto `render --to markdown` for one staged `.qmd` file.
+     *
+     * @param {string} quartoCommand
+     * @param {{
+     *   stagedQmdBaseName: string;
+     *   stagedMdBaseName: string;
+     *   stagedQmdDir: string;
+     * }} staged
+     * @returns {Promise<void>}
+     */
+    async #runQuartoMarkdownRenderAsync(quartoCommand, staged) {
+        await this.#runCommandAsync(quartoCommand, [
+            'render',
+            staged.stagedQmdBaseName,
+            '--to',
+            'markdown',
+            '--output',
+            staged.stagedMdBaseName,
+            '--no-execute',
+            '--execute-dir',
+            this.#quarto.rootDir
+        ], {
+            cwd: staged.stagedQmdDir,
+            env: {
+                QUARTO_PROJECT_DIR: this.#quarto.rootDir
+            }
+        });
+    }
+
+    /**
+     * Applies post-Quarto markdown transforms and returns cleaned body plus preserved Jams block stash.
+     *
+     * @param {string} body
+     * @param {string} relativePath
+     * @param {Array<{ placeholder: string; target: string }>} qprotectMap
+     * @param {Array<{ kind: 'fenced-div'; classes: string[]; inner: string; openLine: string }>} stagedStash
+     * @returns {{
+     *   cleanedBody: string;
+     *   stash: Array<{ kind: 'fenced-div'; classes: string[]; inner: string; openLine: string }>;
+     * }}
+     */
+    #prepareRenderedQmdBody(body, relativePath, qprotectMap, stagedStash) {
+        const qprotectedBody = this.#qprotectRestoreRootTargetsAfterQuartoMarkdown(body, qprotectMap);
+        const rewrittenBody = this.#sanitizeQuartoMarkdownLinkRoots(
+            this.#rewriteQuartoAssetPaths(qprotectedBody, relativePath)
+        );
+        let stash = Array.isArray(stagedStash) ? stagedStash : [];
+        let cleanedBody = rewrittenBody;
+        if (stash.length === 0) {
+            const extracted = this.#extractJamsEduBlocksFromQuartoIntermediateMarkdown(rewrittenBody);
+            cleanedBody = extracted.cleanedBody;
+            stash = extracted.stash;
+        }
+        return { cleanedBody, stash };
+    }
+
+    /**
+     * Merges processed Jams block placeholders into a Pandoc HTML fragment and applies final fixes.
+     *
+     * @param {string} htmlFragment
+     * @param {Array<{ kind: 'fenced-div'; classes: string[]; inner: string; openLine: string }>} stash
+     * @returns {string}
+     */
+    #finalizeRenderedQmdHtmlFragment(htmlFragment, stash) {
+        const mergedPieces = stash.map((entry) => {
+            return this.#processJamsEduQuartoStashEntry(entry);
+        });
+        let out = this.#mergeJamsEduBlockPlaceholdersIntoHtmlFragment(htmlFragment, mergedPieces);
+        out = this.#restoreTexBackslashesAfterPandoc(out);
+        this.#warnIfUnresolvedJamsQuartoBlockPlaceholders(out, stash.length);
+        return out;
+    }
+
+    /**
+     * Renders one standalone `.qmd` into its final `.html` output.
+     *
+     * @param {string} src
+     * @param {string} relativePath
+     * @param {string} dest
+     * @returns {void}
+     */
     #processQmdFile(src, relativePath, dest) {
         const quartoCommand = this.#resolveQuartoCommand();
         if (!quartoCommand) {
@@ -3093,22 +3437,7 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
             const staged = this.#prepareQmdRenderStaging(src, relativePath);
             try {
                 /* Shortcodes resolve in Quarto preprocessing; Jupyter is optional and often missing on workstations. */
-                this.#runCommand(quartoCommand, [
-                    'render',
-                    staged.stagedQmdBaseName,
-                    '--to',
-                    'markdown',
-                    '--output',
-                    staged.stagedMdBaseName,
-                    '--no-execute',
-                    '--execute-dir',
-                    this.#quarto.rootDir
-                ], {
-                    cwd: staged.stagedQmdDir,
-                    env: {
-                        QUARTO_PROJECT_DIR: this.#quarto.rootDir
-                    }
-                });
+                this.#runQuartoMarkdownRenderSync(quartoCommand, staged);
             } finally {
                 this.#cleanupQmdRenderStaging(staged, src);
             }
@@ -3118,26 +3447,16 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
             const mdContent = Fs.readFileSync(renderedPath, 'utf8');
             const { frontmatter, body } = this.#splitFrontmatter(mdContent);
             const meta = this.#extractQmdMeta(frontmatter);
-            const qprotectedBody = this.#qprotectRestoreRootTargetsAfterQuartoMarkdown(body, staged.qprotectMap);
-            const rewrittenBody = this.#sanitizeQuartoMarkdownLinkRoots(
-                this.#rewriteQuartoAssetPaths(qprotectedBody, relativePath)
+            const prepared = this.#prepareRenderedQmdBody(
+                body,
+                relativePath,
+                staged.qprotectMap,
+                staged.quartoBlockStash
             );
-            let stash = Array.isArray(staged.quartoBlockStash) ? staged.quartoBlockStash : [];
-            let cleanedBody = rewrittenBody;
-            if (stash.length === 0) {
-                const extracted = this.#extractJamsEduBlocksFromQuartoIntermediateMarkdown(rewrittenBody);
-                cleanedBody = extracted.cleanedBody;
-                stash = extracted.stash;
-            }
-            const mdWithMathHtml = this.#convertMarkdownMathToJamsHtml(cleanedBody);
+            const mdWithMathHtml = this.#convertMarkdownMathToJamsHtml(prepared.cleanedBody);
             let htmlFragment = this.#pandocToHtmlFragment(mdWithMathHtml);
             htmlFragment = this.#sanitizeHtmlFragmentForJhp(htmlFragment);
-            const mergedPieces = stash.map((entry) => {
-                return this.#processJamsEduQuartoStashEntry(entry);
-            });
-            htmlFragment = this.#mergeJamsEduBlockPlaceholdersIntoHtmlFragment(htmlFragment, mergedPieces);
-            htmlFragment = this.#restoreTexBackslashesAfterPandoc(htmlFragment);
-            this.#warnIfUnresolvedJamsQuartoBlockPlaceholders(htmlFragment, stash.length);
+            htmlFragment = this.#finalizeRenderedQmdHtmlFragment(htmlFragment, prepared.stash);
             const finalHtml = this.#renderQmdWithTemplate(relativePath, htmlFragment, meta);
             this.#writeFile(dest, finalHtml, src);
             this.#copyRenderedQmdAssets(staged.stagedMdPath, relativePath);
@@ -3168,22 +3487,7 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
         try {
             const staged = this.#prepareQmdRenderStaging(src, relativePath);
             try {
-                await this.#runCommandAsync(quartoCommand, [
-                    'render',
-                    staged.stagedQmdBaseName,
-                    '--to',
-                    'markdown',
-                    '--output',
-                    staged.stagedMdBaseName,
-                    '--no-execute',
-                    '--execute-dir',
-                    this.#quarto.rootDir
-                ], {
-                    cwd: staged.stagedQmdDir,
-                    env: {
-                        QUARTO_PROJECT_DIR: this.#quarto.rootDir
-                    }
-                });
+                await this.#runQuartoMarkdownRenderAsync(quartoCommand, staged);
             } finally {
                 this.#cleanupQmdRenderStaging(staged, src);
             }
@@ -3193,26 +3497,16 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
             const mdContent = Fs.readFileSync(renderedPath, 'utf8');
             const { frontmatter, body } = this.#splitFrontmatter(mdContent);
             const meta = this.#extractQmdMeta(frontmatter);
-            const qprotectedBody = this.#qprotectRestoreRootTargetsAfterQuartoMarkdown(body, staged.qprotectMap);
-            const rewrittenBody = this.#sanitizeQuartoMarkdownLinkRoots(
-                this.#rewriteQuartoAssetPaths(qprotectedBody, relativePath)
+            const prepared = this.#prepareRenderedQmdBody(
+                body,
+                relativePath,
+                staged.qprotectMap,
+                staged.quartoBlockStash
             );
-            let stash = Array.isArray(staged.quartoBlockStash) ? staged.quartoBlockStash : [];
-            let cleanedBody = rewrittenBody;
-            if (stash.length === 0) {
-                const extracted = this.#extractJamsEduBlocksFromQuartoIntermediateMarkdown(rewrittenBody);
-                cleanedBody = extracted.cleanedBody;
-                stash = extracted.stash;
-            }
-            const mdWithMathHtml = this.#convertMarkdownMathToJamsHtml(cleanedBody);
+            const mdWithMathHtml = this.#convertMarkdownMathToJamsHtml(prepared.cleanedBody);
             let htmlFragment = await this.#pandocToHtmlFragmentAsync(mdWithMathHtml);
             htmlFragment = this.#sanitizeHtmlFragmentForJhp(htmlFragment);
-            const mergedPieces = stash.map((entry) => {
-                return this.#processJamsEduQuartoStashEntry(entry);
-            });
-            htmlFragment = this.#mergeJamsEduBlockPlaceholdersIntoHtmlFragment(htmlFragment, mergedPieces);
-            htmlFragment = this.#restoreTexBackslashesAfterPandoc(htmlFragment);
-            this.#warnIfUnresolvedJamsQuartoBlockPlaceholders(htmlFragment, stash.length);
+            htmlFragment = this.#finalizeRenderedQmdHtmlFragment(htmlFragment, prepared.stash);
             const finalHtml = this.#renderQmdWithTemplate(relativePath, htmlFragment, meta);
             this.#writeFile(dest, finalHtml, src);
             this.#copyRenderedQmdAssets(staged.stagedMdPath, relativePath);
@@ -3262,6 +3556,12 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
         }
     }
 
+    /**
+     * Processes a single source file, compiling pages or copying assets as needed.
+     *
+     * @param {string} src Absolute source path under `srcDir`.
+     * @returns {void}
+     */
     #processFile(src) {
         if (this.#isUnderTemplateDir(src)) {
             return;
@@ -3311,6 +3611,11 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
         }
     }
 
+    /**
+     * Ensures the instance was initialized before running build or watch operations.
+     *
+     * @returns {boolean}
+     */
     #requireInit() {
         if (!this.#initialized) {
             if (this.#verbose) {
@@ -3344,6 +3649,11 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
         this.#scheduleThrottledWatchReloadFlush();
     }
 
+    /**
+     * Schedules a throttled flush of queued watch reload calls.
+     *
+     * @returns {void}
+     */
     #scheduleThrottledWatchReloadFlush() {
         if (!this.#NSS) {
             return;
@@ -3360,7 +3670,11 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
         }, delay);
     }
 
-    /** Applies queued NSS reload calls and updates throttle clock. Skips empty queue. */
+    /**
+     * Applies queued NSS reload calls and updates the throttle clock.
+     *
+     * @returns {void}
+     */
     #flushWatchReloadQueueNow() {
         if (!this.#NSS) {
             return;

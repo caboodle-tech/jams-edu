@@ -1,4 +1,4 @@
-// @jamsedu-version: 2.2.0
+// @jamsedu-version: 2.2.1
 // @jamsedu-component: mermaid
 
 import './dom-watcher.js';

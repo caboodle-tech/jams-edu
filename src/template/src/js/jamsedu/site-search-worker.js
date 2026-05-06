@@ -1,8 +1,11 @@
+// @jamsedu-version: 1.0.0
+// @jamsedu-component: site-search-worker
+
 /**
  * Site search worker: loads `sitemap.json` once per worker lifetime, ranks pages in this thread.
  */
 
-const PAGE_SIZE = 30;
+const PAGE_SIZE = 25;
 
 /** @type {{ p: Array<{ u: string; t: string; d: string; k: string; h: string[]; s: string; m: number }> } | null} */
 let index = null;

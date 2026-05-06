@@ -1,4 +1,4 @@
-// @jamsedu-version: 1.4.0
+// @jamsedu-version: 1.4.1
 // @jamsedu-component: tiny-wysiwyg-2
 
 import './dom-watcher.js';

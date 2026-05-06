@@ -83,6 +83,7 @@ At this point you're ready to explore more advanced features of JamsEdu:
 - Adding template [processing hooks](#hooks-pre-and-post)
 - Additional [configuration options](#configuration-options)
 - Customizing JamsEdu components (see template `docs/` folder)
+- Authoring Quarto pages with [Quarto (`.qmd`) Guide](./docs/quarto.jamsedu.md)
 
 ## JamsEdu Configuration File
 

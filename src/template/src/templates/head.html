@@ -1,16 +1,25 @@
-<!-- @jamsedu-version: 1.0.0 -->
+<!-- @jamsedu-version: 1.1.0 -->
 <!-- @jamsedu-component: templates-head -->
 
 <script>
-    title = (typeof title !== 'undefined' && title) ? title : 'JamsEdu';
-    description = (typeof description !== 'undefined' && description) ? description :
-        'JamsEdu static site generator for teaching and open content.';
+    /**
+     * Set basic defaults for the page title and description if they are not set.
+     */
+    if (!title) {
+        const title = 'JamsEdu';
+    }
+    if (!description) {
+        const description = 'JamsEdu static site generator for teaching and open content.';
+    }
 </script>
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" href="/assets/images/favicon/favicon.ico" sizes="any">
+        <link rel="icon" href="/assets/images/favicon/icon.svg" type="image/svg+xml">
+        <link rel="apple-touch-icon" href="/assets/images/favicon/apple-touch-icon.png">
         <link href="/assets/css/main.css" rel="stylesheet">
         <title><script>$echo(title);</script></title>
         <script>

@@ -1,4 +1,4 @@
-// @jamsedu-version: 1.2.0
+// @jamsedu-version: 1.2.1
 // @jamsedu-component: dom-watcher
 
 /**

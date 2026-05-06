@@ -1,4 +1,4 @@
-// @jamsedu-version: 3.2.0
+// @jamsedu-version: 3.2.1
 // @jamsedu-component: main-js
 
 import { DomWatcher, initJamsEdu } from './jamsedu/index.js';

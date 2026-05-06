@@ -1,4 +1,4 @@
-// @jamsedu-version: 1.6.1
+// @jamsedu-version: 1.6.2
 // @jamsedu-component: embed-pdf-js
 
 import './dom-watcher.js';

@@ -1,4 +1,4 @@
-<!-- @jamsedu-version: 5.1.0 -->
+<!-- @jamsedu-version: 2.2.2 -->
 <!-- @jamsedu-component: docs-jhp-templates -->
 # JHP Templates Guide
 

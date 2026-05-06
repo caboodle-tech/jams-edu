@@ -33,9 +33,9 @@
             <li><a href="#diagrams">Diagrams (Mermaid)</a></li>
             <li><a href="#code-highlighting">Code Highlighting</a></li>
             <li><a href="#rich-text">Rich Text</a></li>
-            <li><a href="#tiny-doc">Tiny Doc</a></li>
         </ul>
         <ul>
+            <li><a href="#tiny-doc">Tiny Doc</a></li>
             <li><a href="#embedded-pdf">Embedded PDF</a></li>
             <li><a href="#responsive-video">Responsive Video</a></li>
             <li><a href="#frontend-feature-options">Optional Settings</a></li>
@@ -48,6 +48,9 @@
     <h2 id="quarto-heading">Quarto + Built-Ins</h2>
     <p>
         Quarto support is a core feature in JamsEDU. If you are authoring in <code>.qmd</code>, start with <a href="/features/builtins/quarto-jamsedu.html">Quarto with JamsEDU</a>. It covers native Quarto shortcode syntax, include behavior, and the exact HTML patterns to use when you want JamsEDU built-ins like Mermaid, KaTeX, Tiny Doc, Rich Text, embedded PDFs, and responsive video.
+    </p>
+    <p>
+        <a href="/features/builtins/quarto-jamsedu.html">Quarto with JamsEDU Guide</a>
     </p>
 </section>
 

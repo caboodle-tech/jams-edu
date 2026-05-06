@@ -1,11 +1,13 @@
-// @jamsedu-version: 2.2.0
+// @jamsedu-version: 2.2.1
 // @jamsedu-component: katex
 
 import './dom-watcher.js';
 
 /**
- * Loads KaTeX from jsDelivr and renders `.math` blocks. Also handles `.math.macro` definitions.
- * Use `displayMode` (centered block) by default; add class `inline` (e.g. `span.math.inline`) for flow inline like `code`.
+ * Loads KaTeX from jsDelivr and renders `.math` blocks.
+ * Also handles `.math.macro` definitions.
+ * Use `displayMode` (centered block) by default.
+ * Add class `inline` (e.g. `span.math.inline`) for flow inline like `code`.
  *
  * @typedef {object} KatexLoaderConfig
  * @property {string} [katexVersion] npm tag, default `latest`.
@@ -216,16 +218,26 @@ class KatexLoader {
         if (typeof window.katex?.render !== 'function') {
             return;
         }
-        document.querySelectorAll('.math').forEach((el) => {
-            if (el.dataset.katexRendered) {
-                return;
-            }
+
+        const mathElements = Array.from(document.querySelectorAll('.math'));
+        const macroElements = mathElements.filter((el) => {
+            return !el.dataset.katexRendered && el.classList.contains('macro');
+        });
+
+        const renderElements = mathElements.filter((el) => {
+            return !el.dataset.katexRendered && !el.classList.contains('macro');
+        });
+
+        // Pass 1: collect and remove macros so formulas can reference them regardless of DOM order.
+        macroElements.forEach((el) => {
             const raw = el.dataset.formula ?? el.textContent ?? '';
-            if (el.classList.contains('macro')) {
-                this.#mergeMacrosFromContent(raw, this.#macros);
-                el.remove();
-                return;
-            }
+            this.#mergeMacrosFromContent(raw, this.#macros);
+            el.remove();
+        });
+
+        // Pass 2: render non-macro math with the full macro table.
+        renderElements.forEach((el) => {
+            const raw = el.dataset.formula ?? el.textContent ?? '';
             if (!raw) {
                 return;
             }

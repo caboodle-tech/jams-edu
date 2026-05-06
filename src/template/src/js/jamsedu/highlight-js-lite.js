@@ -1,4 +1,4 @@
-// @jamsedu-version: 1.0.0
+// @jamsedu-version: 1.0.1
 // @jamsedu-component: js-jamsedu-highlight-js-lite
 
 /**

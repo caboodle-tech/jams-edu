@@ -1,0 +1,1 @@
+This paragraph is pulled from `features/snippets/quarto-shared-note.qmd` using Quarto's `{{< include >}}` shortcode, showing that includes work as expected in JamsEDU.

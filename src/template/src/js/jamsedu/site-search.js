@@ -1,3 +1,6 @@
+// @jamsedu-version: 1.0.0
+// @jamsedu-component: site-search
+
 /**
  * Wires the header search panel to a dedicated worker that loads `sitemap.json` once per tab.
  * Queries debounce while typing; Enter submits the form and runs immediately (skips the debounce wait).
