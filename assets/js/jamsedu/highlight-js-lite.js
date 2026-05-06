@@ -119,7 +119,14 @@ class HighlightJsLiteLoader {
     #loadWithVersionFallback() {
         const primary = this.#resolvedVersion();
         return new Promise((resolve, reject) => {
-            const attempt = (version) => {
+            const bumpToLatestOrReject = (version, err) => {
+                if (version === 'latest') {
+                    reject(err);
+                    return;
+                }
+                tryVersion('latest');
+            };
+            const tryVersion = (version) => {
                 this.#injectHljsl(
                     version,
                     () => {
@@ -127,22 +134,14 @@ class HighlightJsLiteLoader {
                             resolve();
                             return;
                         }
-                        if (version === 'latest') {
-                            reject(new Error('HLJSL API missing after load'));
-                            return;
-                        }
-                        attempt('latest');
+                        bumpToLatestOrReject(version, new Error('HLJSL API missing after load'));
                     },
                     () => {
-                        if (version === 'latest') {
-                            reject(new Error('HLJSL script failed'));
-                            return;
-                        }
-                        attempt('latest');
+                        bumpToLatestOrReject(version, new Error('HLJSL script failed'));
                     }
                 );
             };
-            attempt(primary);
+            tryVersion(primary);
         });
     }
 

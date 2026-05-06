@@ -1,5 +1,9 @@
 import './dom-watcher.js';
 
+const REGEX = Object.freeze({
+    pdfHref: /\.pdf(\?|#|$)/i
+});
+
 /**
  * EmbedPDF Snippet loader: mounts viewers for `div[data-pdf]` and `embed[src$=".pdf"]`.
  * Loads `@embedpdf/snippet` from jsDelivr, maps `.embed-pdf-container` CSS variables into
@@ -260,7 +264,7 @@ class EmbedPdfLoader {
     #ensurePdfEmbedsTyped() {
         document.querySelectorAll('embed').forEach((el) => {
             const src = el.getAttribute('src')?.trim();
-            if (!src || !/\.pdf(\?|#|$)/i.test(src)) {
+            if (!src || !REGEX.pdfHref.test(src)) {
                 return;
             }
             const type = el.getAttribute('type')?.trim().toLowerCase();
@@ -293,7 +297,7 @@ class EmbedPdfLoader {
 
         document.querySelectorAll('embed').forEach((el) => {
             const src = el.getAttribute('src')?.trim();
-            if (!src || !/\.pdf(\?|#|$)/i.test(src)) {
+            if (!src || !REGEX.pdfHref.test(src)) {
                 return;
             }
             const type = el.getAttribute('type')?.trim().toLowerCase();

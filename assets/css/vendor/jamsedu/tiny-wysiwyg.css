@@ -1,6 +1,3 @@
-
-
-
 /**
  * WYSIWYG chrome + prose. Site tokens (`--font-*`, `--spacing-*`, `--color-*`) plus `--jamsedu-*`.
  * Never reference `--pdf-*`. Use `variables.css` for sizes and `tokens.css` for `--richtext-*` hooks.

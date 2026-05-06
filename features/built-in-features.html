@@ -3,6 +3,9 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" href="../assets/images/favicon/favicon.ico" sizes="any">
+        <link rel="icon" href="../assets/images/favicon/icon.svg" type="image/svg+xml">
+        <link rel="apple-touch-icon" href="../assets/images/favicon/apple-touch-icon.png">
         <link href="../assets/css/main.css" rel="stylesheet">
         <title>Built-In Features · JamsEDU</title>
         <meta name="description" content="Explore JamsEDU built-in features including LaTeX math, Mermaid diagrams, code highlighting, Rich Text editing, interactive forms, PDF viewing, responsive video embeds, and theming.">
@@ -37,6 +40,12 @@
                 <svg class="site-nav-icon site-nav-icon-open" aria-hidden="true" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" fill="currentColor"></svg>
                 <svg class="site-nav-icon site-nav-icon-close" aria-hidden="true" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"></svg>
             </label>
+            <input class="visually-hidden" type="checkbox" id="site-search-toggle" aria-controls="site-search-panel">
+            <label class="site-search-trigger" for="site-search-toggle">
+                <span class="visually-hidden">Toggle site search</span>
+                <span aria-hidden="true">🔎</span>
+                <span aria-hidden="true">✕</span>
+            </label>
             <details class="theme-menu">
                 <summary class="theme-control">
                     <span class="visually-hidden">Color scheme</span>
@@ -61,6 +70,13 @@
             </details>
         </div>
     </div>
+    <div id="site-search-panel" role="region" aria-label="Site search">
+        <form method="get" action role="search">
+            <label class="visually-hidden" for="site-search-query">Search</label>
+            <input type="search" id="site-search-query" name="query" autocomplete="off" enterkeyhint="search" placeholder="Search…">
+        </form>
+        <div id="site-search-results" class="site-search-results" aria-live="polite"></div>
+    </div>
 </header>
 <main>
 <p class="breadcrumb"><a href="../index.html">Home</a> · <a href="../features/index.html">Docs</a> · Built-In Features</p>
@@ -81,13 +97,14 @@
     <h2 id="built-ins-toc-heading">On This Page</h2>
     <div class="columns two">
         <ul>
+            <li><a href="#quarto">Quarto + Built-Ins</a></li>
             <li><a href="#math">Math (KaTeX)</a></li>
             <li><a href="#diagrams">Diagrams (Mermaid)</a></li>
             <li><a href="#code-highlighting">Code Highlighting</a></li>
             <li><a href="#rich-text">Rich Text</a></li>
-            <li><a href="#tiny-doc">Tiny Doc</a></li>
         </ul>
         <ul>
+            <li><a href="#tiny-doc">Tiny Doc</a></li>
             <li><a href="#embedded-pdf">Embedded PDF</a></li>
             <li><a href="#responsive-video">Responsive Video</a></li>
             <li><a href="#frontend-feature-options">Optional Settings</a></li>
@@ -95,6 +112,15 @@
         </ul>
     </div>
 </nav>
+<section id="quarto" aria-labelledby="quarto-heading">
+    <h2 id="quarto-heading">Quarto + Built-Ins</h2>
+    <p>
+        Quarto support is a core feature in JamsEDU. If you are authoring in <code>.qmd</code>, start with <a href="../features/builtins/quarto-jamsedu.html">Quarto with JamsEDU</a>. It covers native Quarto shortcode syntax, include behavior, and the exact HTML patterns to use when you want JamsEDU built-ins like Mermaid, KaTeX, Tiny Doc, Rich Text, embedded PDFs, and responsive video.
+    </p>
+    <p>
+        <a href="../features/builtins/quarto-jamsedu.html">Quarto with JamsEDU Guide</a>
+    </p>
+</section>
 <section id="math" aria-labelledby="math-heading">
     <h2 id="math-heading">Math (KaTeX)</h2>
     <p>
@@ -205,9 +231,7 @@ sequenceDiagram
     <p>
         You can also include a <code>cite</code> element inside the <code>video</code> tag. JamsEDU will turn the cite text into a link pointing to the same URL as <code>src</code> so readers can open the original video on the host site.
     </p>
-    <figure class="video"><iframe allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" frameborder="0" sandbox="allow-scripts allow-same-origin allow-presentation" src="https://www.youtube-nocookie.com/embed/NpEaa2P7qZI?modestbranding=1"></iframe><figcaption>
-        <a href="https://youtu.be/NpEaa2P7qZI" target="_blank" rel="noreferrer">&nbsp;Sample video citation&nbsp;</a></cite>
-    </figcaption></figure>
+    <figure class="video"><iframe allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" frameborder="0" sandbox="allow-scripts allow-same-origin allow-presentation" src="https://www.youtube-nocookie.com/embed/NpEaa2P7qZI?modestbranding=1"></iframe><figcaption><a href="https://youtu.be/NpEaa2P7qZI" target="_blank" rel="noreferrer">&nbsp;Sample video citation&nbsp;</a></figcaption></figure>
     <pre><code class="html">
         &lt;video src="https://youtu.be/NpEaa2P7qZI"&gt;
             &lt;cite&gt;Your visible citation label&lt;/cite&gt;

@@ -1,13 +1,14 @@
 /**
  * Early theme sync for `tokens/colors.css` (`html:has(input[name="theme-preference"]…)`).
- * Load as a blocking script in `head` (no `defer` / `async`). If `document.body` is not created yet,
- * appends to `document.head`; `html:has(…)` still matches.
+ * Load as a blocking script in `head` without `defer` or `async`.
+ * If `document.body` is not created yet, append to `document.head`; `html:has(…)` still matches.
  *
- * Creates `#theme-preference-sync` (hidden radio group) when absent. Saving the choice from the visible
- * `.theme-menu` runs in `main.js` (`localStorage` key `theme-preference`).
+ * Creates `#theme-preference-sync` (hidden radio group) when absent.
+ * Saving the choice from the visible `.theme-menu` runs in `main.js` (`localStorage` key `theme-preference`).
  */
 (() => {
-    const ALLOWED = new Set(['light', 'system', 'dark']);
+    const ALLOWED_VALUES = ['light', 'system', 'dark'];
+    const ALLOWED = new Set(ALLOWED_VALUES);
     const syncContainerId = 'theme-preference-sync';
 
     let container = document.getElementById(syncContainerId);
@@ -16,7 +17,7 @@
         container.id = syncContainerId;
         container.hidden = true;
         container.setAttribute('aria-hidden', 'true');
-        ['light', 'system', 'dark'].forEach((v) => {
+        ALLOWED_VALUES.forEach((v) => {
             const input = document.createElement('input');
             input.type = 'radio';
             input.name = 'theme-preference';

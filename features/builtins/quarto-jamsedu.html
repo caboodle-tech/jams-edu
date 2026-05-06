@@ -7,8 +7,8 @@
         <link rel="icon" href="../../assets/images/favicon/icon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="../../assets/images/favicon/apple-touch-icon.png">
         <link href="../../assets/css/main.css" rel="stylesheet">
-        <title>KaTeX Math · JamsEDU</title>
-        <meta name="description" content="How to add inline and block LaTeX math formulas to your JamsEDU pages using KaTeX, including custom macros.">
+        <title>Quarto Not Installed</title>
+        <meta name="description" content="Quarto CLI is missing; this page is using graceful fallback output.">
         <script type="module" src="../../assets/js/main.js"></script>
         <script src="../../assets/js/theme-preference.js"></script>
     </head>
@@ -79,91 +79,11 @@
     </div>
 </header>
 <main>
-<p class="breadcrumb">
-    <a href="../../index.html">Home</a> · <a href="../../features/index.html">Docs</a> · <a href="../../features/built-in-features.html">Built-In Features</a> · KaTeX Math
-</p>
-<h1>KaTeX Math</h1>
-<p>
-    JamsEDU uses KaTeX to render LaTeX math formulas on your pages. Formulas can be placed inline within a sentence or as their own centered block. You write your LaTeX either in a <code>data-formula</code> attribute or as text content inside the element and JamsEDU handles the rendering automatically. Math adapts to your site's light and dark mode through the built-in token system. See <a href="#katex-styling-heading">Styling</a> below for details.
-</p>
-<p>
-    You can customize how KaTeX loads by editing <code>jamsEduConfig.katex</code> in <code>assets/js/main.js</code>. Set only the properties you need and anything you omit will use the default values. To disable math entirely, set the whole key to <code>false</code>. For more on how <code>jamsEduConfig</code> works across all built-ins, see <a href="../../features/built-in-features.html#frontend-feature-options-heading">Optional Settings</a>.
-</p>
-<dl>
-    <div>
-        <dt><code>useMutationObserver</code></dt>
-        <dd>When true (default), new <code>.math</code> nodes added after load are processed via the shared DOM watcher. When false, only elements present at load are rendered unless you wire your own callbacks.</dd>
-    </div>
-    <div>
-        <dt><code>version</code></dt>
-        <dd>The KaTeX version to load from jsDelivr. Currently defaults to <code>0.16.45</code>.</dd>
-    </div>
-</dl>
-<section aria-labelledby="inline-heading">
-    <h2 id="inline-heading">Inline Math</h2>
-    <p>
-        Use a <code>span</code> with the classes <code>math</code> and <code>inline</code> to place a formula inside a paragraph. The formula will flow naturally with your text at a matching size. For example, the identity <span class="math inline" data-formula="\sin^2\theta + \cos^2\theta = 1"></span> sits right alongside this sentence, as does a quadratic discriminant like <span class="math inline" data-formula="\Delta = b^2 - 4ac"></span>.
-    </p>
-    <pre><code class="html">
-        &lt;span class="math inline" data-formula="\sin^2\theta + \cos^2\theta = 1"&gt;&lt;/span&gt;
-    </code></pre>
-    <p>
-        A few more examples to show how different formulas look inline. Euler's identity: <span class="math inline" data-formula="e^{i\pi} + 1 = 0"></span>. Newton's second law: <span class="math inline" data-formula="\vec{F} = m\vec{a}"></span>. A small matrix: <span class="math inline" data-formula="\begin{pmatrix} a &amp; b \\ c &amp; d \end{pmatrix}"></span>. Note that column breaks in a matrix use <code>&amp;amp;</code> when written inside an HTML attribute.
-    </p>
-</section>
-<section aria-labelledby="block-heading">
-    <h2 id="block-heading">Block Math</h2>
-    <p>
-        Use a <code>div</code> with the class <code>math</code> to display a formula as a centered block. You can provide the LaTeX in a <code>data-formula</code> attribute or as text content inside the element. Both approaches produce the same result.
-    </p>
-    <p>
-        Using <code>data-formula</code>:
-    </p>
-    <div class="math" data-formula="c = \pm\sqrt{a^2 + b^2}"></div>
-    <pre><code class="html">
-        &lt;div class="math" data-formula="c = \pm\sqrt{a^2 + b^2}"&gt;&lt;/div&gt;
-    </code></pre>
-    <p>
-        Using text content inside the element:
-    </p>
-    <div class="math">x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}</div>
-    <pre><code class="html">
-        &lt;div class="math"&gt;x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}&lt;/div&gt;
-    </code></pre>
-    <p>
-        More block examples:
-    </p>
-    <div class="math" data-formula="e^{i\pi} + 1 = 0"></div>
-    <div class="math">\int_{0}^{\infty} e^{-x^2} dx = \frac{\sqrt{\pi}}{2}</div>
-    <div class="math">(a + b)^n = \sum_{k=0}^{n} \binom{n}{k} a^{n-k} b^k</div>
-</section>
-<section aria-labelledby="macros-heading">
-    <h2 id="macros-heading">Custom Macros</h2>
-    <p>
-        You can define reusable macros by adding the <code>macro</code> class to a <code>div.math</code> element. The macro definition is not rendered on the page but becomes available to any formulas that follow it. This is useful when a formula or symbol appears repeatedly and you want to define it once.
-    </p>
-    <div class="math macro">
-        \f = #1f(#2)
-    </div>
-    <div class="math">
-        \f\relax{x} = \int_{-\infty}^\infty \f\hat\xi\,e^{2 \pi i \xi x} \,d\xi
-    </div>
-    <pre><code class="html">
-        &lt;div class="math macro"&gt;
-            \f = #1f(#2)
-        &lt;/div&gt;
-        &lt;div class="math"&gt;
-            \f\relax{x} = \int_{-\infty}^\infty \f\hat\xi\,e^{2 \pi i \xi x} \,d\xi
-        &lt;/div&gt;
-    </code></pre>
-</section>
-<section aria-labelledby="katex-styling-heading">
-    <h2 id="katex-styling-heading">Styling</h2>
-    <p>
-        In a standard JamsEDU app, block math is centered and inline math gets a subtle chip surface styled through your site's design tokens in <code>css/vendor/jamsedu/jamsedu.css</code>. KaTeX inherits its text color from the page so formulas automatically follow light and dark mode as long as you keep the default token stack. For details on where these tokens live and how to override them, see <a href="../../features/builtins/css-theming.html">CSS and Theming</a>.
-    </p>
-</section>
-</main>
+<section class="callout warning">
+    <div class="title">Quarto Not Installed</div>
+    <p>The source file <code>features/builtins/quarto-jamsedu.qmd</code> could not be built because Quarto is not available right now. Install <a href="https://quarto.org/docs/get-started/" target="_blank" rel="noopener noreferrer">Quarto</a>, restart your app or terminal, and build again.</p>
+    <details><summary>Advanced troubleshooting</summary><p>JamsEDU checked these locations for Quarto:</p><ul><li><code>/usr/local/bin/quarto</code></li><li><code>/opt/homebrew/bin/quarto</code></li><li><code>/usr/bin/quarto</code></li></ul></details>
+</section></main>
 <footer class="full-width">
     <div class="columns two">
         <nav aria-label="Footer">

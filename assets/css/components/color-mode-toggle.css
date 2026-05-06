@@ -1,6 +1,3 @@
-
-
-
 /**
  * `.theme-control` is the shared tile for the disclosure trigger (`summary`) and each radio `label`.
  * Scoped under `details.theme-menu` so load order vs `details.css` does not matter.

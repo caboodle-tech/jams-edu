@@ -3,6 +3,9 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" href="../assets/images/favicon/favicon.ico" sizes="any">
+        <link rel="icon" href="../assets/images/favicon/icon.svg" type="image/svg+xml">
+        <link rel="apple-touch-icon" href="../assets/images/favicon/apple-touch-icon.png">
         <link href="../assets/css/main.css" rel="stylesheet">
         <title>Get Started · JamsEDU</title>
         <meta name="description" content="Learn how to install JamsEDU globally, initialize a new project, and start previewing your site locally with a few simple terminal commands.">
@@ -37,6 +40,12 @@
                 <svg class="site-nav-icon site-nav-icon-open" aria-hidden="true" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" fill="currentColor"></svg>
                 <svg class="site-nav-icon site-nav-icon-close" aria-hidden="true" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"></svg>
             </label>
+            <input class="visually-hidden" type="checkbox" id="site-search-toggle" aria-controls="site-search-panel">
+            <label class="site-search-trigger" for="site-search-toggle">
+                <span class="visually-hidden">Toggle site search</span>
+                <span aria-hidden="true">🔎</span>
+                <span aria-hidden="true">✕</span>
+            </label>
             <details class="theme-menu">
                 <summary class="theme-control">
                     <span class="visually-hidden">Color scheme</span>
@@ -60,6 +69,13 @@
                 </div>
             </details>
         </div>
+    </div>
+    <div id="site-search-panel" role="region" aria-label="Site search">
+        <form method="get" action role="search">
+            <label class="visually-hidden" for="site-search-query">Search</label>
+            <input type="search" id="site-search-query" name="query" autocomplete="off" enterkeyhint="search" placeholder="Search…">
+        </form>
+        <div id="site-search-results" class="site-search-results" aria-live="polite"></div>
     </div>
 </header>
 <main>
@@ -99,6 +115,9 @@
 </code></pre>
 <p>
     The watch command will automatically rebuild your site every time you save a file, giving you a live preview as you work. When you are ready to generate a final production build, use <code>jamsedu --build</code> instead. You can also add <code>--verbose</code> to either command for more detailed logging output.
+</p>
+<p>
+    A full <strong><code>jamsedu --build</code></strong> writes search metadata (<code>sitemap.json</code>) for the site header search and, when <code>websiteUrl</code> is set in <strong><code>.jamsedu/config.js</code></strong>, <code>sitemap.xml</code> for crawlers. <strong><code>--watch</code></strong> updates pages as you edit but does not refresh those index files on every save; run <code>--build</code> before you ship or when results should reflect the entire site (<a href="../features/configuration.html">Configuration</a>).
 </p>
 <h2>Project Configuration</h2>
 <p>
