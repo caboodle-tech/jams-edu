@@ -1,4 +1,4 @@
-// @jamsedu-version: 1.0.0
+// @jamsedu-version: 1.1.0
 // @jamsedu-component: site-search
 
 /**
@@ -15,7 +15,7 @@ let worker = null;
 let debounceTimer = null;
 
 /** @type {(q: string, page: number) => void} */
-let postWorkerSearch;
+let postWorkerSearch = () => {};
 
 const getWorker = () => {
     if (worker) {

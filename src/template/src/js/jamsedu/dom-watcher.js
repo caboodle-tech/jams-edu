@@ -1,11 +1,11 @@
-// @jamsedu-version: 1.2.1
+// @jamsedu-version: 1.3.0
 // @jamsedu-component: dom-watcher
 
 /**
  * Watches the DOM for elements matching a CSS selector. Runs your callback for nodes that already
  * exist and for nodes added later (including inside inserted subtrees).
  */
-class DOMWatcher {
+class DomWatcher {
 
     #observer;
     #processedElementsBySelector = new Map();
@@ -52,7 +52,7 @@ class DOMWatcher {
         } else if (typeof mode === 'number') {
             let timeoutMs = mode;
             if (timeoutMs < 100) {
-                console.warn(`DOMWatcher: Timeout must be at least 100ms. Adjusting ${timeoutMs}ms to 100ms.`);
+                console.warn(`DomWatcher: Timeout must be at least 100ms. Adjusting ${timeoutMs}ms to 100ms.`);
                 timeoutMs = 100;
             }
             once = true;
@@ -162,6 +162,6 @@ class DOMWatcher {
 }
 
 /** Same instance as the default export from this module. */
-window.DomWatcher = new DOMWatcher();
+window.DomWatcher = new DomWatcher();
 
 export default window.DomWatcher;

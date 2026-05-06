@@ -1,7 +1,16 @@
-// @jamsedu-version: 1.4.1
+// @jamsedu-version: 1.5.0
 // @jamsedu-component: tiny-wysiwyg-2
 
 import './dom-watcher.js';
+
+const REGEX = Object.freeze({
+    zwsp: /\u200b/g,
+    bom: /\ufeff/g,
+    nbsp: /\u00a0/g,
+    whitespaceChar: /\s/,
+    nonWhitespaceChar: /\S/,
+    hasProtocol: /^[a-z][a-z0-9+.-]*:/i
+});
 
 /**
  * Rich editor for `textarea.rich`: toolbar, contenteditable, sync back to the textarea.
@@ -100,9 +109,8 @@ class TinyWysiwyg {
         TinyWysiwyg.start({});
     }
 
-    // Unified cleanup method for both pasted content and regular formatting
+    /* Unified cleanup for pasted content and formatting passes: strip attrs, unwrap font/span, drop empty spans. */
     cleanHTML(element) {
-        // Remove unwanted attributes
         const allElements = element.querySelectorAll('*');
         allElements.forEach((el) => {
             el.removeAttribute('style');
@@ -110,19 +118,16 @@ class TinyWysiwyg {
             el.removeAttribute('id');
         });
 
-        // Remove font tags while preserving their content
         const fonts = element.querySelectorAll('font');
         fonts.forEach((font) => {
             this.unwrapElement(font);
         });
 
-        // Remove span tags while preserving their content
         const spans = element.querySelectorAll('span');
         spans.forEach((span) => {
             this.unwrapElement(span);
         });
 
-        // Remove empty spans
         const emptySpans = element.querySelectorAll('span:empty');
         emptySpans.forEach((span) => { return span.remove(); });
     }
@@ -157,7 +162,7 @@ class TinyWysiwyg {
         if (!this.editor) {
             return true;
         }
-        const text = this.editor.textContent.replace(/\u200b/g, '').replace(/\ufeff/g, '').trim();
+        const text = this.editor.textContent.replace(REGEX.zwsp, '').replace(REGEX.bom, '').trim();
         return text.length === 0;
     }
 
@@ -572,7 +577,7 @@ class TinyWysiwyg {
 
         if (start.nodeType === 3) { // Text node
             const text = start.textContent;
-            while (startOffset < text.length && /\s/.test(text[startOffset])) {
+            while (startOffset < text.length && REGEX.whitespaceChar.test(text[startOffset])) {
                 startOffset += 1;
             }
             range.setStart(start, startOffset);
@@ -584,7 +589,7 @@ class TinyWysiwyg {
 
         if (end.nodeType === 3) { // Text node
             const text = end.textContent;
-            while (endOffset > 0 && /\s/.test(text[endOffset - 1])) {
+            while (endOffset > 0 && REGEX.whitespaceChar.test(text[endOffset - 1])) {
                 endOffset -= 1;
             }
             range.setEnd(end, endOffset);
@@ -602,12 +607,12 @@ class TinyWysiwyg {
         let { endOffset } = range;
 
         // Expand start to beginning of word
-        while (startOffset > 0 && /\S/.test(text[startOffset - 1])) {
+        while (startOffset > 0 && REGEX.nonWhitespaceChar.test(text[startOffset - 1])) {
             startOffset -= 1;
         }
 
         // Expand end to end of word
-        while (endOffset < text.length && /\S/.test(text[endOffset])) {
+        while (endOffset < text.length && REGEX.nonWhitespaceChar.test(text[endOffset])) {
             endOffset += 1;
         }
 
@@ -1101,8 +1106,8 @@ class TinyWysiwyg {
             probe.selectNodeContents(block);
             probe.setStart(range.endContainer, range.endOffset);
             const trailing = probe.toString()
-                .replace(/\u00a0/g, ' ')
-                .replace(/\u200b/g, '')
+                .replace(REGEX.nbsp, ' ')
+                .replace(REGEX.zwsp, '')
                 .trim();
             const atEnd = trailing.length === 0;
             return atEnd;
@@ -1128,7 +1133,7 @@ class TinyWysiwyg {
                 prevElement = node.childNodes[offset - 1];
             } else if (node.nodeType === Node.TEXT_NODE) {
             // Check if text node is empty or only whitespace
-                const textContent = node.textContent.replace(/\u200b/g, '').trim();
+                const textContent = node.textContent.replace(REGEX.zwsp, '').trim();
                 if (textContent === '') {
                     prevElement = node.previousSibling;
                 }
@@ -1136,7 +1141,7 @@ class TinyWysiwyg {
 
             // Walk back through empty text nodes to find actual element
             while (prevElement && prevElement.nodeType === Node.TEXT_NODE) {
-                const text = prevElement.textContent.replace(/\u200b/g, '').trim();
+                const text = prevElement.textContent.replace(REGEX.zwsp, '').trim();
                 if (text !== '') {
                     break;
                 }
@@ -1148,7 +1153,7 @@ class TinyWysiwyg {
             // Now check if the one before that is also a BR
                 let beforeBr = prevElement.previousSibling;
                 while (beforeBr && beforeBr.nodeType === Node.TEXT_NODE) {
-                    const text = beforeBr.textContent.replace(/\u200b/g, '').trim();
+                    const text = beforeBr.textContent.replace(REGEX.zwsp, '').trim();
                     if (text !== '') {
                         break;
                     }
@@ -1180,7 +1185,7 @@ class TinyWysiwyg {
                                 toRemove.push(prev);
                                 count += 1;
                             } else if (prev.nodeType === Node.TEXT_NODE &&
-                                   prev.textContent.replace(/\u200b/g, '').trim() === '') {
+                                   prev.textContent.replace(REGEX.zwsp, '').trim() === '') {
                                 toRemove.push(prev);
                             } else {
                                 break;
@@ -1565,7 +1570,7 @@ class TinyWysiwyg {
         }
 
         // Add https:// if no protocol specified
-        if (!s.match(/^[a-z][a-z0-9+.-]*:/i)) {
+        if (!REGEX.hasProtocol.test(s)) {
             s = `https://${s}`;
         }
 

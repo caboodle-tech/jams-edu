@@ -1,4 +1,4 @@
-// @jamsedu-version: 3.3.1
+// @jamsedu-version: 3.4.0
 // @jamsedu-component: jamsedu-index
 
 import DomWatcher from './dom-watcher.js';
@@ -134,6 +134,15 @@ const mergeDefaultsWithOverride = (defaults, override) => {
     return merged;
 };
 
+const LOADERS = [
+    ['tinyDocument', TinyDocument],
+    ['tinyWysiwyg', TinyWysiwyg],
+    ['katex', KatexLoader],
+    ['mermaid', MermaidLoader],
+    ['highlightJsLite', HighlightJsLiteLoader],
+    ['embedPdf', EmbedPdfLoader]
+];
+
 /**
  * Starts TinyDocument, TinyWysiwyg, KaTeX, Mermaid, Highlight JS Lite, and Embed PDF from `main.js` config.
  *
@@ -153,39 +162,11 @@ export const initJamsEdu = (overrides = {}) => {
         };
     };
 
-    const tinyDocument = mergeDefaultsWithOverride(
-        defaultJamsEduConfig.tinyDocument,
-        overrides.tinyDocument
-    );
-    const tinyWysiwyg = mergeDefaultsWithOverride(
-        defaultJamsEduConfig.tinyWysiwyg,
-        overrides.tinyWysiwyg
-    );
-    const katex = mergeDefaultsWithOverride(defaultJamsEduConfig.katex, overrides.katex);
-    const mermaid = mergeDefaultsWithOverride(defaultJamsEduConfig.mermaid, overrides.mermaid);
-    const highlightJsLite = mergeDefaultsWithOverride(
-        defaultJamsEduConfig.highlightJsLite,
-        overrides.highlightJsLite
-    );
-    const embedPdf = mergeDefaultsWithOverride(defaultJamsEduConfig.embedPdf, overrides.embedPdf);
-
-    if (tinyDocument !== false) {
-        TinyDocument.start(withMutationObserverOption(tinyDocument));
-    }
-    if (tinyWysiwyg !== false) {
-        TinyWysiwyg.start(withMutationObserverOption(tinyWysiwyg));
-    }
-    if (katex !== false) {
-        KatexLoader.start(withMutationObserverOption(katex));
-    }
-    if (mermaid !== false) {
-        MermaidLoader.start(withMutationObserverOption(mermaid));
-    }
-    if (highlightJsLite !== false) {
-        HighlightJsLiteLoader.start(withMutationObserverOption(highlightJsLite));
-    }
-    if (embedPdf !== false) {
-        EmbedPdfLoader.start(withMutationObserverOption(embedPdf));
+    for (const [key, Loader] of LOADERS) {
+        const merged = mergeDefaultsWithOverride(defaultJamsEduConfig[key], overrides[key]);
+        if (merged !== false) {
+            Loader.start(withMutationObserverOption(merged));
+        }
     }
 };
 

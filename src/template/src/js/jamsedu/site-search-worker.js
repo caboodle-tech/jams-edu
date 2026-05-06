@@ -1,4 +1,4 @@
-// @jamsedu-version: 1.0.0
+// @jamsedu-version: 1.1.0
 // @jamsedu-component: site-search-worker
 
 /**
@@ -48,7 +48,7 @@ const scoreRow = (q, row) => {
             if (row.t.toLowerCase().includes(tok)) {
                 score += 6;
             }
-            if (hay.indexOf(tok) !== -1) {
+            if (hay.includes(tok)) {
                 score += 3;
             }
         }
