@@ -1,6 +1,3 @@
-
-
-
 @import './tokens.css' layer(vendor);
 @import './tiny-document.css' layer(vendor);
 @import './embed-pdf.css' layer(vendor);

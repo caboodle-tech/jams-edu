@@ -1,4 +1,4 @@
-<!-- @jamsedu-version: 5.0.0 -->
+<!-- @jamsedu-version: 2.2.2 -->
 <!-- @jamsedu-component: docs-tiny-documents -->
 # TinyDocument Guide
 

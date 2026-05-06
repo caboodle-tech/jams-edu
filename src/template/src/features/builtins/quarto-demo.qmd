@@ -1,0 +1,124 @@
+---
+title: Quarto Live Demos
+description: Companion page for Quarto with JamsEDU, same topics as the guide, shown as rendered output only.
+---
+
+# Quarto Live Demos
+
+Use **[Quarto with JamsEDU](./quarto-jamsedu.html)** for configuration, fenced-block recipes, and migration notes. Below is live output produced from ordinary `.qmd` authoring in JamsEDU.
+
+## Quarto Include
+
+{{< include /features/snippets/quarto-shared-note.qmd >}}
+
+## Using JamsEDU Features in `.qmd` Files
+
+#### [Mermaid Diagrams](./mermaid-diagrams.html)
+
+::: {.jams-mermaid}
+sequenceDiagram
+    participant A as Author
+    participant Q as Quarto
+    participant J as JamsEDU
+    A->>Q: Write qmd
+    Q->>J: Rendered markdown
+    J-->>A: Final html page
+:::
+
+::: {.jams-diagram}
+flowchart LR;
+    Author --> Quarto --> JamsEDU
+:::
+
+#### [KaTeX Math](./katex-math.html)
+
+Inline: $\sin^2\theta + \cos^2\theta = 1$
+
+Inline shortcode: The sum {{< jams-math-inline formula="\alpha+\beta=\gamma" >}} sits in this sentence alongside normal text.
+
+$$
+x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+$$
+
+::: {.jams-katex .macro}
+\f = #1f(#2)
+:::
+
+::: {.jams-math}
+\f\relax{x} = \int_{-\infty}^\infty \f\hat\xi\,e^{2 \pi i \xi x} \,d\xi
+:::
+
+::: html
+<div class="callout info icon">
+    <p>
+        Fenced math blocks can declare macro functions for math on this page. See <a href="./katex-math.html">KaTeX math</a> and <a href="./quarto-jamsedu.html">Quarto with JamsEDU</a>.
+    </p>
+</div>
+:::
+
+#### [Embedded PDF](./embedded-pdf.html)
+
+::: {.jams-pdf}
+/assets/docs/jamsedu-demo.pdf
+:::
+
+#### [Responsive Video](../built-in-features.html#responsive-video)
+
+::: {.jams-video}
+https://youtu.be/NpEaa2P7qZI
+:::
+
+::: html
+<div class="callout warning icon">
+    <p>
+        JamsEDU only supports the following video hosting platforms: YouTube, Vimeo, Dailymotion, Rumble, and Twitch.
+    </p>
+</div>
+:::
+
+`<video>` plus optional `<cite>` (same hooks as fenced `jams-video`):
+
+<video src="https://youtu.be/NpEaa2P7qZI">
+    <cite>Sample video citation</cite>
+</video>
+
+#### [Rich Text](./rich-text.html)
+
+::: {.jams-rich placeholder="Answer in a few sentences."}
+<p>Draft answer goes here.</p>
+:::
+
+::: html
+<div class="callout warning icon">
+    <p>
+        It is common to only set the placeholder attribute and not prepopulate the editor. If you choose to prepopulate the editor, only basic HTML is supported. Any tags not in this list will break your editor: <code>a</code>, <code>blockquote</code>, <code>em</code>, <code>h1</code>, <code>ol</code>, <code>p</code>, <code>strong</code>, <code>u</code>, <code>ul</code>
+    </p>
+</div>
+:::
+
+#### [Tiny Document](./tiny-document.html)
+
+::: {.jams-document}
+```{=html}
+<div class="title">Worksheet</div>
+<div class="header">
+    <div><input type="text" placeholder="Your Name"></div>
+    <div><input type="date"></div>
+</div>
+<div class="section">Reflection</div>
+<p class="instructions">
+    This is a simple demo document...
+</p>
+<textarea class="rich" placeholder="Write your thoughts here..."></textarea>
+```
+:::
+
+#### [Code Highlighting](./highlight-js-lite.html)
+
+```javascript
+const sum = (a, b) => {
+    return a + b;
+};
+
+console.log(sum(10, 32));
+```

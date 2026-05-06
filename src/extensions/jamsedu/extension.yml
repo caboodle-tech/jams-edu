@@ -1,0 +1,8 @@
+title: JamsEDU shortcodes
+author: Caboodle Tech
+version: 1.0.0
+contributes:
+  shortcodes:
+    - jamsedu.lua
+  filters:
+    - jamsedu-blocks.lua

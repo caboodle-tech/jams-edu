@@ -23,7 +23,7 @@ To maintain its simplicity and focus, JamsEdu intentionally excludes some advanc
 - :x: Automatic (dynamic) pagination; although with JHP you can do this yourself
 - :x: Built for you custom tags or components
 - :x: Collections or tags
-- :x: Front Matter
+- :x: Front Matter for `.jhp` pages (Quarto `.qmd` frontmatter is supported in the Quarto pipeline)
 - :x: Shortcodes
 
 ### Choose the Right Tool
@@ -83,6 +83,7 @@ At this point you're ready to explore more advanced features of JamsEdu:
 - Adding template [processing hooks](#hooks-pre-and-post)
 - Additional [configuration options](#configuration-options)
 - Customizing JamsEdu components (see template `docs/` folder)
+- Authoring Quarto pages with [Quarto (`.qmd`) Guide](./docs/quarto.jamsedu.md)
 
 ## JamsEdu Configuration File
 
@@ -101,35 +102,83 @@ export default {
 | `destDir`     | Yes      | Where the compiled (built) site is written.                                 |
 | `srcDir`      | Yes      | Where the site's source files live.                                         |
 | `templateDir` | Yes      | Where template and variable files live (typically inside `srcDir`).         |
-| `websiteUrl`  | No       | Base URL for the site (e.g. `https://example.com`); used e.g. for sitemap. |
+| `websiteUrl`  | No       | In `.jamsedu/config.js`, base URL (e.g. `https://example.com`); a clean `jamsedu --build` emits `destDir/sitemap.xml` when this property is set. Same build emits `sitemap.json` for masthead search even without `websiteUrl`. Incremental `--watch` does not rewrite those files each save; run `--build` to refresh them. |
 | `verbose`     | No       | Set to `true` for extra CLI output.                                         |
 | `pre`         | No       | Array of hook functions run before the template process.                    |
 | `post`        | No       | Array of hook functions run after the template process.                     |
-| `doNotCopy`   | No       | Array of file extensions to exclude from build output.                      |
+| `doNotCopy`   | No       | Additional deny-list extensions, merged with default safe exclusions.       |
+| `copyRules`   | No       | Advanced allow/deny copy rules by extension or filename suffix.             |
+| `quarto`      | No       | Quarto integration (`template`, `assetsDir`, `workingDir`; see Quarto section). |
 
-#### JHP `$include` paths (3.9+)
+#### JHP `$include` paths
 
-JamsEdu depends on **@caboodle-tech/jhp** 3.9 or newer. On each build, it passes JHP the **`includeSearchRoots`** list derived from your config: your **`templateDir`** (when set and not identical to `srcDir`), then your **`srcDir`**. That lines up with a leading `/` in `$include('/partials.html')` searching those directories in order, after JHP’s own rules for the current file and for paths starting with `../`. You can still pass a custom `includePathResolver` through JamsEdu in the future if a project needs a different policy; the default is documented in [docs/jhp-templates.jamsedu.md](./docs/jhp-templates.jamsedu.md) and in the [JHP “Include paths”](https://github.com/caboodle-tech/jhp) section.
+JamsEdu depends on **@caboodle-tech/jhp** 4.x. On each build, it passes JHP the **`includeSearchRoots`** list derived from your config: your **`templateDir`** (when set and not identical to `srcDir`), then your **`srcDir`**. That lines up with a leading `/` in `$include('/partials.html')` searching those directories in order, after JHP's own rules for the current file and for paths starting with `../`. You can still pass a custom `includePathResolver` through JamsEdu in the future if a project needs a different policy; the default is documented in [docs/jhp-templates.jamsedu.md](./docs/jhp-templates.jamsedu.md) and in the [JHP “Include paths”](https://github.com/caboodle-tech/jhp) section.
 
 ### Configuration Options
 
 #### `doNotCopy` (array)
 
-By default, JamsEdu prevents `js`, `json`, `md`, `sass`, `scss`, and `ts` files from being copied to the built site. To modify these restrictions, add the `doNotCopy` array to your configuration:
+JamsEdu uses a safe default deny-list for source and developer-only files. The defaults include `json`, `md`, `qmd`, `sass`, `scss`, and `ts`. Add `doNotCopy` to block additional extensions:
 
 ```js
 export default {
-    doNotCopy: ['js', 'sass', 'scss', 'ts', 'private.json', ...],
+    doNotCopy: ['private.json', 'secret.txt'],
     destDir: 'www',
     srcDir: 'src',
     templateDir: 'src/templates'
 };
 ```
 
-> [!WARNING]
-> Setting this option overwrites JamsEdu's default settings. You must include all file extensions you want to prevent from being output. Ensure you don't accidentally expose sensitive files!
+`doNotCopy` is merged with defaults. It does not replace built in safety rules.
 
-When adding file extensions to `doNotCopy`, omit the leading dot. For complex file extensions (e.g., `some-important-file.private.json`), add the entire extension without the dot: `'private.json'`.
+#### `copyRules` (object)
+
+`copyRules` provides explicit allow and deny controls:
+
+```js
+export default {
+    copyRules: {
+        allowExtensions: [],
+        allowSuffixes: [],
+        denyExtensions: [],
+        denySuffixes: []
+    },
+    destDir: 'www',
+    srcDir: 'src',
+    templateDir: 'src/templates'
+};
+```
+
+Rules are evaluated in this order:
+1. `allowSuffixes`
+2. `allowExtensions`
+3. `denySuffixes`
+4. `denyExtensions`
+
+Suffix values are useful for names like `private.json`. Extension values should not include the leading dot.
+
+#### Quarto options (`quarto`)
+
+JamsEdu can render `.qmd` files through Quarto and then wrap the result in your normal template system.
+
+```js
+export default {
+    quarto: {
+        template: 'src/templates/quarto.jhp',
+        assetsDir: 'quarto-assets',
+        workingDir: '.quarto'
+    },
+    destDir: 'www',
+    srcDir: 'src',
+    templateDir: 'src/templates'
+};
+```
+
+- `quarto.template`: Template path used for Quarto pages.
+- `quarto.assetsDir`: Destination namespace for generated `_files` assets.
+- `quarto.workingDir`: Staging directory used during Quarto renders.
+- Optional **Quarto project YAML** beside your config—only **the first found** is used—in this order under **`.jamsedu/`**: **`quarto.yml`**, **`_quarto.yml`**, **`quarto-project.yml`**. It is merged into the managed `_quarto.yml` under `quarto.workingDir`; any key Jams also sets (for example `filters`, `engine`, `project`) keeps the **built-in** value so the engine keeps working.
+- Graceful fallback is always enabled: if Quarto CLI is missing, JamsEdu writes a helpful placeholder page for each `.qmd` file and continues building the rest of the site.
 
 #### Hooks (`pre` and `post`)
 
@@ -182,4 +231,4 @@ export default {
 ```
 
 > [!NOTE]
-> This feature is not yet implemented. In the future, the website URL will be used to generate the sitemap.
+> A clean `jamsedu --build` writes `destDir/sitemap.json` used by the built-in masthead search (loaded via `/sitemap.json`). When `websiteUrl` is set **in `.jamsedu/config.js`**, that same pass writes `destDir/sitemap.xml` with absolute `<loc>` values for crawlers. Incremental `jamsedu --watch` does not regenerate those files on every save; run a full `--build` before deployment or whenever you want search metadata to span the entire site tree.

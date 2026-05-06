@@ -5,7 +5,7 @@
 
 /** Extensions for files we treat as text and strip comments from (build copy). */
 const TEXT_EXTENSIONS = new Set([
-    'css', 'htm', 'html', 'js', 'json', 'mjs', 'cjs', 'md', 'svg', 'xml'
+    'css', 'htm', 'html', 'js', 'json', 'mjs', 'cjs', 'md', 'qmd', 'svg', 'xml'
 ]);
 
 const LINE_END = String.raw`(?:\r\n|\n|\r)`;
@@ -13,8 +13,9 @@ const LINE_END = String.raw`(?:\r\n|\n|\r)`;
 /**
  * Strip @jamsedu-version and @jamsedu-component lines from content.
  * Handles //, block, and HTML comment forms. Line endings: CRLF, LF, or CR.
- * If any metadata was removed, trims leading newlines left behind so the file does not
- * start with a blank run.
+ * CSS block comment forms consume one trailing line terminator with each stripped tag so the file
+ * does not gain extra blank runs before real content.
+ * If any metadata was removed, trims a leading UTF-8 BOM and leading newlines.
  *
  * @param {string} content - Raw file content.
  * @returns {string} Content with JamsEdu comment lines removed.
@@ -30,8 +31,14 @@ export const stripJamseduComments = (content) => {
         new RegExp(`//\\s*@jamsedu-component:\\s*\\S+\\s*${LINE_END}?`, 'g'),
         ''
     );
-    out = out.replace(/\/\*\s*@jamsedu-version:\s*[\d.]+\s*\*\//g, '');
-    out = out.replace(/\/\*\s*@jamsedu-component:\s*\S+\s*\*\//g, '');
+    out = out.replace(
+        new RegExp(`\\/\\*\\s*@jamsedu-version:\\s*[\\d.]+\\s*\\*\\/${LINE_END}?`, 'g'),
+        ''
+    );
+    out = out.replace(
+        new RegExp(`\\/\\*\\s*@jamsedu-component:\\s*\\S+\\s*\\*\\/${LINE_END}?`, 'g'),
+        ''
+    );
     out = out.replace(
         new RegExp(String.raw`<!--\s*@jamsedu-version:\s*[\d.]+\s*-->${LINE_END}?`, 'g'),
         ''
@@ -41,7 +48,7 @@ export const stripJamseduComments = (content) => {
         ''
     );
     if (before !== out) {
-        out = out.replace(new RegExp(`^${LINE_END}+`), '');
+        out = out.replace(/^\uFEFF/, '').replace(new RegExp(`^${LINE_END}+`), '');
     }
     return out;
 };

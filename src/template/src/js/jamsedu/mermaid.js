@@ -1,4 +1,4 @@
-// @jamsedu-version: 2.2.0
+// @jamsedu-version: 2.3.0
 // @jamsedu-component: mermaid
 
 import './dom-watcher.js';
@@ -8,8 +8,8 @@ import './dom-watcher.js';
  *
  * @typedef {object} MermaidLoaderConfig
  * @property {string} mermaidVersion npm tag.
- * @property {string} theme Passed to `mermaid.initialize`. Prefer `default` (light); dark pages use CSS
- * `filter` in `jamsedu.css`.
+ * @property {string} theme Passed to `mermaid.initialize`. Prefer `default` (light); dark pages use the CSS
+ * `filter` rules in `jamsedu.css`.
  */
 
 class MermaidLoader {

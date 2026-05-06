@@ -144,16 +144,14 @@ class TinyDocument {
     }
 
     #setupFileInputs(elem, _) {
-        // Set up file input for image uploads
+        /* Configure image upload input, preview region, wrapper with icons; reposition input; wire uploads. */
         elem.classList.add('doc-input', 'doc-file');
         elem.setAttribute('accept', 'image/*');
 
-        // Create and add preview container
         const previewContainer = document.createElement('div');
         previewContainer.classList.add('doc-preview', 'empty');
         elem.parentNode.insertBefore(previewContainer, elem.nextSibling);
 
-        // Create a wrapper for the file input and add icons
         const wrapper = document.createElement('div');
         wrapper.classList.add('doc-file-wrapper', 'empty');
         if (elem.classList.contains('inline')) {
@@ -161,11 +159,9 @@ class TinyDocument {
         }
         wrapper.innerHTML = `<span class="count">0</span>${this.#icons.img}${this.#icons.imgUpload}`;
 
-        // Move the file input into the wrapper
         elem.parentElement.replaceChild(wrapper, elem);
         wrapper.prepend(elem);
 
-        // Handle multiple vs single file uploads
         if (elem.hasAttribute('multiple')) {
             wrapper.classList.add('multiple');
             previewContainer.classList.add('multiple');
@@ -680,34 +676,28 @@ class TinyDocument {
     }
 
     async #replaceFileInputsWithImages(clone) {
-        // Find all image file inputs in ORIGINAL document (to access the files)
+        /* Match originals to clones by index; replace with embedded images or remove unused inputs. */
         const originalInputs = Array.from(
             this.#document.querySelectorAll('input[type="file"][accept*="image"]')
         );
 
-        // Find all image file inputs in CLONED document (to replace)
         const clonedInputs = Array.from(
             clone.querySelectorAll('input[type="file"][accept*="image"]')
         );
 
-        // Process each input by index
         const promises = originalInputs.map(async(originalInput, index) => {
             const clonedInput = clonedInputs[index];
 
-            // Check if this input has a file selected
             if (originalInput.files && originalInput.files.length > 0) {
                 const file = originalInput.files[0];
 
-                // Read file as base64
                 const base64 = await this.#fileToBase64(file);
 
-                // Create image element
                 const img = document.createElement('img');
                 img.classList.add('doc-image');
                 img.src = base64;
                 img.alt = file.name;
 
-                // Optional: preserve any styling or dimensions
                 if (originalInput.style.width) {
                     img.style.width = originalInput.style.width;
                 }
@@ -715,15 +705,12 @@ class TinyDocument {
                     img.style.height = originalInput.style.height;
                 }
 
-                // Replace the cloned input with the image
                 clonedInput.parentNode.replaceChild(img, clonedInput);
             } else {
-                // No file selected, just remove the input
                 clonedInput.remove();
             }
         });
 
-        // Wait for all file reads to complete
         await Promise.all(promises);
     }
 

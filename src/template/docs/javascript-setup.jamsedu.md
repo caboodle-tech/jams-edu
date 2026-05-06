@@ -1,4 +1,4 @@
-<!-- @jamsedu-version: 5.0.0 -->
+<!-- @jamsedu-version: 2.2.2 -->
 <!-- @jamsedu-component: docs-javascript-setup -->
 # JavaScript Setup Guide
 
@@ -6,7 +6,7 @@
 
 **You MUST use `type="module"` when linking JavaScript files that use ES6 imports!**
 
-Path examples below are illustrative only. Always match your configured `srcDir`, `assetsDir`, and `assetPaths`.
+Path examples below are illustrative only. Always match your configured `srcDir` and optional grouped folder (`assetsDir` when you use one).
 
 ### Correct Usage
 

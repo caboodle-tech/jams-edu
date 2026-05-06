@@ -1,6 +1,3 @@
-
-
-
 /**
  * Color tokens: seeds + one `light-dark()` pair per surface (see
  * `www/public/css-architecture-and-folder-structure.md`). Dark side uses `oklch(from var(--seed-…) …)`.

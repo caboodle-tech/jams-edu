@@ -9,29 +9,32 @@ importers:
   .:
     dependencies:
       '@caboodle-tech/jhp':
-        specifier: ^3.10.0
-        version: 3.10.0
+        specifier: ^4.1.0
+        version: 4.1.0
       '@caboodle-tech/node-simple-server':
         specifier: ^4.3.0
         version: 4.3.0
+      js-yaml:
+        specifier: ^4.1.1
+        version: 4.1.1
     devDependencies:
       '@eslint/json':
         specifier: ^1.2.0
         version: 1.2.0
       '@html-eslint/eslint-plugin':
         specifier: ^0.59.0
-        version: 0.59.0(eslint@10.2.1)
+        version: 0.59.0(eslint@10.3.0)
       '@html-eslint/parser':
         specifier: ^0.59.0
         version: 0.59.0
       eslint:
-        specifier: ^10.2.1
-        version: 10.2.1
+        specifier: ^10.3.0
+        version: 10.3.0
 
 packages:
 
-  '@caboodle-tech/jhp@3.10.0':
-    resolution: {integrity: sha512-NpYNWqHN7Rr1iztwp4K82Unh7vlErXZaHN/ztS1evqI9p03mgoSFCVTPLZfGFh+/v5qa2UPc04tIVP5WRwOAow==}
+  '@caboodle-tech/jhp@4.1.0':
+    resolution: {integrity: sha512-tkYQ4Tnt85a6ACmNbe0xzFB2SA9RP/svd4c4d8Pd1EYyaQ2dZ+g4+V8UoT38jQRRZU6KJZjSiCCZDqX0dJEE1g==}
 
   '@caboodle-tech/node-simple-server@4.3.0':
     resolution: {integrity: sha512-r9aBk3Crwmh746wQzDC0S2j0m5s3c+0ojDBdKX6X8mhFg828S40U+dNVvKbfpoX34mQJUqw2bZ6dUkZqBFDGLQ==}
@@ -168,6 +171,9 @@ packages:
   ajv@6.15.0:
     resolution: {integrity: sha512-fgFx7Hfoq60ytK2c7DhnF8jIvzYgOMxfugjLOSMHjLIPgenqa7S7oaagATUq99mV6IYvN2tRmC0wnTYX6iPbMw==}
 
+  argparse@2.0.1:
+    resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
+
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
@@ -219,8 +225,8 @@ packages:
     resolution: {integrity: sha512-tD40eHxA35h0PEIZNeIjkHoDR4YjjJp34biM0mDvplBe//mB+IHCqHDGV7pxF+7MklTvighcCPPZC7ynWyjdTA==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  eslint@10.2.1:
-    resolution: {integrity: sha512-wiyGaKsDgqXvF40P8mDwiUp/KQjE1FdrIEJsM8PZ3XCiniTMXS3OHWWUe5FI5agoCnr8x4xPrTDZuxsBlNHl+Q==}
+  eslint@10.3.0:
+    resolution: {integrity: sha512-XbEXaRva5cF0ZQB8w6MluHA0kZZfV2DuCMJ3ozyEOHLwDpZX2Lmm/7Pp0xdJmI0GL1W05VH5VwIFHEm1Vcw2gw==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
     hasBin: true
     peerDependencies:
@@ -298,6 +304,10 @@ packages:
 
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
+
+  js-yaml@4.1.1:
+    resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
+    hasBin: true
 
   json-buffer@3.0.1:
     resolution: {integrity: sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==}
@@ -422,7 +432,7 @@ packages:
 
 snapshots:
 
-  '@caboodle-tech/jhp@3.10.0':
+  '@caboodle-tech/jhp@4.1.0':
     dependencies:
       '@caboodle-tech/simple-html-parser': 2.8.0
       acorn-loose: 8.5.2
@@ -437,9 +447,9 @@ snapshots:
 
   '@caboodle-tech/simple-html-parser@2.8.0': {}
 
-  '@eslint-community/eslint-utils@4.9.1(eslint@10.2.1)':
+  '@eslint-community/eslint-utils@4.9.1(eslint@10.3.0)':
     dependencies:
-      eslint: 10.2.1
+      eslint: 10.3.0
       eslint-visitor-keys: 3.4.3
 
   '@eslint-community/regexpp@4.12.2': {}
@@ -493,7 +503,7 @@ snapshots:
       '@html-eslint/types': 0.59.0
       html-standard: 0.0.13
 
-  '@html-eslint/eslint-plugin@0.59.0(eslint@10.2.1)':
+  '@html-eslint/eslint-plugin@0.59.0(eslint@10.3.0)':
     dependencies:
       '@eslint/plugin-kit': 0.4.1
       '@html-eslint/core': 0.59.0
@@ -502,7 +512,7 @@ snapshots:
       '@html-eslint/template-syntax-parser': 0.59.0
       '@html-eslint/types': 0.59.0
       '@rviscomi/capo.js': 2.1.0
-      eslint: 10.2.1
+      eslint: 10.3.0
       html-standard: 0.0.13
 
   '@html-eslint/parser@0.59.0':
@@ -574,6 +584,8 @@ snapshots:
       json-schema-traverse: 0.4.1
       uri-js: 4.4.1
 
+  argparse@2.0.1: {}
+
   balanced-match@4.0.4: {}
 
   brace-expansion@5.0.5:
@@ -616,9 +628,9 @@ snapshots:
 
   eslint-visitor-keys@5.0.1: {}
 
-  eslint@10.2.1:
+  eslint@10.3.0:
     dependencies:
-      '@eslint-community/eslint-utils': 4.9.1(eslint@10.2.1)
+      '@eslint-community/eslint-utils': 4.9.1(eslint@10.3.0)
       '@eslint-community/regexpp': 4.12.2
       '@eslint/config-array': 0.23.5
       '@eslint/config-helpers': 0.5.5
@@ -711,6 +723,10 @@ snapshots:
       is-extglob: 2.1.1
 
   isexe@2.0.0: {}
+
+  js-yaml@4.1.1:
+    dependencies:
+      argparse: 2.0.1
 
   json-buffer@3.0.1: {}
 

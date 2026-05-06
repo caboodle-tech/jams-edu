@@ -1,2 +1,3 @@
-.jamsedu/backups/
+/.jamsedu/backups/
+/.quarto/
 node_modules/

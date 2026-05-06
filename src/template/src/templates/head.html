@@ -1,9 +1,9 @@
-<!-- @jamsedu-version: 1.0.0 -->
+<!-- @jamsedu-version: 1.1.0 -->
 <!-- @jamsedu-component: templates-head -->
 
 <script>
     /**
-     * Default values for meta tags if not provided
+     * Set basic defaults for the page title and description if they are not set.
      */
     if (!title) {
         const title = 'JamsEdu';
@@ -17,10 +17,24 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" href="/assets/images/favicon/favicon.ico" sizes="any">
+        <link rel="icon" href="/assets/images/favicon/icon.svg" type="image/svg+xml">
+        <link rel="apple-touch-icon" href="/assets/images/favicon/apple-touch-icon.png">
         <link href="/assets/css/main.css" rel="stylesheet">
         <title><script>$echo(title);</script></title>
         <script>
-            $echo(`<meta name="description" content="${description}">`);
+            if (description) {
+                $echo(`<meta name="description" content="${description}">`);
+            }
+            if (author) {
+                $echo(`<meta name="author" content="${author}">`);
+            }
+            if (date) {
+                $echo(`<meta name="date" content="${date}">`);
+            }
+            if (keywords) {
+                $echo(`<meta name="keywords" content="${keywords}">`);
+            }
         </script>
         <script type="module" src="/assets/js/main.js"></script>
         <script src="/assets/js/theme-preference.js"></script>

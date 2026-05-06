@@ -1,6 +1,3 @@
-
-
-
 /* main prose only; editor quotes live in `vendor/jamsedu/tiny-wysiwyg.css` */
 /* `cite` uses inline-flex so `::before` (em dash) is the first flex item and follows `direction` (RTL/LTR). */
 

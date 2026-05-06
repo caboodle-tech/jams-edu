@@ -49,7 +49,7 @@ This template includes:
 
 ### Asset output paths
 
-By default, CSS, JS, and images are written under `destDir` with the same structure as `srcDir`. To put them under a single assets directory, set **`assetsDir`** in `.jamsedu/config.js` (e.g. `assetsDir: 'assets'`). To control each type separately, set **`assetPaths`** (e.g. `assetPaths: { css: 'assets/styles', js: 'assets/scripts', images: 'assets/images' }`). Per-type entries override `assetsDir` for that type.
+CSS, JS, and images are published under `destDir` with the **same relative paths** they use under `srcDir`. During `jamsedu --init`, you can choose to group `css/`, `js/`, and `images/` under one folder inside `srcDir` (default name `assets`). Set **`assetsDir`** in `.jamsedu/config.js` (for example `assetsDir: 'assets'`) when that grouped folder should also be treated as a static-only subtree during builds (no `.jhp`/`.qmd` processing inside it). That is separate from **`quarto.assetsDir`**, which only controls where Quarto `_files` output goes.
 
 ## Documentation
 

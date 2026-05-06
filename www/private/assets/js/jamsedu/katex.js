@@ -1,8 +1,19 @@
 import './dom-watcher.js';
 
+const REGEX = Object.freeze({
+    lineSplit: /\r?\n/,
+    macroLine: /^\s*\\([a-zA-Z]+)\s*=\s*(.*)$/,
+    stripLineComment: /%[^\n]*$/,
+    trailingSemi: /;\s*$/,
+    thinSpace: /\u2009/g,
+    zeroWidth: /[\u200B\u200C\u200D\uFEFF]/g
+});
+
 /**
- * Loads KaTeX from jsDelivr and renders `.math` blocks. Also handles `.math.macro` definitions.
- * Use `displayMode` (centered block) by default; add class `inline` (e.g. `span.math.inline`) for flow inline like `code`.
+ * Loads KaTeX from jsDelivr and renders `.math` blocks.
+ * Also handles `.math.macro` definitions.
+ * Use `displayMode` (centered block) by default.
+ * Add class `inline` (e.g. `span.math.inline`) for flow inline like `code`.
  *
  * @typedef {object} KatexLoaderConfig
  * @property {string} [katexVersion] npm tag, default `latest`.
@@ -213,16 +224,26 @@ class KatexLoader {
         if (typeof window.katex?.render !== 'function') {
             return;
         }
-        document.querySelectorAll('.math').forEach((el) => {
-            if (el.dataset.katexRendered) {
-                return;
-            }
+
+        const mathElements = Array.from(document.querySelectorAll('.math'));
+        const macroElements = mathElements.filter((el) => {
+            return !el.dataset.katexRendered && el.classList.contains('macro');
+        });
+
+        const renderElements = mathElements.filter((el) => {
+            return !el.dataset.katexRendered && !el.classList.contains('macro');
+        });
+
+        // Pass 1: collect and remove macros so formulas can reference them regardless of DOM order.
+        macroElements.forEach((el) => {
             const raw = el.dataset.formula ?? el.textContent ?? '';
-            if (el.classList.contains('macro')) {
-                this.#mergeMacrosFromContent(raw, this.#macros);
-                el.remove();
-                return;
-            }
+            this.#mergeMacrosFromContent(raw, this.#macros);
+            el.remove();
+        });
+
+        // Pass 2: render non-macro math with the full macro table.
+        renderElements.forEach((el) => {
+            const raw = el.dataset.formula ?? el.textContent ?? '';
             if (!raw) {
                 return;
             }
@@ -242,13 +263,12 @@ class KatexLoader {
      * @param {Record<string, string>} macros
      */
     #mergeMacrosFromContent(raw, macros) {
-        const lines = (raw || '').split(/\r?\n/);
-        const macroLine = /^\s*\\([a-zA-Z]+)\s*=\s*(.*)$/;
+        const lines = (raw || '').split(REGEX.lineSplit);
         for (const line of lines) {
-            const withoutComment = line.replace(/%[^\n]*$/, '').trim();
-            const m = withoutComment.match(macroLine);
+            const withoutComment = line.replace(REGEX.stripLineComment, '').trim();
+            const m = withoutComment.match(REGEX.macroLine);
             if (m) {
-                const value = m[2].trim().replace(/;\s*$/, '');
+                const value = m[2].trim().replace(REGEX.trailingSemi, '');
                 macros[`\\${m[1]}`] = value;
             }
         }
@@ -260,8 +280,8 @@ class KatexLoader {
      */
     #sanitizeFormula(s) {
         return s
-            .replace(/\u2009/g, '\\,')
-            .replace(/[\u200B\u200C\u200D\uFEFF]/g, '');
+            .replace(REGEX.thinSpace, '\\,')
+            .replace(REGEX.zeroWidth, '');
     }
 
 }

@@ -84,7 +84,7 @@ class Updater {
      *
      * @param {string} cwd Project root (usersRoot).
      * @param {string} jamseduWd Installed JamsEdu package root (template + package.json).
-     * @param {{ srcDir?: string, destDir?: string, templateDir?: string, assetsDir?: string, assetPaths?: Record<string, string> }} userConfig
+     * @param {{ srcDir?: string, destDir?: string, templateDir?: string, assetsDir?: string }} userConfig
      *        Layout options from the user config (same semantics as .jamsedu/config.js); used for path mapping, not CLI flags.
      * @param {boolean} [force]
      */
@@ -111,7 +111,6 @@ class Updater {
         }
         const templatePathLayout = {
             assetsDir: userConfig.assetsDir,
-            assetPaths: userConfig.assetPaths,
             ...(templateDirMap ? { templateDir: templateDirMap } : {})
         };
         const sourceRepoMode = this.isSourceRepoMode(cwd);
@@ -460,7 +459,7 @@ class Updater {
                     
                     const component = parseComponentFromFile(content);
 
-                    // Map template path to user path; apply assetsDir/assetPaths so source layout matches user choice
+                    // Map template path to user path; apply assetsDir so source layout matches user choice
                     let userPath = relativePath;
                     if (relativePath.startsWith('src/')) {
                         const pathAfterSrc = relativePath.replace(/^src\//, '');
@@ -497,18 +496,11 @@ class Updater {
                 Path.join(cwd, '.vscode'),
                 Path.join(cwd, srcDir, 'css') // For main.css
             ];
-        // If user moved assets (assetsDir or assetPaths), also scan those locations under srcDir
+        // If user grouped assets under assetsDir, also scan that location under srcDir
         if (typeof userConfig.assetsDir === 'string' && userConfig.assetsDir) {
             jamseduDirs.push(Path.join(cwd, srcDir, userConfig.assetsDir));
         }
-        if (userConfig.assetPaths && typeof userConfig.assetPaths === 'object') {
-            for (const value of Object.values(userConfig.assetPaths)) {
-                if (typeof value === 'string' && value) {
-                    jamseduDirs.push(Path.join(cwd, srcDir, value));
-                }
-            }
-        }
-        
+
         // Also check root-level files that might be tracked (like eslint.config.js), unless source repo mode.
         if (!options.sourceRepoMode) {
             const rootFiles = ['eslint.config.js'];

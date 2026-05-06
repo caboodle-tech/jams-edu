@@ -8,6 +8,7 @@ import Path from 'path';
 import Print from '../src/imports/print.js';
 import URL from 'url';
 import { ArgParser, getRootPaths } from '../src/imports/helpers.js';
+import { persistQuartoDefaultsIntoConfigJsIfEligible } from '../src/imports/quarto-default-config.js';
 import { exit } from 'process';
 
 // Parsing command line arguments.
@@ -152,6 +153,14 @@ config.pre = [...(JamsEduHooks.pre || []), ...(config.pre || [])];
 // eslint-disable-next-line no-extra-parens
 config.post = [...(JamsEduHooks.post || []), ...(config.post || [])];
 
+if (args.watch || args.build) {
+    persistQuartoDefaultsIntoConfigJsIfEligible({
+        usersRoot: USERS_ROOT,
+        configFileAbsPath: configFile,
+        config
+    });
+}
+
 // Handle update command (requires config file to know srcDir)
 if (args.update) {
     // Import updater dynamically to avoid circular dependencies
@@ -160,8 +169,7 @@ if (args.update) {
         srcDir: config.srcDir,
         destDir: config.destDir,
         templateDir: config.templateDir,
-        assetsDir: config.assetsDir,
-        assetPaths: config.assetPaths
+        assetsDir: config.assetsDir
     };
     await Updater.update(USERS_ROOT, JAMSEDU_ROOT, updateConfig, args.force || false);
     exit();

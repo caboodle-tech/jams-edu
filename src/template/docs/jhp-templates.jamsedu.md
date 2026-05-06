@@ -1,4 +1,4 @@
-<!-- @jamsedu-version: 5.1.0 -->
+<!-- @jamsedu-version: 2.2.2 -->
 <!-- @jamsedu-component: docs-jhp-templates -->
 # JHP Templates Guide
 
@@ -12,23 +12,23 @@ JHP (JavaScript HTML Processor) is the template engine that powers JamsEdu. It p
 2. **Processing**: JHP processes the file and outputs `.html` in your `destDir`
 3. **Template Variables**: You can use variables and includes in your `.jhp` files
 
-JamsEdu uses **@caboodle-tech/jhp** 3.9 or newer. The CLI passes **`includeSearchRoots`** to each `JHP` `process()` call: an **ordered** list of absolute directories, **`templateDir` first** (when it differs from `srcDir`), then **`srcDir`**. That list only affects **built-in** `$include` resolution; for full control, JHP also supports a custom `includePathResolver` (rare in JamsEdu projects).
+JamsEdu uses **@caboodle-tech/jhp** 4.x. The CLI passes **`includeSearchRoots`** to each `JHP` `process()` call: an **ordered** list of absolute directories, **`templateDir` first** (when it differs from `srcDir`), then **`srcDir`**. That list only affects **built-in** `$include` resolution; for full control, JHP also supports a custom `includePathResolver` (rare in JamsEdu projects).
 
 ## Include paths in JamsEdu
 
-These rules describe how **`$include('…')`** is resolved with JamsEdu’s default setup (no custom resolver):
+These rules describe how **`$include('…')`** is resolved with JamsEdu's default setup (no custom resolver):
 
 | Path form | What happens |
 |------------|----------------|
-| Starts with `../` | Resolve **only** from the **including file’s directory** (JHP: parent-directory includes; no search roots). |
+| Starts with `../` | Resolve **only** from the **including file's directory** (JHP: parent-directory includes; no search roots). |
 | Starts with `/` (root-semantic) | Try the path **without the leading `/`** under each `includeSearchRoot` in order: **`templateDir`**, then **`srcDir`**. |
-| Other relative (e.g. `partials/x.html` or starts with `./`) | JHP tries the **current file’s directory** first, then the search roots, then a legacy fallback to the **page working directory** (`#rootDir`). |
+| Other relative (e.g. `partials/x.html` or starts with `./`) | JHP tries the **current file's directory** first, then the search roots, then a legacy fallback to the **page working directory** (`#rootDir`). |
 | `../` in the middle of a path | Normal path resolution; still constrained by the rules above. |
 
 **Practical takeaways:**
 
 - From **any** page, **`$include('/header.html')`** looks for `header.html` under your configured `templateDir` first, then under `srcDir`, so you do not have to count `../` segments for site-wide partials.
-- For pages in subfolders, you can still use **explicit relatives** (e.g. `$include('../templates/header.html')`) if you prefer; that resolves from the current file’s directory first.
+- For pages in subfolders, you can still use **explicit relatives** (e.g. `$include('../templates/header.html')`) if you prefer; that resolves from the current file's directory first.
 - Partials in **`templateDir`** (often `<your-src-dir>/templates/`) are the usual home for `header.html`, `footer.html`, and `head.html`.
 
 For the exact algorithm and options (`includeSearchRoots`, `includePathResolver`), see the [JHP repository](https://github.com/caboodle-tech/jhp) README, **Include paths** section.
@@ -77,7 +77,7 @@ Use `$include()` to include partial files (header, footer, etc.):
 </script>
 ```
 
-Choose **`/name.html`** for includes that should follow **`templateDir` → `srcDir`**, or a **relative** path when you want resolution from the current file’s location first.
+Choose **`/name.html`** for includes that should follow **`templateDir` → `srcDir`**, or a **relative** path when you want resolution from the current file's location first.
 
 ### Creating Partials
 
@@ -149,7 +149,7 @@ Your templates should be organized in your `templateDir` (configured in `.jamsed
 1. **Organize Partials**: Keep reusable components in your configured `templateDir`
 2. **Use Variables**: Define variables at the top of your `.jhp` files
 3. **Root-style includes**: Use paths starting with `/` (e.g. `/header.html`) when you want the same include from many folders without `../` chains
-4. **Relative paths**: Use `./` and `../` when you want resolution strictly from the current file’s tree first
+4. **Relative paths**: Use `./` and `../` when you want resolution strictly from the current file's tree first
 5. **Naming**: Use the `.jhp` extension for pages that need JHP processing; partials are often plain `.html`
 
 ## Example: Complete Page

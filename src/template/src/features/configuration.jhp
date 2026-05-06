@@ -63,7 +63,11 @@
         </div>
         <div>
             <dt><code>websiteUrl</code> <small>Optional</small></dt>
-            <dd>Canonical absolute URL for your site (including <code>https://</code>), used by features like sitemap generation that need a stable origin. (Not implemented yet)</dd>
+            <dd>
+                Canonical absolute URL for your site (including <code>https://</code>), configured here in this exported object (<code>.jamsedu/config.js</code>). A full <strong><code>jamsedu --build</code></strong> (the default clean production pass) writes <code>sitemap.xml</code> under <code>destDir</code> when this property is set, so crawlers get full <code>&lt;loc&gt;</code> URLs.
+                The same clean build pass always writes <code>sitemap.json</code> at the site root (next to published HTML); that file powers the masthead search and does <strong>not</strong> require <code>websiteUrl</code>.
+                <strong><code>jamsedu --watch</code></strong> refreshes individual pages as you save but does not rewrite <code>sitemap.json</code> or <code>sitemap.xml</code> on every save; run <code>jamsedu --build</code> after substantive edits (or before deploy) so search and sitemap files match the full site.
+            </dd>
         </div>
         <div>
             <dt><code>verbose</code> <small>Optional</small></dt>
@@ -79,13 +83,21 @@
         </div>
         <div>
             <dt><code>doNotCopy</code> <small>Optional</small></dt>
-            <dd>List of file extensions (without the leading dot) that should not be copied into <code>destDir</code>. Setting this <strong>replaces</strong> the entire default exclusion list, so your array must include every extension you still want excluded.</dd>
+            <dd>Additional deny-list extensions (without the leading dot) that should not be copied into <code>destDir</code>. This list is merged with JamsEdu's built-in safe defaults.</dd>
+        </div>
+        <div>
+            <dt><code>copyRules</code> <small>Optional</small></dt>
+            <dd>Advanced allow and deny copy rules. Supports <code>allowExtensions</code>, <code>allowSuffixes</code>, <code>denyExtensions</code>, and <code>denySuffixes</code> with deterministic precedence.</dd>
+        </div>
+        <div>
+            <dt><code>quarto</code> <small>Optional</small></dt>
+            <dd>Optional Quarto integration object: <code>template</code> (<code>.qmd</code> layout), <code>assetsDir</code>, and <code>workingDir</code>. If Quarto CLI is missing, JamsEDU writes a placeholder page per <code>.qmd</code> and continues building.</dd>
         </div>
     </dl>
     <div class="callout notice">
         <div class="title">A Note on Extension Exclusions</div>
         <p>
-            If you set <code>doNotCopy</code>, the built in default exclusions are completely discarded and only the extensions you specify will be blocked. Anything not in your list may be copied into the output directory as a normal asset. Double check your list before publishing, especially for source only or private file types. If you are unsure whether you need this option, leave it out until you have a specific reason to use it.
+            <code>doNotCopy</code> adds to safe defaults rather than replacing them. If you need fine-grained control, use <code>copyRules</code> to explicitly allow or deny by extension or suffix.
         </p>
     </div>
 </section>

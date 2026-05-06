@@ -1,10 +1,11 @@
 {
     "name": "@caboodle-tech/jamsedu",
-    "version": "5.5.0",
+    "version": "7.0.0",
     "bin": {
         "jamsedu": "bin/cli.js"
     },
     "scripts": {
+        "test:dollar-mask": "node --test test/quarto-context-dollar-mask.test.js",
         "start": "node bin/cli.js --watch",
         "build": "node bin/cli.js --build",
         "build:debug": "node bin/cli.js --build --verbose",
@@ -13,14 +14,15 @@
         "watch:debug": "node bin/cli.js --watch --verbose"
     },
     "dependencies": {
-        "@caboodle-tech/jhp": "^3.10.0",
-        "@caboodle-tech/node-simple-server": "^4.3.0"
+        "@caboodle-tech/jhp": "^4.1.0",
+        "@caboodle-tech/node-simple-server": "^4.3.0",
+        "js-yaml": "^4.1.1"
     },
     "devDependencies": {
         "@eslint/json": "^1.2.0",
         "@html-eslint/eslint-plugin": "^0.59.0",
         "@html-eslint/parser": "^0.59.0",
-        "eslint": "^10.2.1"
+        "eslint": "^10.3.0"
     },
     "type": "module",
     "engines": {
