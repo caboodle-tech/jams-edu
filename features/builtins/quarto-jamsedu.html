@@ -7,8 +7,8 @@
         <link rel="icon" href="../../assets/images/favicon/icon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="../../assets/images/favicon/apple-touch-icon.png">
         <link href="../../assets/css/main.css" rel="stylesheet">
-        <title>Quarto Not Installed</title>
-        <meta name="description" content="Quarto CLI is missing; this page is using graceful fallback output.">
+        <title>Quarto with JamsEDU</title>
+        <meta name="description" content="Crash course for using Quarto files in a JamsEDU site, including include shortcodes and JamsEDU built-in feature markup patterns.">
         <script type="module" src="../../assets/js/main.js"></script>
         <script src="../../assets/js/theme-preference.js"></script>
     </head>
@@ -79,11 +79,263 @@
     </div>
 </header>
 <main>
-<section class="callout warning">
-    <div class="title">Quarto Not Installed</div>
-    <p>The source file <code>features/builtins/quarto-jamsedu.qmd</code> could not be built because Quarto is not available right now. Install <a href="https://quarto.org/docs/get-started/" target="_blank" rel="noopener noreferrer">Quarto</a>, restart your app or terminal, and build again.</p>
-    <details><summary>Advanced troubleshooting</summary><p>JamsEDU checked these locations for Quarto:</p><ul><li><code>/usr/local/bin/quarto</code></li><li><code>/opt/homebrew/bin/quarto</code></li><li><code>/usr/bin/quarto</code></li></ul></details>
-</section></main>
+<h1 id="quarto-with-jamsedu">Quarto with JamsEDU</h1>
+<p>JamsEDU lets you drop standard Quarto <code>.qmd</code> files into
+your project and have them rendered alongside your <code>.jhp</code>
+pages with the same site chrome. No extra build step on your part:
+JamsEDU calls Quarto internally, captures the HTML output, and wraps it
+in your template.</p>
+<p>Use this page as your quick-start guide for authoring
+<code>.qmd</code> files in a JamsEDU project. See the <a href="./quarto-demo.html">companion demo</a> for a live example of the
+finished output.</p>
+<h2 id="how-it-works">How It Works</h2>
+<ol type="1">
+<li>You create content in <code>*.qmd</code> files.</li>
+<li>JamsEDU calls Quarto to render each file. Quarto resolves its own
+features (e.g. <code>{{&lt; include &gt;}}</code>, fenced
+<code>:::</code> blocks) and produces an HTML fragment.</li>
+<li>JamsEDU injects that fragment into your <code>quarto.template</code>
+layout (<code>quarto</code> in <code>.jamsedu/config.js</code>), so the
+published page ships with the same header, footer, and styling as your
+<code>.jhp</code> pages.</li>
+</ol>
+<p>By design, JamsEDU ignores any Quarto website-level configuration
+(navigation, search, listings, etc.) in your <code>.qmd</code> files and
+applies its own safe defaults.</p>
+<h2 id="configuration">Configuration</h2>
+<p>Quarto options live under the <code>quarto</code> key in
+<code>.jamsedu/config.js</code> and should be an object with the
+following properties:</p>
+<pre class="js"><code>
+quarto: {
+    /**
+     * The .jhp file used as the wrapper template for all .qmd pages.
+     * A default template ships with a fresh JamsEDU install.
+     */
+    template: &#39;src/templates/quarto.jhp&#39;,
+
+    /**
+     * Output directory where Quarto-generated assets (images, figures, etc.) are placed.
+     */
+    assetsDir: &#39;quarto-assets&#39;,
+
+    /**
+     * Staging directory for temporary build files. Should be git-ignored.
+     */
+    workingDir: &#39;.quarto&#39;
+}
+</code></pre>
+<h2 id="the-template">The Template</h2>
+<p>The default template that ships with JamsEDU is minimal:</p>
+<pre class="js"><code>
+    &#36;include(&#39;/header.html&#39;);
+    &#36;echo(quartoHtml);
+    &#36;include(&#39;/footer.html&#39;);
+</code></pre>
+<p>If you modify the template or create your own, you must include
+<code>&#36;echo(quartoHtml);</code> somewhere in it. That call is where the
+rendered <code>.qmd</code> content gets placed.</p>
+<h2 id="quarto-project-yaml">Quarto Project YAML</h2>
+<p>You can provide your own Quarto project YAML to set global
+<code>.qmd</code> settings and metadata. Place one of the following
+files inside <code>.jamsedu/</code> (only the first one found is used,
+checked in this order):</p>
+<ol type="1">
+<li><code>quarto.yml</code></li>
+<li><code>_quarto.yml</code></li>
+<li><code>quarto-project.yml</code></li>
+</ol>
+<p>Note that some keys are managed internally by JamsEDU and cannot be
+overridden.</p>
+<h2 id="using-jamsedu-features-in-.qmd-files">Using JamsEDU Features in
+<code>.qmd</code> Files</h2>
+<h4 id="html-blocks">HTML Blocks</h4>
+<p>JamsEDU sites support Quarto’s built-in raw HTML blocks. These blocks
+must not be indented because Pandoc treats indented lines as code blocks
+and will break the rendered output:</p>
+<pre class="markdown"><code>
+```{=html}
+&lt;nav&gt;
+&lt;ul&gt;
+&lt;li&gt;...&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/nav&gt;
+```
+</code></pre>
+<p>For better results you can use JamsEDU’s raw HTML fenced block
+instead. We support the lazy HTML fenced block:</p>
+<pre class="html"><code>
+::: html
+&lt;nav&gt;
+    &lt;ul&gt;
+        &lt;li&gt;...&lt;/li&gt;
+    &lt;/ul&gt;
+&lt;/nav&gt;
+:::
+</code></pre>
+<p>As well as the explicit HTML fenced block:</p>
+<pre class="html"><code>
+::: {.html}
+&lt;nav&gt;
+    &lt;ul&gt;
+        &lt;li&gt;...&lt;/li&gt;
+    &lt;/ul&gt;
+&lt;/nav&gt;
+:::
+</code></pre>
+<h4 id="mermaid-diagrams">Mermaid Diagrams</h4>
+<p>Quarto’s built-in Mermaid syntax will work in JamsEDU sites, but for
+best results use the JamsEDU fenced blocks instead. To add <a href="./mermaid-diagrams.html">Mermaid diagrams</a> in <code>.qmd</code>
+files, use either of the following:</p>
+<pre class="markdown"><code>
+::: {.jams-mermaid}
+flowchart LR
+  A --&gt; B --&gt; C
+:::
+</code></pre>
+<pre class="markdown"><code>
+::: {.jams-diagram}
+sequenceDiagram
+  A-&gt;&gt;B: hello
+:::
+</code></pre>
+<h4 id="katex-math">KaTeX math</h4>
+<p>To write math equations in <code>.qmd</code> files, use the standard
+<code>&#36;…&#36;</code> for inline and <code>&#36;&#36;…&#36;&#36;</code> for display (block)
+math.</p>
+<p>Here is an example of <code>&#36;...&#36;</code> (inline) <span class="math inline" data-formula="E = mc^2"></span> math, followed by
+<code>&#36;&#36;...&#36;</code> (block) math:</p>
+<div class="math" data-formula="\int_{0}^{1} x^2\,dx = \frac{1}{3}">
+</div>
+<p>If a formula misbehaves (money-like text, complex TeX, edge cases),
+you can use an explicit fenced block or inline shortcode instead.</p>
+<p><strong>Fenced blocks:</strong></p>
+<pre class="markdown"><code>
+::: {.jams-katex .macro}
+\f = #1f(#2)
+:::
+</code></pre>
+<pre class="markdown"><code>
+::: {.jams-math}
+\f\relax{x} = \int_{-\infty}^\infty \f\hat\xi\,e^{2 \pi i \xi x} \,d\xi
+:::
+</code></pre>
+<div class="callout info icon">
+    <p>
+        Fenced math blocks can declare macro functions available to the entire page. This is a feature specific to JamsEDU, see the <a href="./katex-math.html">KaTeX guide</a> for more details.
+    </p>
+</div>
+<p><strong>Inline shortcode:</strong></p>
+<p>For explicit inline math without <code>&#36;</code> delimiters, use the
+<code>{{&lt; jams-math-inline &gt;}}</code> shortcode (aliased as
+<code>jams-katex-inline</code>). You can add <code>macro="true"</code>
+for macro definitions. See the <a href="./katex-math.html">KaTeX
+guide</a> for more details.</p>
+<pre data-shortcodes="false"><code>
+The sum {{&lt; jams-math-inline formula=&quot;\alpha+\beta=\gamma&quot; &gt;}} appears in line.
+</code></pre>
+<h4 id="embedded-pdf">Embedded PDF</h4>
+<p>To <a href="./embedded-pdf.html">embed a PDF</a> in <code>.qmd</code>
+files, use the following fenced block that contains only the URL to the
+PDF:</p>
+<pre class="markdown"><code>
+::: {.jams-pdf}
+/assets/docs/jamsedu-demo.pdf
+:::
+</code></pre>
+<h4 id="responsive-video">Responsive video</h4>
+<p>To auto embed a <a href="./built-in-features.html#responsive-video">responsive video</a> in
+<code>.qmd</code> files, use the following fenced blocks based on your
+needs:</p>
+<pre class="markdown"><code>
+::: {.jams-video}
+https://youtu.be/NpEaa2P7qZI
+:::
+</code></pre>
+<pre class="markdown"><code>
+::: {.jams-video cite=&quot;Sample video citation&quot;}
+https://youtu.be/NpEaa2P7qZI
+:::
+</code></pre>
+<div class="callout warning icon">
+    <p>
+        JamsEDU only supports the following video hosting platforms: YouTube, Vimeo, Dailymotion, Rumble, and Twitch.
+    </p>
+</div>
+<p>If you need to embed an unsupported video format you should use a
+standard HTML code block:</p>
+<pre class="markdown"><code>
+```{=html}
+&lt;iframe src=&quot;...&quot; title=&quot;Embedded video&quot; ...&gt;&lt;/iframe&gt;
+```
+</code></pre>
+<h4 id="rich-text">Rich Text</h4>
+<p>To add a <a href="./rich-text.html">rich text editor</a> in
+<code>.qmd</code> files, use a fenced block with the
+<code>{.jams-rich}</code> class. The <code>placeholder</code> attribute
+is optional. To prepopulate the editor, put HTML inside an inner
+<code>```{=html}</code> block (below), or omit that fence and paste HTML
+directly; JamsEDU inserts the inner fence before Quarto when it is
+missing.</p>
+<pre class="markdown"><code>
+::: {.jams-rich placeholder=&quot;Answer in a few sentences.&quot;}
+&lt;p&gt;Draft answer goes here.&lt;/p&gt;
+:::
+</code></pre>
+<div class="callout warning icon">
+    <p>
+        It is common to only set the placeholder attribute and not prepopulate the editor. If you choose to prepopulate the editor, only basic HTML is supported. Any tags not in this list will break your editor: <code>a</code>, <code>blockquote</code>, <code>em</code>, <code>h1</code>, <code>ol</code>, <code>p</code>, <code>strong</code>, <code>u</code>, <code>ul</code>
+    </p>
+</div>
+<h4 id="tiny-document">Tiny Document</h4>
+<p>To add a <a href="./tiny-document.html">Tiny Document</a> in
+<code>.qmd</code> files, use a fenced block with the
+<code>{.jams-document}</code> class. The canonical recipe wraps the body
+in an inner Pandoc raw HTML fence (three backticks and
+<code>{=html}</code>). JamsEDU also inserts that fence before Quarto
+when you omit it, so bare Tiny Document HTML inside the <code>:::</code>
+is allowed; either way the inner markup must stay valid Tiny Document
+HTML and classes.</p>
+<pre class="markdown"><code>
+::: {.jams-document}
+&lt;div class=&quot;title&quot;&gt;Worksheet&lt;/div&gt;
+&lt;div class=&quot;header&quot;&gt;
+    &lt;div&gt;&lt;input type=&quot;text&quot; placeholder=&quot;Your Name&quot;&gt;&lt;/div&gt;
+    &lt;div&gt;&lt;input type=&quot;date&quot;&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class=&quot;section&quot;&gt;Reflection&lt;/div&gt;
+&lt;p class=&quot;instructions&quot;&gt;
+    This is a simple demo document...
+&lt;/p&gt;
+&lt;textarea class=&quot;rich&quot; placeholder=&quot;Write your thoughts here...&quot;&gt;&lt;/textarea&gt;
+:::
+</code></pre>
+<h4 id="code-highlighting">Code highlighting</h4>
+<p>JamsEDU already supports <a href="./highlight-js-lite.html">code
+highlighting</a> so code blocks (<code>```</code>) will automatically be
+highlighted with JamsEDU’s version of Highlight.js:</p>
+<pre class="markdown"><code>
+```javascript
+const sum = (a, b) =&gt; {
+    return a + b;
+};
+
+console.log(sum(10, 32));
+```
+</code></pre>
+<h2 id="migration-tips">Migration tips</h2>
+<ul>
+<li>Put <code>.qmd</code> sources under
+<strong><code>srcDir</code></strong> from your JamsEdu
+configuration.</li>
+<li>Point <strong><code>quarto.template</code></strong> at a single JHP
+file for shared Quarto HTML (header, footer, scripts, styles).</li>
+<li>Place any extra files (images, CSS, scripts, etc.) from your Quarto
+project into your JamsEDU <code>assetsDir</code> so they stay available
+at their usual URLs.</li>
+</ul>
+<h2 id="sample-.qmd-page">Sample <code>.qmd</code> page</h2>
+<p>To see all of these examples running on a live page, visit the <a href="./quarto-demo.html">companion <code>.qmd</code> demo</a>.</p></main>
 <footer class="full-width">
     <div class="columns two">
         <nav aria-label="Footer">

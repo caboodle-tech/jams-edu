@@ -7,8 +7,8 @@
         <link rel="icon" href="../../assets/images/favicon/icon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="../../assets/images/favicon/apple-touch-icon.png">
         <link href="../../assets/css/main.css" rel="stylesheet">
-        <title>Quarto Not Installed</title>
-        <meta name="description" content="Quarto CLI is missing; this page is using graceful fallback output.">
+        <title>Quarto Live Demos</title>
+        <meta name="description" content="Companion page for Quarto with JamsEDU, same topics as the guide, shown as rendered output only.">
         <script type="module" src="../../assets/js/main.js"></script>
         <script src="../../assets/js/theme-preference.js"></script>
     </head>
@@ -79,11 +79,91 @@
     </div>
 </header>
 <main>
-<section class="callout warning">
-    <div class="title">Quarto Not Installed</div>
-    <p>The source file <code>features/builtins/quarto-demo.qmd</code> could not be built because Quarto is not available right now. Install <a href="https://quarto.org/docs/get-started/" target="_blank" rel="noopener noreferrer">Quarto</a>, restart your app or terminal, and build again.</p>
-    <details><summary>Advanced troubleshooting</summary><p>JamsEDU checked these locations for Quarto:</p><ul><li><code>/usr/local/bin/quarto</code></li><li><code>/opt/homebrew/bin/quarto</code></li><li><code>/usr/bin/quarto</code></li></ul></details>
-</section></main>
+<h1 id="quarto-live-demos">Quarto Live Demos</h1>
+<p>Use <strong><a href="./quarto-jamsedu.html">Quarto with
+JamsEDU</a></strong> for configuration, fenced-block recipes, and
+migration notes. Below is live output produced from ordinary
+<code>.qmd</code> authoring in JamsEDU.</p>
+<h2 id="quarto-include">Quarto Include</h2>
+<p>This paragraph is pulled from
+<code>features/snippets/quarto-shared-note.qmd</code> using Quarto’s
+<code>{{&lt; include &gt;}}</code> shortcode, showing that includes work
+as expected in JamsEDU.</p>
+<h2 id="using-jamsedu-features-in-.qmd-files">Using JamsEDU Features in
+<code>.qmd</code> Files</h2>
+<h4 id="mermaid-diagrams"><a href="./mermaid-diagrams.html">Mermaid
+Diagrams</a></h4>
+<pre class="mermaid">
+sequenceDiagram
+    participant A as Author
+    participant Q as Quarto
+    participant J as JamsEDU
+    A->>Q: Write qmd
+    Q->>J: Rendered markdown
+    J-->>A: Final html page
+</pre>
+<pre class="mermaid">
+flowchart LR;
+    Author --> Quarto --> JamsEDU
+</pre>
+<h4 id="katex-math"><a href="./katex-math.html">KaTeX Math</a></h4>
+<p>Inline: <span class="math inline" data-formula="\sin^2\theta + \cos^2\theta = 1"></span></p>
+<p>Inline shortcode: The sum
+<span class="math inline">\alpha+\beta=\gamma</span> sits in this
+sentence alongside normal text.</p>
+<div class="math" data-formula="x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}">
+</div>
+<div class="math macro" data-formula="\f = #1f(#2)"></div>
+<div class="math" data-formula="\f\relax{x} = \int_{-\infty}^\infty \f\hat\xi\,e^{2 \pi i \xi x} \,d\xi"></div>
+<div class="callout info icon">
+    <p>
+        Fenced math blocks can declare macro functions for math on this page. See <a href="./katex-math.html">KaTeX math</a> and <a href="./quarto-jamsedu.html">Quarto with JamsEDU</a>.
+    </p>
+</div>
+<h4 id="embedded-pdf"><a href="./embedded-pdf.html">Embedded
+PDF</a></h4>
+<div data-pdf="../../assets/docs/jamsedu-demo.pdf"></div>
+<h4 id="responsive-video"><a href="../built-in-features.html#responsive-video">Responsive
+Video</a></h4>
+<figure class="video"><iframe allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" frameborder="0" sandbox="allow-scripts allow-same-origin allow-presentation" src="https://www.youtube-nocookie.com/embed/NpEaa2P7qZI?modestbranding=1"></iframe></figure>
+<div class="callout warning icon">
+    <p>
+        JamsEDU only supports the following video hosting platforms: YouTube, Vimeo, Dailymotion, Rumble, and Twitch.
+    </p>
+</div>
+<p><code>&lt;video&gt;</code> plus optional <code>&lt;cite&gt;</code>
+(same hooks as fenced <code>jams-video</code>):</p>
+<figure class="video"><iframe allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" frameborder="0" sandbox="allow-scripts allow-same-origin allow-presentation" src="https://www.youtube-nocookie.com/embed/NpEaa2P7qZI?modestbranding=1"></iframe><figcaption><a href="https://youtu.be/NpEaa2P7qZI" target="_blank" rel="noreferrer">&nbsp;Sample video citation&nbsp;</a></figcaption></figure>
+<h4 id="rich-text"><a href="./rich-text.html">Rich Text</a></h4>
+<textarea class="rich" placeholder="Answer in a few sentences.">&lt;p&gt;Draft answer goes here.&lt;/p&gt;</textarea>
+<div class="callout warning icon">
+    <p>
+        It is common to only set the placeholder attribute and not prepopulate the editor. If you choose to prepopulate the editor, only basic HTML is supported. Any tags not in this list will break your editor: <code>a</code>, <code>blockquote</code>, <code>em</code>, <code>h1</code>, <code>ol</code>, <code>p</code>, <code>strong</code>, <code>u</code>, <code>ul</code>
+    </p>
+</div>
+<h4 id="tiny-document"><a href="./tiny-document.html">Tiny
+Document</a></h4>
+<div class="document">
+<div class="title">Worksheet</div>
+<div class="header">
+    <div><input type="text" placeholder="Your Name"></div>
+    <div><input type="date"></div>
+</div>
+<div class="section">Reflection</div>
+<p class="instructions">
+    This is a simple demo document...
+</p>
+<textarea class="rich" placeholder="Write your thoughts here..."></textarea>
+</div>
+<h4 id="code-highlighting"><a href="./highlight-js-lite.html">Code
+Highlighting</a></h4>
+<pre class="javascript"><code>
+const sum = (a, b) =&gt; {
+    return a + b;
+};
+
+console.log(sum(10, 32));
+</code></pre></main>
 <footer class="full-width">
     <div class="columns two">
         <nav aria-label="Footer">
