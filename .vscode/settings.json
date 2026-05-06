@@ -14,7 +14,8 @@
     ],
     "explorer.compactFolders": false,
     "files.associations": {
-        "*.jhp": "html"
+        "*.jhp": "html",
+        "*.qmd": "markdown"
     },
     "files.eol": "\n",
     "[*]": {

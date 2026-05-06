@@ -1,6 +1,6 @@
 /**
  * Shared mapping from template layout (under template `src/`) to the user's source tree.
- * Must stay in sync with JamsEdu build output mapping (jamsedu.js) and the update scanner (updater.js).
+ * Must stay in sync with the update scanner (updater.js) and `jamsedu --init` layout baking (initializer.js).
  */
 
 /**
@@ -14,7 +14,7 @@ const ASSET_ROOT_FOLDERS = new Set(['css', 'js', 'images']);
  *
  * @param {string} userSrcDir Relative source root, forward slashes (e.g. www/src)
  * @param {string} pathAfterSrc Path after src/ with forward slashes
- * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null, templateDir?: string }} [userConfig]
+ * @param {{ assetsDir?: string, templateDir?: string }} [userConfig]
  *        templateDir: project-relative folder where bundled `templates/*` partials are written; must match
  *        your `$include()` paths. Not related to `assetsDir` (css/js/images only).
  * @returns {string} Relative path from project root, forward slashes
@@ -34,9 +34,6 @@ export const templateSrcPathToUserPath = (userSrcDir, pathAfterSrc, userConfig =
     const assetsDir = typeof userConfig.assetsDir === 'string' ?
         userConfig.assetsDir.replace(/\\/g, '/').replace(/^\/+/, '') :
         '';
-    const assetPaths = userConfig.assetPaths && typeof userConfig.assetPaths === 'object' ?
-        userConfig.assetPaths :
-        null;
 
     // Site pages at bundle src root (e.g. index.jhp): never under assets/
     if (parts.length === 1 && first.endsWith('.jhp')) {
@@ -58,34 +55,13 @@ export const templateSrcPathToUserPath = (userSrcDir, pathAfterSrc, userConfig =
         return restPath ? `${base}/${restPath}` : base;
     }
 
-    // css, js, images only: map under assetsDir / assetPaths
+    // css, js, images only: map under assetsDir when set
     if (ASSET_ROOT_FOLDERS.has(first)) {
-        const dirForType = assetPaths && typeof assetPaths[first] === 'string' ?
-            assetPaths[first].replace(/\\/g, '/').replace(/^\/+/, '') :
-            assetsDir ? `${assetsDir}/${first}` : first;
+        const dirForType = assetsDir ? `${assetsDir}/${first}` : first;
         const segment = restPath ? `${dirForType}/${restPath}` : dirForType;
         return `${normalizedRoot}/${segment}`.replace(/\\/g, '/');
     }
 
     // Any other bundle path stays under src root as-is
     return `${normalizedRoot}/${normalized}`.replace(/\\/g, '/');
-};
-
-/**
- * Keep only string values suitable for path segments; normalize slashes.
- *
- * @param {unknown} raw From user config `assetPaths`
- * @returns {Record<string, string> | null}
- */
-export const sanitizeAssetPaths = (raw) => {
-    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-        return null;
-    }
-    const out = {};
-    for (const [key, value] of Object.entries(raw)) {
-        if (typeof value === 'string' && value.trim() !== '') {
-            out[key] = value.trim().replace(/\\/g, '/').replace(/^\/+/, '');
-        }
-    }
-    return Object.keys(out).length > 0 ? out : null;
 };

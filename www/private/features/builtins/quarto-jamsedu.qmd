@@ -45,12 +45,10 @@ quarto: {
 
 The default template that ships with JamsEDU is minimal:
 
-```html
-
+```js
     $include('/header.html');
     $echo(quartoHtml);
     $include('/footer.html');
-
 ```
 
 If you modify the template or create your own, you must include `$echo(quartoHtml);` somewhere in it. That call is where the rendered `.qmd` content gets placed.
@@ -66,6 +64,44 @@ You can provide your own Quarto project YAML to set global `.qmd` settings and m
 Note that some keys are managed internally by JamsEDU and cannot be overridden.
 
 ## Using JamsEDU Features in `.qmd` Files
+
+#### HTML Blocks
+
+JamsEDU sites support Quarto's built-in raw HTML blocks. These blocks must not be indented because Pandoc treats indented lines as code blocks and will break the rendered output:
+
+````markdown
+```{=html}
+<nav>
+<ul>
+<li>...</li>
+</ul>
+</nav>
+```
+````
+
+For better results you can use JamsEDU's raw HTML fenced block instead. We support the lazy HTML fenced block:
+
+````html
+::: html
+<nav>
+    <ul>
+        <li>...</li>
+    </ul>
+</nav>
+:::
+````
+
+As well as the explicit HTML fenced block:
+
+````html
+::: {.html}
+<nav>
+    <ul>
+        <li>...</li>
+    </ul>
+</nav>
+:::
+````
 
 #### Mermaid Diagrams
 
@@ -111,13 +147,13 @@ If a formula misbehaves (money-like text, complex TeX, edge cases), you can use 
 :::
 ```
 
-```{=html}
+::: html
 <div class="callout info icon">
     <p>
         Fenced math blocks can declare macro functions available to the entire page. This is a feature specific to JamsEDU, see the <a href="./katex-math.html">KaTeX guide</a> for more details.
     </p>
 </div>
-```
+:::
 
 **Inline shortcode:**
 
@@ -153,13 +189,13 @@ https://youtu.be/NpEaa2P7qZI
 :::
 ```
 
-```{=html}
+::: html
 <div class="callout warning icon">
     <p>
         JamsEDU only supports the following video hosting platforms: YouTube, Vimeo, Dailymotion, Rumble, and Twitch.
     </p>
 </div>
-```
+:::
 
 If you need to embed an unsupported video format you should use a standard HTML code block:
 
@@ -169,39 +205,42 @@ If you need to embed an unsupported video format you should use a standard HTML 
 ```
 ````
 
-#### Rich text
+#### Rich Text
 
-To add a [rich text editor](./rich-text.html) in `.qmd` files, use a fenced block with the `{.jams-rich}` class. The `placeholder` attribute is optional. To prepopulate the editor with content, include it in a `{=html}` block:
+To add a [rich text editor](./rich-text.html) in `.qmd` files, use a fenced block with the `{.jams-rich}` class. The `placeholder` attribute is optional. To prepopulate the editor, put HTML inside an inner `` ```{=html} `` block (below), or omit that fence and paste HTML directly; JamsEDU inserts the inner fence before Quarto when it is missing.
 
 ````markdown
 ::: {.jams-rich placeholder="Answer in a few sentences."}
-```{=html}
 <p>Draft answer goes here.</p>
-```
 :::
 ````
 
-```{=html}
+::: html
 <div class="callout warning icon">
     <p>
-        Only basic HTML is supposed in rich text editors, any tags not in this list will break your editor: `p`, `a`, `strong`, `em`, `u`, `ul`, `ol`, or `h1`
+        It is common to only set the placeholder attribute and not prepopulate the editor. If you choose to prepopulate the editor, only basic HTML is supported. Any tags not in this list will break your editor: <code>a</code>, <code>blockquote</code>, <code>em</code>, <code>h1</code>, <code>ol</code>, <code>p</code>, <code>strong</code>, <code>u</code>, <code>ul</code>
     </p>
 </div>
-```
+:::
 
 #### Tiny Document
 
-To add a [Tiny Document](./tiny-document.html) in `.qmd` files, use a fenced block with the `{.jams-document}` class. The `{=html}` block is required and must contain valid Tiny Document HTML and classes:
+To add a [Tiny Document](./tiny-document.html) in `.qmd` files, use a fenced block with the `{.jams-document}` class. The canonical recipe wraps the body in an inner Pandoc raw HTML fence (three backticks and `{=html}`). JamsEDU also inserts that fence before Quarto when you omit it, so bare Tiny Document HTML inside the `:::` is allowed; either way the inner markup must stay valid Tiny Document HTML and classes.
 
-````markdown
+```markdown
 ::: {.jams-document}
-```{=html}
 <div class="title">Worksheet</div>
-<p class="instructions">Try the prompts below.</p>
-<!-- The rest of the document here... -->
-```
+<div class="header">
+    <div><input type="text" placeholder="Your Name"></div>
+    <div><input type="date"></div>
+</div>
+<div class="section">Reflection</div>
+<p class="instructions">
+    This is a simple demo document...
+</p>
+<textarea class="rich" placeholder="Write your thoughts here..."></textarea>
 :::
-````
+```
 
 #### Code highlighting
 

@@ -10,7 +10,6 @@ import Print from './imports/print.js';
  * @property {string} destDir
  * @property {string} [websiteUrl]
  * @property {string} [assetsDir]
- * @property {Record<string, string> | null} [assetPaths]
  * @property {string} [quartoAssetsDir]
  * @property {boolean} [verbose]
  */
@@ -44,7 +43,7 @@ const destPathToSitePath = (destDir, absHtmlPath) => {
 
 /**
  * @param {string} relPosix Lowercase path relative to dest root, forward slashes, no leading slash.
- * @param {{ assetsDirNorm: string; assetPrefixNorms: string[]; quartoAssetsNorm: string }} skip
+ * @param {{ assetsDirNorm: string; quartoAssetsNorm: string }} skip
  * @returns {boolean}
  */
 const shouldSkipRelativeHtml = (relPosix, skip) => {
@@ -53,11 +52,6 @@ const shouldSkipRelativeHtml = (relPosix, skip) => {
     }
     if (skip.assetsDirNorm && (relPosix === skip.assetsDirNorm || relPosix.startsWith(`${skip.assetsDirNorm}/`))) {
         return true;
-    }
-    for (const prefix of skip.assetPrefixNorms) {
-        if (relPosix === prefix || relPosix.startsWith(`${prefix}/`)) {
-            return true;
-        }
     }
     const qn = skip.quartoAssetsNorm;
     if (qn && (relPosix === qn || relPosix.startsWith(`${qn}/`))) {
@@ -69,7 +63,7 @@ const shouldSkipRelativeHtml = (relPosix, skip) => {
 /**
  * @param {string} dir
  * @param {string} destDir
- * @param {{ assetsDirNorm: string; assetPrefixNorms: string[]; quartoAssetsNorm: string }} skip
+ * @param {{ assetsDirNorm: string; quartoAssetsNorm: string }} skip
  * @param {string[]} out
  */
 const collectHtmlPathsRecursive = (dir, destDir, skip, out) => {
@@ -277,17 +271,8 @@ export const writeSearchIndexAndSitemap = async(opts) => {
     const fingerprintPath = Path.join(jamseduDir, 'search-output-fingerprints.json');
     const websiteUrlRaw = typeof opts.websiteUrl === 'string' ? opts.websiteUrl.trim().replace(/\/+$/u, '') : '';
     const assetsDirNorm = normalizeAssetPrefix(opts.assetsDir || '');
-    const assetPrefixNorms = [];
-    if (opts.assetPaths && typeof opts.assetPaths === 'object') {
-        for (const v of Object.values(opts.assetPaths)) {
-            const n = normalizeAssetPrefix(String(v || ''));
-            if (n) {
-                assetPrefixNorms.push(n);
-            }
-        }
-    }
     const quartoAssetsNorm = normalizeAssetPrefix(opts.quartoAssetsDir || 'quarto-assets') || 'quarto-assets';
-    const skip = { assetsDirNorm, assetPrefixNorms, quartoAssetsNorm };
+    const skip = { assetsDirNorm, quartoAssetsNorm };
     const verbose = opts.verbose === true;
 
     /** @type {Record<string, number>} */

@@ -169,8 +169,7 @@ if (args.update) {
         srcDir: config.srcDir,
         destDir: config.destDir,
         templateDir: config.templateDir,
-        assetsDir: config.assetsDir,
-        assetPaths: config.assetPaths
+        assetsDir: config.assetsDir
     };
     await Updater.update(USERS_ROOT, JAMSEDU_ROOT, updateConfig, args.force || false);
     exit();

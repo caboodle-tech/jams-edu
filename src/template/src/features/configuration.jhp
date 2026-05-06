@@ -62,6 +62,12 @@
             <dd>Directory for shared HTML partials (include-only). JamsEdu passes it to JHP as the <strong>first</strong> <code>includeSearchRoot</code> (before <code>srcDir</code>) so <code>$include('/…')</code> can resolve here. Typically a <code>templates</code> folder inside <code>srcDir</code>.</dd>
         </div>
         <div>
+            <dt><code>assetsDir</code> <small>Optional</small></dt>
+            <dd>
+                Single folder name under <code>srcDir</code> (for example <code>assets</code>) where you keep static files that are <strong>not</strong> <code>.jhp</code> or <code>.qmd</code> pages. When set, the build bulk-copies that subtree as static output (same relative paths under <code>destDir</code>) and does not look for page sources there, which speeds up large static trees. The interactive <code>jamsedu --init</code> wizard can place grouped <code>css/</code>, <code>js/</code>, and <code>images/</code> under this folder. This is separate from <code>quarto.assetsDir</code>, which is only for Quarto <code>_files</code> output.
+            </dd>
+        </div>
+        <div>
             <dt><code>websiteUrl</code> <small>Optional</small></dt>
             <dd>
                 Canonical absolute URL for your site (including <code>https://</code>), configured here in this exported object (<code>.jamsedu/config.js</code>). A full <strong><code>jamsedu --build</code></strong> (the default clean production pass) writes <code>sitemap.xml</code> under <code>destDir</code> when this property is set, so crawlers get full <code>&lt;loc&gt;</code> URLs.

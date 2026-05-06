@@ -284,25 +284,22 @@ const jamsEduVideo = (scope) => {
             attributes += `${key}="${value}" `;
         }
 
-        // Get inner HTML content
         const innerHTML = videoNode.innerHtml();
 
-        // Prepare figcaption
         let figcaption = '';
         const figcaptionClass = alignment ? ` class="${alignment}"` : '';
 
-        // Find cite node within this video node
         const citeNode = videoNode.querySelector('cite');
 
-        if (citeNode && innerHTML.length > 0) {
-            const citeHtml = citeNode.toHtml();
-            const citeText = `&nbsp;${citeNode.innerHtml()}&nbsp;`;
-            const link = `<a href="${url}" target="_blank" rel="noreferrer">${citeText}</a>`;
-            figcaption = `<figcaption${figcaptionClass}>${innerHTML.replace(citeHtml, link)}</figcaption>`;
-        } else if (citeNode) {
-            const citeText = `&nbsp;${citeNode.innerHtml()}&nbsp;`;
+        /**
+         * Omit `<figcaption>` when the `<video>` body is only whitespace, so bare embeds stay captionless.
+         * When `<cite>` exists, always build the linked caption from the cite text (avoid
+         * `innerHTML.replace(citeHtml, …)` which breaks on whitespace mismatches and leaves stray `</cite>`).
+         */
+        if (citeNode) {
+            const citeText = `&nbsp;${citeNode.innerHtml().trim()}&nbsp;`;
             figcaption = `<figcaption${figcaptionClass}><a href="${url}" target="_blank" rel="noreferrer">${citeText}</a></figcaption>`;
-        } else if (innerHTML.length > 0) {
+        } else if (innerHTML.trim().length > 0) {
             figcaption = `<figcaption${figcaptionClass}>${innerHTML}</figcaption>`;
         }
 

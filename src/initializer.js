@@ -6,7 +6,7 @@ import Print from './imports/print.js';
 import { promptLine } from './imports/readline-prompt.js';
 import URL from 'url';
 import { execSync } from 'child_process';
-import { sanitizeAssetPaths, templateSrcPathToUserPath } from './imports/template-path-mapping.js';
+import { templateSrcPathToUserPath } from './imports/template-path-mapping.js';
 import {
     isTextFileForStripping,
     normalizeContentForHash,
@@ -175,8 +175,6 @@ This utility will walk you through creating a new JamsEdu project. Press [enter]
         let userTemplateDir;
         let cleanedWebsiteUrl = '';
         let assetsDir = '';
-        /** @type {Record<string, string> | null} */
-        let assetPaths = null;
         let useExistingConfig = false;
         /** When a new config is written, include quarto.template and related keys (default off; auto-patch can add later). */
         let includeQuartoInConfig = false;
@@ -204,7 +202,6 @@ Your choice [y]`,
                         destDir = this.resolveConfigRelPath(cwd, cfg.destDir, 'public');
                         userTemplateDir = this.resolveConfigRelPath(cwd, cfg.templateDir, `${srcDir}/templates`);
                         assetsDir = typeof cfg.assetsDir === 'string' ? cfg.assetsDir.replace(/\\/g, '/').replace(/^\/+/, '') : '';
-                        assetPaths = sanitizeAssetPaths(cfg.assetPaths);
                         if (typeof cfg.websiteUrl === 'string' && cfg.websiteUrl.trim() !== '') {
                             cleanedWebsiteUrl = cfg.websiteUrl.trim();
                             if (cleanedWebsiteUrl.endsWith('/')) {
@@ -218,7 +215,7 @@ Your choice [y]`,
   destDir: ${destDir}
   templateDir: ${userTemplateDir}
   assetsDir: ${assetsDir || '(none)'}
-${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWebsiteUrl ? `  websiteUrl: ${cleanedWebsiteUrl}\n` : ''}`
+${cleanedWebsiteUrl ? `  websiteUrl: ${cleanedWebsiteUrl}\n` : ''}`
                         );
                     }
                 } catch (err) {
@@ -242,8 +239,24 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
                 cleanedWebsiteUrl = cleanedWebsiteUrl.slice(0, -1);
             }
 
-            const useAssetsFolder = await this.getResponse('Use an assets folder for CSS, JS, and images? (y/n) [y]', 'y');
-            assetsDir = /^n(o)?$/i.test(useAssetsFolder.trim()) ? '' : 'assets';
+            const groupAssetsAnswer = await this.getResponse(
+                'Group css, js, and images under one folder inside your source directory?\n\n' +
+                    'This matches how many published sites organize static files. Answer no to keep css/, js/, and images/ at the top of your source tree.\n\n' +
+                    '(y/n) [y]',
+                'y'
+            );
+            const wantsGroupedAssets =
+                groupAssetsAnswer.trim() === '' || /^y(es)?$/i.test(groupAssetsAnswer.trim());
+            if (wantsGroupedAssets) {
+                const folderName = await this.getResponse(
+                    'Folder name for grouped css, js, and images\n\nPress [enter] for default: assets',
+                    'assets'
+                );
+                const trimmed = String(folderName || 'assets').trim().replace(/\\/g, '/').replace(/^\/+/, '');
+                assetsDir = trimmed || 'assets';
+            } else {
+                assetsDir = '';
+            }
 
             const templateDirDefault = `${tmpSrcDir}/templates`;
             userTemplateDir = await this.getResponse(`JHP partials directory\n\nReusable HTML partials (head, header, footer) are copied here. This path is saved as templateDir in .jamsedu/config.js; use the same path in your \$include() calls (e.g. ./templates/ from a page in src root). It is not part of the assets folder (css, js, images).\n\nPress [enter] to accept the default: ${templateDirDefault}`, templateDirDefault);
@@ -268,7 +281,7 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
             }
         }
 
-        const layoutConfig = { assetsDir, assetPaths, templateDir: userTemplateDir };
+        const layoutConfig = { assetsDir, templateDir: userTemplateDir };
         const sourceRepoAllowedRoots = sourceRepoMode ? this.getSourceRepoAllowedWriteRoots(srcDir) : [];
 
         // Check for existing files and handle conflicts (before generating config)
@@ -395,7 +408,7 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
     }
 
     /**
-     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null }} userConfig Same layout keys as .jamsedu/config.js
+     * @param {{ assetsDir?: string }} userConfig Same layout keys as .jamsedu/config.js
      */
     static async handleFileConflicts(cwd, templateDir, userSrcDir, userConfig = {}, options = {}) {
         const filesToCopy = this.scanTemplateFilesForConflictCheck(templateDir, userSrcDir, userConfig, options);
@@ -460,7 +473,7 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
     }
 
     /**
-     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null, templateDir?: string }} userConfig
+     * @param {{ assetsDir?: string, templateDir?: string }} userConfig
      */
     static scanTemplateFilesForConflictCheck(templateDir, userSrcDir, userConfig = {}, options = {}) {
         const files = [];
@@ -504,7 +517,7 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
     }
 
     /**
-     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null, templateDir?: string }} userConfig
+     * @param {{ assetsDir?: string, templateDir?: string }} userConfig
      */
     static copyTemplateFiles(templateDir, cwd, conflictMode, userSrcDir, userConfig = {}, options = {}) {
         Print.info('Copying template files...');
@@ -753,7 +766,7 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
     }
 
     /**
-     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null, templateDir?: string }} userConfig
+     * @param {{ assetsDir?: string, templateDir?: string }} userConfig
      */
     static createManifest(cwd, srcDir, jamseduWd, packageVersion, skippedFiles = [], userConfig = {}) {
         const manifestDir = Path.join(cwd, '.jamsedu');
@@ -810,7 +823,7 @@ ${assetPaths ? `  assetPaths: ${JSON.stringify(assetPaths)}\n` : ''}${cleanedWeb
     }
 
     /**
-     * @param {{ assetsDir?: string, assetPaths?: Record<string, string> | null, templateDir?: string }} userConfig
+     * @param {{ assetsDir?: string, templateDir?: string }} userConfig
      */
     static scanTemplateFilesForManifest(templateDir, userSrcDir, userConfig = {}) {
         const files = [];

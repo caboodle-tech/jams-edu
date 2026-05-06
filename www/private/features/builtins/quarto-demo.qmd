@@ -48,13 +48,13 @@ $$
 \f\relax{x} = \int_{-\infty}^\infty \f\hat\xi\,e^{2 \pi i \xi x} \,d\xi
 :::
 
-```{=html}
+::: html
 <div class="callout info icon">
     <p>
         Fenced math blocks can declare macro functions for math on this page. See <a href="./katex-math.html">KaTeX math</a> and <a href="./quarto-jamsedu.html">Quarto with JamsEDU</a>.
     </p>
 </div>
-```
+:::
 
 #### [Embedded PDF](./embedded-pdf.html)
 
@@ -64,17 +64,21 @@ $$
 
 #### [Responsive Video](../built-in-features.html#responsive-video)
 
+::: {.jams-video}
+https://youtu.be/NpEaa2P7qZI
+:::
+
 ::: {.jams-video cite="Sample video citation"}
 https://youtu.be/NpEaa2P7qZI
 :::
 
-```{=html}
+::: html
 <div class="callout warning icon">
     <p>
         JamsEDU only supports the following video hosting platforms: YouTube, Vimeo, Dailymotion, Rumble, and Twitch.
     </p>
 </div>
-```
+:::
 
 `<video>` plus optional `<cite>` (same hooks as fenced `jams-video`):
 
@@ -85,25 +89,31 @@ https://youtu.be/NpEaa2P7qZI
 #### [Rich Text](./rich-text.html)
 
 ::: {.jams-rich placeholder="Answer in a few sentences."}
-```{=html}
 <p>Draft answer goes here.</p>
-```
 :::
 
-```{=html}
+::: html
 <div class="callout warning icon">
     <p>
-        Only basic HTML is supposed in rich text editors; tags outside this set will break your editor: <code>p</code>, <code>a</code>, <code>strong</code>, <code>em</code>, <code>u</code>, <code>ul</code>, <code>ol</code>, or <code>h1</code>
+        It is common to only set the placeholder attribute and not prepopulate the editor. If you choose to prepopulate the editor, only basic HTML is supported. Any tags not in this list will break your editor: <code>a</code>, <code>blockquote</code>, <code>em</code>, <code>h1</code>, <code>ol</code>, <code>p</code>, <code>strong</code>, <code>u</code>, <code>ul</code>
     </p>
 </div>
-```
+:::
 
 #### [Tiny Document](./tiny-document.html)
 
 ::: {.jams-document}
 ```{=html}
 <div class="title">Worksheet</div>
-<p class="instructions">Try the prompts below.</p>
+<div class="header">
+    <div><input type="text" placeholder="Your Name"></div>
+    <div><input type="date"></div>
+</div>
+<div class="section">Reflection</div>
+<p class="instructions">
+    This is a simple demo document...
+</p>
+<textarea class="rich" placeholder="Write your thoughts here..."></textarea>
 ```
 :::
 

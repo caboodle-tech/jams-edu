@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 import Fs from 'fs';
 import JHP from '@caboodle-tech/jhp';
 import NodeSimpleServer from '@caboodle-tech/node-simple-server';
@@ -12,13 +13,6 @@ import { isTextFileForStripping, stripJamseduComments } from './imports/strip-ja
 import { writeSearchIndexAndSitemap } from './search-index-and-sitemap.js';
 
 const Spawn = Process.spawn;
-
-// Extension suffixes mapped to bundled asset dirs (CSS, JS, images, etc.).
-const ASSET_TYPE_BY_EXT = Object.freeze({
-    css: ['css'],
-    js: ['js', 'mjs'],
-    images: ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico']
-});
 
 /**
  * Absolute path to this package's root (the directory that contains `jamsedu.js`).
@@ -53,16 +47,13 @@ const REGEX = Object.freeze({
     entityNbsp: /&nbsp;/g,
     entityNumDecimalQuote: /&#39;/g,
     entityQuot: /&quot;/g,
-    // Split Markdown while preserving single-backtick `` `inline code` `` spans from math rewriting.
-    markdownFenceLine: /^\s*```/,
-    markdownFencedCodeBlock: /(```[\s\S]*?```)/g,
+    markdownFenceLine: /^\s*```/, // Split on triple backticks to preserve single-backtick for inline code.
     markdownFencedDivClose: /^\s*:::\s*$/,
     markdownFencedDivOpen: /^\s*:::\s*\{([^}]*)\}\s*$/,
+    markdownRawHtmlFenceOpenLine: /^\x60{3}\s*\{=html\}\s*$/i,
     markdownInlineCodeSegment: /(`[^`\n]*`)/g,
-    // Markdown and math (applied before Pandoc where applicable).
     markdownMathBlock: /\$\$([\s\S]*?)\$\$/g,
     markdownMathInline: /\$([^$\n\r]+?)\$/g,
-    // All other regexes:
     collapseSlashes: /\/+/g,
     dotPrefix: /^\./,
     escapeAmp: /&/g,
@@ -107,6 +98,21 @@ const REGEX = Object.freeze({
     windowsSlash: /\\/g
 });
 
+/** Allowed tag names for jams-rich warnings; mirrors archived `jamsedu-blocks.archived.lua`. */
+const JAMS_RICH_ALLOWED_HTML_TAGS = new Set([
+    'p',
+    'ul',
+    'ol',
+    'li',
+    'blockquote',
+    'strong',
+    'em',
+    'h1',
+    'a',
+    'u',
+    'code'
+]);
+
 /**
  * Temporary stand-in while Quarto Markdown + Pandoc run; restored to `\` after HTML fragment emits.
  * (Pandoc would otherwise treat `\frac` etc. as Markdown escapes.) BMP private-use, not Unicode noncharacters.
@@ -115,9 +121,10 @@ const TEX_BACKSLASH_SENTINEL = '\uE000';
 
 export default class JamsEdu {
 
-    #assetsDir = '';
+    /** `::: {.…}` classes that may contain bare HTML; Quarto sees inner lines as authored (no injected raw fences). */
+    static #optionalInnerHtmlFenceDivClasses = new Set(['jams-document', 'jams-rich']);
 
-    #assetPaths = null;
+    #assetsDir = '';
 
     #destDir = '';
 
@@ -230,9 +237,10 @@ export default class JamsEdu {
             this.#websiteUrl = '';
         }
 
-        // Optional: where to put CSS, JS, images. assetPaths overrides assetsDir per type.
-        this.#assetsDir = typeof config.assetsDir === 'string' ? config.assetsDir : '';
-        this.#assetPaths = WhatIs(config.assetPaths) === 'object' ? config.assetPaths : null;
+        // Optional: relative folder under srcDir that holds static assets only (skip .jhp/.qmd processing).
+        this.#assetsDir = typeof config.assetsDir === 'string' && config.assetsDir.trim() ?
+            config.assetsDir.trim().replace(REGEX.trimEdgeSlashes, '') :
+            '';
 
         // Copy safety rules.
         this.#initializeCopyRules(config);
@@ -302,7 +310,6 @@ export default class JamsEdu {
             if (clean && Fs.existsSync(this.#destDir)) {
                 this.#persistBuildSourceMtimes();
                 await writeSearchIndexAndSitemap({
-                    assetPaths: this.#assetPaths,
                     assetsDir: this.#assetsDir,
                     destDir: this.#destDir,
                     quartoAssetsDir: this.#quarto.assetsDir,
@@ -398,7 +405,7 @@ export default class JamsEdu {
 
             // CRITICAL: Skip symlinks - never follow or delete them
             if (entry.isSymbolicLink()) {
-                // eslint-disable-next-line no-continue
+
                 continue;
             }
 
@@ -443,9 +450,11 @@ export default class JamsEdu {
     #getQuartoStaleSkipInvalidationPaths(absoluteQmdSrc) {
         const bundled = Path.join(JAMSEDU_MODULE_DIR, 'extensions', 'jamsedu');
         const extras = [];
+        extras.push(Path.join(JAMSEDU_MODULE_DIR, 'jamsedu.js'));
         extras.push(Path.join(bundled, 'extension.yml'));
         extras.push(Path.join(bundled, 'jamsedu.lua'));
         extras.push(Path.join(bundled, 'jamsedu-blocks.lua'));
+        extras.push(Path.join(bundled, 'jamsedu-blocks.archived.lua'));
         extras.push(Path.join(bundled, 'project.yml'));
         if (this.#quarto.templatePath) {
             extras.push(Path.resolve(this.#quarto.templatePath));
@@ -630,6 +639,41 @@ export default class JamsEdu {
         const quartoDirs = new Set();
 
         const visit = (dir) => {
+            if (this.#isUnderAssetsDir(dir)) {
+                const walkCopiedOnly = (absDir) => {
+                    let innerEntries = [];
+                    try {
+                        innerEntries = Fs.readdirSync(absDir, { withFileTypes: true });
+                    } catch {
+                        return;
+                    }
+                    for (const ent of innerEntries) {
+                        if (ent.name === '.quarto') {
+                            continue;
+                        }
+                        const p = Path.join(absDir, ent.name);
+                        if (this.#isUnderTemplateDir(p)) {
+                            continue;
+                        }
+                        if (ent.isDirectory()) {
+                            walkCopiedOnly(p);
+                        } else if (ent.isFile()) {
+                            const relativePath = Path.relative(this.#srcDir, p);
+                            const normalizedRelPosix = relativePath.replace(REGEX.windowsSlash, '/').toLowerCase();
+                            const ext = Path.extname(p).slice(1);
+                            if (!this.#shouldCopyFile(normalizedRelPosix, ext)) {
+                                continue;
+                            }
+                            copiedPaths.add(
+                                Path.resolve(this.#getDestPathFromRelative(relativePath, false, ext))
+                            );
+                        }
+                    }
+                };
+                walkCopiedOnly(dir);
+                return;
+            }
+
             let entries = [];
             try {
                 entries = Fs.readdirSync(dir, { withFileTypes: true });
@@ -857,31 +901,14 @@ export default class JamsEdu {
     }
 
     /**
-     * Returns asset type for an extension, or null. Used for assetsDir / assetPaths mapping.
-     * @param {string} ext Extension without dot (e.g. 'css', 'png').
-     * @returns {string|null} 'css' | 'js' | 'images' | null.
-     */
-    #getAssetType(ext) {
-        if (!ext || typeof ext !== 'string') {
-            return null;
-        }
-        const lower = ext.toLowerCase();
-        for (const [type, exts] of Object.entries(ASSET_TYPE_BY_EXT)) {
-            if (exts.includes(lower)) {
-                return type;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Computes destination path from a path relative to srcDir. Applies page-source→.html and assets mapping.
+     * Computes destination path from a path relative to srcDir. Compiles page sources to `.html`;
+     * all other files mirror the same relative path under `destDir`.
      * @param {string} relativePath Path relative to srcDir.
      * @param {boolean} isCompiledPage Whether the source compiles to an HTML page.
-     * @param {string} [ext] Extension without dot (for non-jhp asset mapping).
+     * @param {string} [ext] Extension without dot (unused; reserved for future use).
      * @returns {string} Absolute destination path.
      */
-    #getDestPathFromRelative(relativePath, isCompiledPage, ext = '') {
+    #getDestPathFromRelative(relativePath, isCompiledPage, _ext = '') {
         const normalized = Path.normalize(relativePath.replace(REGEX.slash, Path.sep));
         if (normalized.startsWith('..') || Path.isAbsolute(normalized)) {
             return Path.join(this.#destDir, normalized);
@@ -890,27 +917,12 @@ export default class JamsEdu {
             const withHtml = normalized.replace(REGEX.htmlPageSourceExt, '.html');
             return Path.join(this.#destDir, withHtml);
         }
-        const assetType = this.#getAssetType(ext);
-        const hasPerType = this.#assetPaths && assetType && typeof this.#assetPaths[assetType] === 'string';
-        const useCatchAll = this.#assetsDir && assetType;
-        if (hasPerType) {
-            return Path.join(this.#destDir, this.#assetPaths[assetType], normalized);
-        }
-        if (useCatchAll) {
-            // Source may already be under assets (e.g. src/assets/css/...) so avoid double-prepending
-            const assetsPrefix = `${this.#assetsDir}${Path.sep}`;
-            const assetsPrefixSlash = `${this.#assetsDir}/`;
-            if (normalized.startsWith(assetsPrefix) || normalized.startsWith(assetsPrefixSlash)) {
-                return Path.join(this.#destDir, normalized);
-            }
-            return Path.join(this.#destDir, this.#assetsDir, normalized);
-        }
         return Path.join(this.#destDir, normalized);
     }
 
     /**
      * Resolves a watched path (relative to srcDir) to a destination path under destDir.
-     * Uses same mapping as build (assetsDir/assetPaths, page-source→.html). Returns null if outside destDir.
+     * Uses the same rules as build (page-source→.html, otherwise mirror). Returns null if outside destDir.
      * @param {string} relativePath Path relative to srcDir (forward slashes from watcher).
      * @param {boolean} wasCompiledPage Whether the source compiles to .html.
      * @param {string} [ext] Extension without dot (for asset mapping on unlink).
@@ -1026,6 +1038,67 @@ export default class JamsEdu {
         return rel !== '' && !rel.startsWith('..') && !Path.isAbsolute(rel);
     }
 
+    /**
+     * Absolute path to the configured static-assets root under `srcDir`, or empty when disabled.
+     * @returns {string}
+     */
+    #getAssetsDirAbsoluteRoot() {
+        if (!this.#assetsDir) {
+            return '';
+        }
+        return Path.resolve(this.#srcDir, this.#assetsDir);
+    }
+
+    /**
+     * True when the path is the assets root or inside it (used to skip page compilation in that subtree).
+     * @param {string} absoluteFilePath
+     * @returns {boolean}
+     */
+    #isUnderAssetsDir(absoluteFilePath) {
+        const root = this.#getAssetsDirAbsoluteRoot();
+        if (!root) {
+            return false;
+        }
+        const file = Path.resolve(absoluteFilePath);
+        const rel = Path.relative(root, file);
+        return rel === '' || (!rel.startsWith('..') && !Path.isAbsolute(rel));
+    }
+
+    /**
+     * Recursively copies a source subtree into `destDir` with the same relative layout, applying
+     * `#shouldCopyFile` and skipping `.quarto` directories.
+     * @param {string} srcRoot
+     */
+    #copySourceTreeWithCopyRules(srcRoot) {
+        let entries = [];
+        try {
+            entries = Fs.readdirSync(srcRoot, { withFileTypes: true });
+        } catch {
+            return;
+        }
+        for (const entry of entries) {
+            if (entry.name === '.quarto') {
+                continue;
+            }
+            const srcPath = Path.join(srcRoot, entry.name);
+            if (this.#isUnderTemplateDir(srcPath)) {
+                continue;
+            }
+            if (entry.isDirectory()) {
+                this.#copySourceTreeWithCopyRules(srcPath);
+            } else if (entry.isFile()) {
+                const relativePath = Path.relative(this.#srcDir, srcPath);
+                const normalizedRelPosix = relativePath.replace(REGEX.windowsSlash, '/').toLowerCase();
+                const ext = Path.extname(srcPath).slice(1);
+                if (!this.#shouldCopyFile(normalizedRelPosix, ext)) {
+                    continue;
+                }
+                const dest = this.#getDestPathFromRelative(relativePath, false, ext);
+                this.#copyFile(srcPath, dest);
+            }
+        }
+    }
+
     #normalizeConfigStringArray(value) {
         if (!Array.isArray(value)) {
             return [];
@@ -1109,20 +1182,6 @@ export default class JamsEdu {
         }
         const normalizedExt = (ext || '').toLowerCase();
         const basename = Path.basename(normalizedRel);
-        const normalizedAssetsDir = this.#assetsDir.replace(REGEX.windowsSlash, '/')
-            .toLowerCase()
-            .replace(REGEX.trimEdgeForwardSlashes, '');
-        const assetsPrefix = this.#assetsDir ? `${normalizedAssetsDir}/` : '';
-
-        // Keep existing asset-directory behavior stable; source assets should copy unless explicitly denied by suffix.
-        if (assetsPrefix && normalizedRel.startsWith(assetsPrefix)) {
-            for (const denied of this.#copyRules.denySuffix) {
-                if (basename === denied || basename.endsWith(`.${denied}`)) {
-                    return false;
-                }
-            }
-            return true;
-        }
 
         for (const allowed of this.#copyRules.allowSuffix) {
             if (basename === allowed || basename.endsWith(`.${allowed}`)) {
@@ -1634,24 +1693,28 @@ export default class JamsEdu {
                 const fullPath = Path.join(absoluteDir, entry.name);
                 if (entry.isDirectory()) {
                     if (entry.name === '.quarto' || this.#isUnderTemplateDir(fullPath)) {
-                        // eslint-disable-next-line no-continue
+
+                        continue;
+                    }
+                    if (this.#isUnderAssetsDir(fullPath)) {
+
                         continue;
                     }
                     walk(fullPath);
-                    // eslint-disable-next-line no-continue
+
                     continue;
                 }
                 if (!entry.isFile() || !entry.name.toLowerCase().endsWith('.qmd')) {
-                    // eslint-disable-next-line no-continue
+
                     continue;
                 }
                 if (this.#isUnderTemplateDir(fullPath)) {
-                    // eslint-disable-next-line no-continue
+
                     continue;
                 }
                 const relativePath = Path.relative(this.#srcDir, fullPath);
                 if (!this.#shouldCompileQmdStandalone(fullPath, relativePath)) {
-                    // eslint-disable-next-line no-continue
+
                     continue;
                 }
                 callback(fullPath, relativePath);
@@ -1705,6 +1768,134 @@ export default class JamsEdu {
             const trimmed = String(tail || '').replace(REGEX.windowsSlash, '/').replace(REGEX.trimLeadingForwardSlashes, '');
             return `](/features/${trimmed}`;
         });
+    }
+
+    /**
+     * Quarto `render --to markdown` rewrites root-absolute targets like `/x/y` into document-relative `.\x\y` on Windows.
+     * This happens before we see an AST and even applies to raw inlines. QPROTECT works around it by swapping root
+     * targets with non-path placeholders before render, then restoring them after Quarto emits markdown.
+     *
+     * Scope: only targets that start with `/` (including `//host/...` protocol-relative URLs).
+     *
+     * @param {string} qmdPayload Full staged `.qmd` payload (may include YAML frontmatter).
+     * @returns {{ payload: string; map: Array<{ placeholder: string; target: string }> }}
+     */
+    #qprotectRootTargetsBeforeQuartoMarkdown(qmdPayload) {
+        const text = String(qmdPayload || '');
+        const match = text.match(REGEX.frontmatter);
+        if (!match) {
+            return this.#qprotectRootTargetsInMarkdownBody(text);
+        }
+        const headLen = match[0].length;
+        const protectedBody = this.#qprotectRootTargetsInMarkdownBody(text.slice(headLen));
+        return { payload: text.slice(0, headLen) + protectedBody.payload, map: protectedBody.map };
+    }
+
+    /**
+     * @param {string} markdownBody
+     * @returns {{ payload: string; map: Array<{ placeholder: string; target: string }> }}
+     */
+    #qprotectRootTargetsInMarkdownBody(markdownBody) {
+        const map = [];
+        let n = 0;
+
+        const nextPlaceholder = (target) => {
+            n += 1;
+            const id = String(n).padStart(4, '0');
+            const t = String(target || '');
+            const withoutQuery = t.split('#')[0].split('?')[0];
+            const ext = withoutQuery.lastIndexOf('.') >= 0 ? withoutQuery.slice(withoutQuery.lastIndexOf('.')) : '';
+            const safeExt = /^[.][A-Za-z0-9]+$/.test(ext) ? ext : '';
+            return `https://qprotect.invalid/jamsedu/${id}${safeExt}`;
+        };
+
+        const protectTarget = (target) => {
+            const t = String(target || '');
+            if (!t.startsWith('/')) {
+                return t;
+            }
+            const placeholder = nextPlaceholder(t);
+            map.push({ placeholder, target: t });
+            return placeholder;
+        };
+
+        // Inline markdown links/images: [text](/path "title") and ![alt](/path)
+        // Note: keep this conservative; we only rewrite when the first URL token starts with `/`.
+        const inlineLinkImage = /(!?\[[^\]]*])\(([^)\r\n]+)\)/g;
+        let out = String(markdownBody || '').replace(inlineLinkImage, (full, label, inner) => {
+            const raw = String(inner || '').trim();
+            if (raw === '') {
+                return full;
+            }
+            if (raw.startsWith('<')) {
+                const close = raw.indexOf('>');
+                if (close <= 1) {
+                    return full;
+                }
+                const url = raw.slice(1, close);
+                if (!url.startsWith('/')) {
+                    return full;
+                }
+                const rest = raw.slice(close + 1);
+                return `${label}(<${protectTarget(url)}>${rest})`;
+            }
+            const parts = raw.split(/\s+/);
+            const url = parts[0] || '';
+            if (!url.startsWith('/')) {
+                return full;
+            }
+            const rest = raw.slice(url.length);
+            return `${label}(${protectTarget(url)}${rest})`;
+        });
+
+        // Reference definitions: [id]: /path "title"
+        const refDef = /^(\s*\[[^\]]+]:\s*)(<[^>]+>|[^ \t\r\n]+)([^\r\n]*)$/gm;
+        out = out.replace(refDef, (full, lead, urlToken, tail) => {
+            const token = String(urlToken || '').trim();
+            if (token.startsWith('<') && token.endsWith('>')) {
+                const url = token.slice(1, -1);
+                if (!url.startsWith('/')) {
+                    return full;
+                }
+                return `${lead}<${protectTarget(url)}>${tail}`;
+            }
+            if (!token.startsWith('/')) {
+                return full;
+            }
+            return `${lead}${protectTarget(token)}${tail}`;
+        });
+
+        // Raw HTML attribute targets.
+        const htmlAttr = /\b(src|href)=(["'])(\/[^"']*)(\2)/gi;
+        out = out.replace(htmlAttr, (_full, attr, quote, value, q2) => {
+            const v = String(value || '');
+            if (!v.startsWith('/')) {
+                return `${attr}=${quote}${v}${q2}`;
+            }
+            return `${attr}=${quote}${protectTarget(v)}${q2}`;
+        });
+
+        return { payload: out, map };
+    }
+
+    /**
+     * @param {string} markdownBody Quarto-emitted markdown body (post `render --to markdown`).
+     * @param {Array<{ placeholder: string; target: string }>} map
+     * @returns {string}
+     */
+    #qprotectRestoreRootTargetsAfterQuartoMarkdown(markdownBody, map) {
+        if (!Array.isArray(map) || map.length === 0) {
+            return String(markdownBody || '');
+        }
+        let out = String(markdownBody || '');
+        for (const entry of map) {
+            if (!entry || typeof entry.placeholder !== 'string' || typeof entry.target !== 'string') {
+                continue;
+            }
+            const placeholder = entry.placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            out = out.replace(new RegExp(placeholder, 'g'), entry.target);
+        }
+        return out;
     }
 
     #rewriteQuartoAssetPaths(markdownBody, relativePath) {
@@ -1775,19 +1966,66 @@ export default class JamsEdu {
 
     /**
      * Turn `$…$` / `$$…$$` in Quarto markdown into JamsEDU math HTML **before** Pandoc.
-     * Skips fenced ``` code blocks and single-backtick `` `...` `` spans (so illustrative dollars inside code ticks stay verbatim).
-     * Display math emits a bare `<div class="math">` (never ```{=html}` fences): fences break paragraphs and list items mid-line.
+     * Skips fenced code blocks using the same fence stack as elsewhere (any backtick or tilde run length ≥ 3), not only
+     * `` ```…``` ``. A naive triple-backtick-only split breaks on outer ` `````` ` fences: it treats inner `` ```{=html} ``
+     * as a fence end, leaves `{=html}` “outside,” and Pandoc’s `+raw_attribute` pass then emits stray `{=html}` in HTML.
+     * Single-backtick `` `...` `` spans are still respected inside outside segments. Display math emits a bare
+     * `<div class="math">` (never raw-HTML fences): fences break paragraphs and list items mid-line.
      * Built with string concat only so LaTeX backslashes are never mangled by JS template literals.
      */
     #convertMarkdownMathToJamsHtml(markdownBody) {
-        const segments = markdownBody.split(REGEX.markdownFencedCodeBlock);
-        const mapped = segments.map((segment, index) => {
-            if (index % 2 === 1) {
-                return segment;
+        const lines = String(markdownBody || '').split(/\r?\n/);
+        /** @type {{ tickChar: string; tickLen: number }[]} */
+        const stack = [];
+        const outPieces = [];
+        const outside = [];
+        /** @type {string[] | null} */
+        let fenceLines = null;
+
+        const flushOutside = () => {
+            if (outside.length === 0) {
+                return;
             }
-            return this.#rewriteMarkdownMathSpansOutsideInlineCode(segment);
-        });
-        return mapped.join('');
+            outPieces.push(this.#rewriteMarkdownMathSpansOutsideInlineCode(outside.join('\n')));
+            outside.length = 0;
+        };
+
+        for (let i = 0; i < lines.length; i += 1) {
+            const line = lines[i];
+            const depthBefore = stack.length;
+            const applied = this.#markdownCodeFenceStackApplyLine(stack, line);
+            const depthAfter = stack.length;
+
+            if (applied) {
+                if (depthBefore === 0 && depthAfter > 0) {
+                    flushOutside();
+                    fenceLines = [line];
+                } else if (fenceLines != null) {
+                    fenceLines.push(line);
+                    if (depthAfter === 0) {
+                        outPieces.push(fenceLines.join('\n'));
+                        fenceLines = null;
+                    }
+                }
+                continue;
+            }
+
+            if (depthAfter > 0) {
+                if (fenceLines == null) {
+                    fenceLines = [];
+                }
+                fenceLines.push(line);
+            } else {
+                outside.push(line);
+            }
+        }
+
+        flushOutside();
+        if (fenceLines != null && fenceLines.length > 0) {
+            outPieces.push(fenceLines.join('\n'));
+        }
+
+        return outPieces.join('\n');
     }
 
     /**
@@ -1838,31 +2076,187 @@ export default class JamsEdu {
             .filter(Boolean);
     }
 
+    /**
+     * @param {string} line
+     * @returns {number | null} colon run length when the line is only a Pandoc-style fenced-div closer
+     */
+    #markdownFencedDivPureCloseColonLength(line) {
+        const m = String(line || '').match(/^\s*(:{3,})\s*$/);
+        return m ? m[1].length : null;
+    }
+
+    /**
+     * Colon run length for a fenced-div opener (not a pure close line).
+     *
+     * @param {string} line
+     * @returns {number | null}
+     */
+    #markdownFencedDivOpenColonLength(line) {
+        if (this.#markdownFencedDivPureCloseColonLength(line) !== null) {
+            return null;
+        }
+        const m = String(line || '').match(/^\s*(:{3,})\s*(.*)$/);
+        if (!m) {
+            return null;
+        }
+        if (String(m[2]).trim() === '') {
+            return null;
+        }
+        return m[1].length;
+    }
+
+    /**
+     * Quarto `--to markdown` may emit `::: {.class}`, `:::: {.class}`, or a bare `::: jams-document` open line.
+     *
+     * @param {string} line
+     * @returns {string[] | null} class names without leading dots, or null when this line is not a fenced div open
+     */
+    #quartoMarkdownFencedDivOpenLineClasses(line) {
+        const s = String(line || '');
+        if (this.#markdownFencedDivPureCloseColonLength(s) !== null) {
+            return null;
+        }
+        const m = s.match(/^\s*(:{3,})\s*(.*)$/);
+        if (!m) {
+            return null;
+        }
+        const rest = String(m[2]).trim();
+        if (rest === '') {
+            return null;
+        }
+        if (/^html$/i.test(rest)) {
+            return ['html'];
+        }
+        const braced = rest.match(/^\{([^}]*)\}\s*$/);
+        if (braced) {
+            const parsed = this.#parseFencedDivClasses(braced[1]);
+            return parsed.length > 0 ? parsed : null;
+        }
+        const bare = rest.match(/^([\w.-]+)\s*$/);
+        if (bare) {
+            return [bare[1]];
+        }
+        return null;
+    }
+
+    /**
+     * CommonMark-style leading fence run on `line` (backticks or tildes).
+     *
+     * @param {string} line
+     * @returns {{ tickChar: string; tickLen: number; rest: string } | null}
+     */
+    #markdownLeadingCodeFenceRun(line) {
+        const m = String(line || '').match(/^(\s*)(`{3,}|~{3,})(.*)$/);
+        if (!m) {
+            return null;
+        }
+        return { tickChar: m[2][0], tickLen: m[2].length, rest: m[3] };
+    }
+
+    /**
+     * True when `line` closes a fence opened with `openTickChar` / `openTickLen` (same char, run at least as long,
+     * rest of line blank).
+     *
+     * @param {string} openTickChar
+     * @param {number} openTickLen
+     * @param {string} line
+     * @returns {boolean}
+     */
+    #markdownLineClosesThisCodeFence(openTickChar, openTickLen, line) {
+        const run = this.#markdownLeadingCodeFenceRun(line);
+        if (!run) {
+            return false;
+        }
+        if (run.tickChar !== openTickChar || run.tickLen < openTickLen) {
+            return false;
+        }
+        return String(run.rest).trim() === '';
+    }
+
+    /**
+     * When `line` starts a fence, pop the innermost frame if this line closes it; otherwise push a nested or outer
+     * fence. Mutates `stack`.
+     *
+     * @param {{ tickChar: string; tickLen: number }[]} stack
+     * @param {string} line
+     * @returns {boolean} false when the line does not start a fence run
+     */
+    #markdownCodeFenceStackApplyLine(stack, line) {
+        const run = this.#markdownLeadingCodeFenceRun(line);
+        if (!run) {
+            return false;
+        }
+        const top = stack[stack.length - 1];
+        if (
+            stack.length > 0 &&
+            this.#markdownLineClosesThisCodeFence(top.tickChar, top.tickLen, line)
+        ) {
+            stack.pop();
+            return true;
+        }
+        stack.push({ tickChar: run.tickChar, tickLen: run.tickLen });
+        return true;
+    }
+
+    /**
+     * Pre-Quarto fenced-div pass for partial `.qmd`: normalize `jams-mermaid`, `jams-math`, and HTML-oriented `::: …`
+     * inners to block HTML lines. Does not emit Pandoc `` ```{=html} `` fences; Quarto owns that form in author sources.
+     */
     #rewriteJamsFencedBlocksForQuartoRender(markdownBody) {
         const lines = String(markdownBody).split(/\r?\n/);
         const out = [];
         let i = 0;
-        let inCodeFence = false;
+        /** @type {{ tickChar: string; tickLen: number }[]} */
+        const codeFenceStack = [];
         while (i < lines.length) {
             const line = lines[i];
-            if (REGEX.markdownFenceLine.test(line)) {
-                inCodeFence = !inCodeFence;
+            if (this.#markdownCodeFenceStackApplyLine(codeFenceStack, line)) {
                 out.push(line);
                 i += 1;
                 continue;
             }
-            if (inCodeFence) {
+            if (codeFenceStack.length > 0) {
                 out.push(line);
                 i += 1;
                 continue;
             }
-            const open = line.match(REGEX.markdownFencedDivOpen);
-            if (!open) {
+            const classes = this.#quartoMarkdownFencedDivOpenLineClasses(line);
+            const divOpenLen = this.#markdownFencedDivOpenColonLength(line);
+            if (!classes || divOpenLen == null) {
                 out.push(line);
                 i += 1;
                 continue;
             }
-            const classes = this.#parseFencedDivClasses(open[1]);
+            const needsOptionalInnerHtmlFence =
+                classes.some((cls) => {
+                    return JamsEdu.#optionalInnerHtmlFenceDivClasses.has(cls);
+                }) ||
+                (classes.length === 1 && classes[0] === 'html') ||
+                classes.includes('jams-raw-html');
+            if (needsOptionalInnerHtmlFence) {
+                let j = i + 1;
+                const inner = [];
+                while (j < lines.length) {
+                    const cl = this.#markdownFencedDivPureCloseColonLength(lines[j]);
+                    if (cl === divOpenLen) {
+                        break;
+                    }
+                    inner.push(lines[j]);
+                    j += 1;
+                }
+                if (j >= lines.length) {
+                    out.push(line);
+                    i += 1;
+                    continue;
+                }
+                out.push(line);
+                for (let k = 0; k < inner.length; k += 1) {
+                    out.push(inner[k]);
+                }
+                out.push(lines[j]);
+                i = j + 1;
+                continue;
+            }
             const isMermaid = classes.includes('jams-mermaid') || classes.includes('jams-diagram');
             const isMath = classes.includes('jams-math') || classes.includes('jams-katex');
             if (!isMermaid && !isMath) {
@@ -1872,7 +2266,11 @@ export default class JamsEdu {
             }
             let j = i + 1;
             const inner = [];
-            while (j < lines.length && !REGEX.markdownFencedDivClose.test(lines[j])) {
+            while (j < lines.length) {
+                const cl = this.#markdownFencedDivPureCloseColonLength(lines[j]);
+                if (cl === divOpenLen) {
+                    break;
+                }
                 inner.push(lines[j]);
                 j += 1;
             }
@@ -1883,197 +2281,426 @@ export default class JamsEdu {
             }
             const body = inner.join('\n').trim();
             if (isMermaid && body) {
-                out.push('```{=html}');
                 out.push('<pre class="mermaid">');
                 out.push(body);
                 out.push('</pre>');
-                out.push('```');
             } else if (isMath && body) {
                 const isMacro = classes.includes('macro');
                 const className = isMacro ? 'math macro' : 'math';
                 const attr = this.#texDataAttrForPandocPass(body);
-                out.push('```{=html}');
                 out.push(`<div class="${className}" data-formula="${attr}"></div>`);
-                out.push('```');
             }
             i = j + 1;
         }
         return out.join('\n');
     }
 
-    /** @type {ReadonlySet<string>} */
-    static #voidHtmlTagNames = new Set([
-        'area',
-        'base',
-        'br',
-        'col',
-        'embed',
-        'hr',
-        'img',
-        'input',
-        'link',
-        'meta',
-        'param',
-        'source',
-        'track',
-        'wbr'
-    ]);
-
     /**
-     * Parses a trimmed single-line opening or self-closing HTML tag (`<div …>`, `<br>`, `<img … />`).
+     * Closing fenced-div line index for the block opened at `openIdx`, skipping nested code fences and nested divs.
+     * Supports Pandoc-style variable colon counts (`::::` … `::::`).
      *
-     * @param {string} trimmedLine
-     * @returns {{ tag: string; selfClosing: boolean } | null}
-     */
-    #parseHtmlOpeningTagMetadata(trimmedLine) {
-        const t = String(trimmedLine || '').trim();
-        if (!/^<[a-zA-Z]/.test(t) || /^<\//.test(t)) {
-            return null;
-        }
-        const m = /^<([a-zA-Z][\w:-]*)\b/i.exec(t);
-        if (!m) {
-            return null;
-        }
-        const tag = m[1].toLowerCase();
-        const voidTag = JamsEdu.#voidHtmlTagNames.has(tag);
-        if (/[^/]\/\s*>$/.test(t)) {
-            return { tag, selfClosing: true };
-        }
-        if (voidTag && />\s*$/.test(t)) {
-            return { tag, selfClosing: true };
-        }
-        if (!/>\s*$/.test(t)) {
-            return null;
-        }
-        return { tag, selfClosing: false };
-    }
-
-    /**
      * @param {string[]} lines
      * @param {number} openIdx
      * @returns {number | null}
      */
-    #findBalancedHtmlIslandClosingLineIndex(lines, openIdx) {
-        const opener = lines[openIdx];
-        if (typeof opener !== 'string' || opener.length !== opener.trimStart().length) {
+    #findJamsFencedDivCloseLineIndex(lines, openIdx) {
+        const openColonLen = this.#markdownFencedDivOpenColonLength(lines[openIdx] || '');
+        if (openColonLen == null) {
             return null;
         }
-        const parsedOpen = this.#parseHtmlOpeningTagMetadata(opener.trim());
-        if (!parsedOpen || parsedOpen.selfClosing) {
-            return null;
-        }
-        const stack = [parsedOpen.tag];
+        /** @type {number[]} */
+        const divColonStack = [openColonLen];
         let j = openIdx + 1;
-        while (j < lines.length && stack.length > 0) {
-            const raw = lines[j];
-            const trimmed = raw.trim();
-            if (trimmed === '') {
+        /** @type {{ tickChar: string; tickLen: number }[]} */
+        const codeFenceStack = [];
+        while (j < lines.length) {
+            const line = lines[j];
+            if (this.#markdownCodeFenceStackApplyLine(codeFenceStack, line)) {
                 j += 1;
                 continue;
             }
-            const isCol0NonSpace = trimmed !== '' && raw === raw.trimStart();
-            const closeMt = /^<\/([\w:-]+)\s*>/i.exec(trimmed);
-            if (closeMt) {
-                const tg = closeMt[1].toLowerCase();
-                if (stack.length === 0 || stack[stack.length - 1] !== tg) {
-                    return null;
-                }
-                stack.pop();
-                const closedIdx = j;
+            if (codeFenceStack.length > 0) {
                 j += 1;
-                if (stack.length === 0) {
-                    return closedIdx;
-                }
                 continue;
             }
-            const nestedOpen = this.#parseHtmlOpeningTagMetadata(trimmed);
-            if (nestedOpen && !/^<\//.test(trimmed)) {
-                if (!nestedOpen.selfClosing) {
-                    stack.push(nestedOpen.tag.toLowerCase());
+            const closeLen = this.#markdownFencedDivPureCloseColonLength(line);
+            if (
+                closeLen !== null &&
+                divColonStack.length > 0 &&
+                closeLen === divColonStack[divColonStack.length - 1]
+            ) {
+                divColonStack.pop();
+                if (divColonStack.length === 0) {
+                    return j;
                 }
                 j += 1;
                 continue;
             }
-            if (!isCol0NonSpace) {
-                j += 1;
-                continue;
+            const nestedOpenLen = this.#markdownFencedDivOpenColonLength(line);
+            const nestedClasses = this.#quartoMarkdownFencedDivOpenLineClasses(line);
+            if (nestedOpenLen !== null && nestedClasses !== null && nestedClasses.length > 0) {
+                divColonStack.push(nestedOpenLen);
             }
-            return null;
+            j += 1;
         }
         return null;
     }
 
     /**
-     * Quarto markdown after `{=html}` often keeps prettily indented tags. Pandoc then treats 4+ space indents as
-     * indented code blocks, so inner `<p>` becomes `<pre><code>`. Only rewrite balanced HTML islands outside ``` fences;
-     * skip islands that contain `<pre>`, `<script>`, `<style>`, or `<textarea>` so whitespace-sensitive blocks stay
-     * untouched. Does not disable markdown indented code blocks globally.
+     * Jams passthrough `html` / `jams-raw-html` may appear alone or beside other classes (for example `{.html .panel}`).
      *
-     * @param {string[]} lines
-     * @param {number} startIdx
-     * @returns {{ startIdx: number; closingIdx: number; linesOut: string[] } | null}
+     * @param {string[]} classes from `#parseFencedDivClasses` or `#quartoMarkdownFencedDivOpenLineClasses`
+     * @returns {boolean}
      */
-    #tryTrimStartIndentedHtmlIsland(lines, startIdx) {
-        const closingIdx = this.#findBalancedHtmlIslandClosingLineIndex(lines, startIdx);
-        if (closingIdx === null || closingIdx <= startIdx) {
-            return null;
-        }
-        const innerSlice = lines.slice(startIdx + 1, closingIdx);
-        const innerJoined = innerSlice.join('\n');
-        if (/<\s*(pre|script|style|textarea)\b/i.test(innerJoined)) {
-            return null;
-        }
-        const linesOut = [lines[startIdx]];
-        for (let k = 0; k < innerSlice.length; k += 1) {
-            linesOut.push(innerSlice[k].trimStart());
-        }
-        linesOut.push(lines[closingIdx]);
-        const oldSeg = lines.slice(startIdx, closingIdx + 1).join('\n');
-        const newSeg = linesOut.join('\n');
-        if (oldSeg === newSeg) {
-            return null;
-        }
-        return { startIdx, closingIdx, linesOut };
+    #quartoMarkdownFencedDivClassListHasHtmlPassthrough(classes) {
+        return classes.some((c) => {
+            const t = String(c).toLowerCase();
+            return t === 'html' || t === 'jams-raw-html';
+        });
     }
 
     /**
-     * @param {string} plainMarkdownChunk
+     * @param {string[]} classes from `#parseFencedDivClasses`
+     * @returns {boolean}
+     */
+    #quartoMarkdownFencedDivIsPreserveExtract(classes) {
+        if (this.#quartoMarkdownFencedDivClassListHasHtmlPassthrough(classes)) {
+            return true;
+        }
+        return classes.some((c) => {
+            return c.startsWith('jams-');
+        });
+    }
+
+    /**
+     * @param {string} attrText Inside `::: { ... }` (first capture from `REGEX.markdownFencedDivOpen`).
+     * @param {string} key Attribute name (for example placeholder, cite).
+     * @returns {string | null}
+     */
+    #parseBracedFencedDivDoubleQuotedAttr(attrText, key) {
+        const escapedKey = String(key).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp(`(?:^|\\s)${escapedKey}\\s*=\\s*"((?:\\\\.|[^"\\\\])*)"`, 'i');
+        const m = String(attrText || '').match(re);
+        if (!m) {
+            return null;
+        }
+        return m[1].replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+    }
+
+    /**
+     * @param {string} openLine
+     * @returns {{ placeholder: string | null; cite: string | null }}
+     */
+    #parseJamsQuartoFencedDivOpenLineAttrs(openLine) {
+        const braced = String(openLine || '').match(REGEX.markdownFencedDivOpen);
+        if (!braced) {
+            return { placeholder: null, cite: null };
+        }
+        const attrText = braced[1];
+        return {
+            placeholder: this.#parseBracedFencedDivDoubleQuotedAttr(attrText, 'placeholder'),
+            cite: this.#parseBracedFencedDivDoubleQuotedAttr(attrText, 'cite')
+        };
+    }
+
+    /**
+     * When the block inner begins with a Pandoc raw HTML fence, return its body plus any trailing lines; otherwise
+     * return trimmed inner.
+     *
+     * @param {string} inner
      * @returns {string}
      */
-    #relaxMisinterpretedIndentedHtmlInMarkdownPlainChunk(plainMarkdownChunk) {
-        const lines = plainMarkdownChunk.split(/\r?\n/);
+    #stripOptionalLeadingRawHtmlFenceFromBlockInner(inner) {
+        const lines = String(inner || '').split(/\r?\n/);
+        let k = 0;
+        while (k < lines.length && lines[k].trim() === '') {
+            k += 1;
+        }
+        if (k >= lines.length) {
+            return '';
+        }
+        if (!REGEX.markdownRawHtmlFenceOpenLine.test(lines[k].trim())) {
+            return lines.join('\n').trim();
+        }
+        const fenceOpenIdx = k;
+        const openRun = this.#markdownLeadingCodeFenceRun(lines[fenceOpenIdx]);
+        let j = fenceOpenIdx + 1;
+        while (j < lines.length) {
+            if (
+                openRun &&
+                this.#markdownLineClosesThisCodeFence(openRun.tickChar, openRun.tickLen, lines[j])
+            ) {
+                break;
+            }
+            j += 1;
+        }
+        if (j >= lines.length) {
+            return lines.join('\n').trim();
+        }
+        const fenceInner = lines.slice(fenceOpenIdx + 1, j).join('\n');
+        const after = lines.slice(j + 1).join('\n').trim();
+        if (after === '') {
+            return fenceInner.trim();
+        }
+        return `${fenceInner}\n${after}`.trim();
+    }
+
+    /**
+     * @param {string} inner
+     * @returns {string}
+     */
+    #firstNonEmptyLineInBlockInner(inner) {
+        const lines = String(inner || '').split(/\r?\n/);
+        for (let i = 0; i < lines.length; i += 1) {
+            const t = lines[i].trim();
+            if (t !== '') {
+                return t;
+            }
+        }
+        return '';
+    }
+
+    /**
+     * @param {string} htmlSeed Unescaped HTML for jams-rich subset warnings.
+     */
+    #warnJamsRichUnknownTags(htmlSeed) {
+        const lower = String(htmlSeed || '').toLowerCase();
+        const seen = new Set();
+        const tagRe = /<\/?([a-z][\w-]*)/gi;
+        let match = tagRe.exec(lower);
+        while (match !== null) {
+            const tag = match[1];
+            if (!JAMS_RICH_ALLOWED_HTML_TAGS.has(tag) && !seen.has(tag)) {
+                seen.add(tag);
+                Print.warn(
+                    `[JamsEDU] jams-rich: tag <${tag}> is outside the recommended subset ` +
+                        '(p, ul, ol, li, blockquote, strong, em, h1, a, i, u, code).'
+                );
+            }
+            match = tagRe.exec(lower);
+        }
+    }
+
+    /**
+     * Entity escape for textarea payload (archived Lua `escape_html_text` behavior for rich seed).
+     *
+     * @param {string} value
+     * @returns {string}
+     */
+    #escapeHtmlTextForRichTextareaPayload(value) {
+        return String(value)
+            .replace(REGEX.escapeAmp, '&amp;')
+            .replace(REGEX.escapeLt, '&lt;')
+            .replace(REGEX.escapeGt, '&gt;');
+    }
+
+    /**
+     * @param {string} inner
+     * @returns {string}
+     */
+    #jamsMathFormulaTextFromStashInner(inner) {
+        let formula = String(inner || '')
+            .trim()
+            .replace(/\r?\n/g, ' ');
+        if (formula === '') {
+            return '';
+        }
+        formula = formula.replace(/`([^`]+)`\s*\{=tex\}/gi, '$1').replace(/`/g, '');
+        return formula.replace(/\s+/g, ' ').trim();
+    }
+
+    /**
+     * Single pass: stash jams / html fenced div inners, leaving `#jamsEduQuartoBlockPlaceholderMarkdownLine` sentinels.
+     * Standalone Pandoc `` ```{=html} `` fences are left in the body for Quarto; JamsEdu does not extract them.
+     * Used on the staged `.qmd` body before Quarto (Step 0) and, when that pass left nothing in the stash, again on
+     * intermediate `.md` after Quarto for anything Quarto reintroduced.
+     *
+     * @param {string} markdownBody
+     * @returns {{
+     *   cleanedBody: string;
+     *   stash: Array<{ kind: 'fenced-div'; classes: string[]; inner: string; openLine: string }>;
+     * }}
+     */
+    #extractJamsEduBlocksFromQuartoIntermediateMarkdown(markdownBody) {
+        const lines = String(markdownBody || '').split(/\r?\n/);
         const out = [];
+        /** @type {Array<{ kind: 'fenced-div'; classes: string[]; inner: string; openLine: string }>} */
+        const stash = [];
+        /** @type {{ tickChar: string; tickLen: number }[]} */
+        const codeFenceStack = [];
         let i = 0;
         while (i < lines.length) {
-            const island = this.#tryTrimStartIndentedHtmlIsland(lines, i);
-            if (!island) {
-                out.push(lines[i]);
+            const line = lines[i];
+            if (this.#markdownCodeFenceStackApplyLine(codeFenceStack, line)) {
+                out.push(line);
                 i += 1;
                 continue;
             }
-            for (let k = 0; k < island.linesOut.length; k += 1) {
-                out.push(island.linesOut[k]);
+            if (codeFenceStack.length > 0) {
+                out.push(line);
+                i += 1;
+                continue;
             }
-            i = island.closingIdx + 1;
+            const openClasses = this.#quartoMarkdownFencedDivOpenLineClasses(line);
+            const isJamsDivOpen =
+                openClasses !== null && this.#quartoMarkdownFencedDivIsPreserveExtract(openClasses);
+            if (!isJamsDivOpen) {
+                out.push(line);
+                i += 1;
+                continue;
+            }
+            const closeIdx = this.#findJamsFencedDivCloseLineIndex(lines, i);
+            if (closeIdx === null) {
+                out.push(line);
+                i += 1;
+                continue;
+            }
+            const innerSlice = lines.slice(i + 1, closeIdx);
+            const idx = stash.length;
+            stash.push({
+                kind: 'fenced-div',
+                classes: openClasses,
+                inner: innerSlice.join('\n'),
+                openLine: line
+            });
+            out.push(this.#jamsEduQuartoBlockPlaceholderMarkdownLine(idx));
+            i = closeIdx + 1;
         }
-        return out.join('\n');
+        return { cleanedBody: out.join('\n'), stash };
     }
 
     /**
-     * Fixes `{=html}` / raw HTML blobs in Quarto intermediate markdown without changing global Pandoc markdown rules.
-     *
-     * @param {string} markdownBody
+     * @param {{ kind: 'fenced-div'; classes: string[]; inner: string; openLine: string }} entry
      * @returns {string}
      */
-    #relaxMisinterpretedIndentedHtmlInQuartoMarkdown(markdownBody) {
-        const segments = markdownBody.split(REGEX.markdownFencedCodeBlock);
-        const mapped = segments.map((segment, index) => {
-            if (index % 2 === 1) {
-                return segment;
+    #processJamsEduQuartoStashEntry(entry) {
+        if (!entry) {
+            return '';
+        }
+        if (entry.kind !== 'fenced-div') {
+            return '';
+        }
+        const { classes, inner: innerField, openLine } = entry;
+        const inner = String(innerField || '');
+        const openAttrs = this.#parseJamsQuartoFencedDivOpenLineAttrs(openLine);
+        const onlyHtmlPassThrough = this.#quartoMarkdownFencedDivClassListHasHtmlPassthrough(classes);
+        if (onlyHtmlPassThrough) {
+            return this.#stripOptionalLeadingRawHtmlFenceFromBlockInner(inner);
+        }
+        if (classes.includes('jams-document')) {
+            const html = this.#stripOptionalLeadingRawHtmlFenceFromBlockInner(inner);
+            if (html === '') {
+                return '';
             }
-            return this.#relaxMisinterpretedIndentedHtmlInMarkdownPlainChunk(segment);
-        });
-        return mapped.join('');
+            return `<div class="document">\n${html}\n</div>`;
+        }
+        if (classes.includes('jams-rich')) {
+            const seed = this.#stripOptionalLeadingRawHtmlFenceFromBlockInner(inner);
+            this.#warnJamsRichUnknownTags(seed);
+            const escPayload = this.#escapeHtmlTextForRichTextareaPayload(seed);
+            let open = '<textarea class="rich"';
+            if (openAttrs.placeholder) {
+                open = `${open} placeholder="${this.#escapeHtmlAttribute(openAttrs.placeholder)}"`;
+            }
+            open = `${open}>`;
+            return `${open}${escPayload}</textarea>`;
+        }
+        if (classes.includes('jams-mermaid') || classes.includes('jams-diagram')) {
+            const body = inner.trim();
+            if (body === '') {
+                return '';
+            }
+            return `<pre class="mermaid">\n${body}\n</pre>`;
+        }
+        if (classes.includes('jams-katex') || classes.includes('jams-math')) {
+            const formula = this.#jamsMathFormulaTextFromStashInner(inner);
+            if (formula === '') {
+                return '';
+            }
+            const className = classes.includes('macro') ? 'math macro' : 'math';
+            const attr = this.#texDataAttrForPandocPass(formula);
+            return `<div class="${className}" data-formula="${attr}"></div>`;
+        }
+        if (classes.includes('jams-pdf')) {
+            const path = this.#firstNonEmptyLineInBlockInner(inner);
+            if (path === '') {
+                return '';
+            }
+            return `<div data-pdf="${this.#escapeHtmlAttribute(path)}"></div>`;
+        }
+        if (classes.includes('jams-video')) {
+            const src = this.#firstNonEmptyLineInBlockInner(inner);
+            if (src === '') {
+                return '';
+            }
+            const cite =
+                openAttrs.cite != null && openAttrs.cite !== '' ? String(openAttrs.cite).trim() : '';
+            let html = `<video src="${this.#escapeHtmlAttribute(src)}">`;
+            if (cite !== '') {
+                html = `${html}\n    <cite>${this.#escapeHtmlTextMinimal(cite)}</cite>`;
+            }
+            html = `${html}\n</video>`;
+            return html;
+        }
+        return this.#stripOptionalLeadingRawHtmlFenceFromBlockInner(inner);
+    }
+
+    /**
+     * Single-line markdown sentinel before fragment Pandoc. Uses bracket text so Quarto’s markdown writer does not
+     * backtick-wrap custom tags (which produced `` `&lt;jamsedu-block…&gt;`{=html} `` in intermediate `.md`).
+     * Fragment Pandoc emits `<p>[[JAMSEDU-BLOCK-n]]</p>`; merge replaces that or a bare `[[JAMSEDU-BLOCK-n]]`.
+     *
+     * @param {number} idx
+     * @returns {string}
+     */
+    #jamsEduQuartoBlockPlaceholderMarkdownLine(idx) {
+        return `[[JAMSEDU-BLOCK-${idx}]]`;
+    }
+
+    /**
+     * @param {string} htmlFragment
+     * @param {string[]} processedChunks Parallel to `#jamsEduQuartoBlockPlaceholderMarkdownLine` indices.
+     * @returns {string}
+     */
+    #mergeJamsEduBlockPlaceholdersIntoHtmlFragment(htmlFragment, processedChunks) {
+        let out = String(htmlFragment || '');
+        for (let n = 0; n < processedChunks.length; n += 1) {
+            const chunk = processedChunks[n];
+            const replacement = typeof chunk === 'string' ? chunk : '';
+            const id = String(n);
+            const bracket = `\\[\\[JAMSEDU-BLOCK-${id}\\]\\]`;
+            const wrappedBracket = new RegExp(`<p>\\s*${bracket}\\s*</p>`, 'gi');
+            const bareBracket = new RegExp(bracket, 'gi');
+            out = out.replace(wrappedBracket, replacement);
+            out = out.replace(bareBracket, replacement);
+            const tagCore = `<jamsedu-block\\s+data-i="${id}"\\s*>\\s*</jamsedu-block>`;
+            const wrappedTag = new RegExp(`<p>\\s*${tagCore}\\s*</p>`, 'gi');
+            const bareTag = new RegExp(tagCore, 'gi');
+            out = out.replace(wrappedTag, replacement);
+            out = out.replace(bareTag, replacement);
+        }
+        return out;
+    }
+
+    /**
+     * When merge misses (Pandoc output shape drift), fragment still contains placeholder markers; warn once per build path.
+     *
+     * @param {string} htmlFragment
+     * @param {number} stashLength
+     */
+    #warnIfUnresolvedJamsQuartoBlockPlaceholders(htmlFragment, stashLength) {
+        if (stashLength <= 0) {
+            return;
+        }
+        const raw = String(htmlFragment || '');
+        const bracketLeft = (raw.match(/\[\[JAMSEDU-BLOCK-/g) || []).length;
+        const tagLeft = (raw.match(/<jamsedu-block\b[^>]*>/gi) || []).length;
+        const left = bracketLeft + tagLeft;
+        if (left > 0) {
+            Print.warn(
+                `[Quarto] ${left} JamsEDU block placeholder(s) were not merged into HTML; output may be incomplete.`
+            );
+        }
     }
 
     #pandocToHtmlFragment(markdownBody) {
@@ -2086,7 +2713,7 @@ export default class JamsEdu {
             '--lua-filter',
             Path.join(this.#quarto.rootDir, '_extensions', 'jamsedu', 'jamsedu-blocks.lua'),
             '--from',
-            'markdown+fenced_divs+yaml_metadata_block-smart',
+            'markdown+fenced_divs+yaml_metadata_block+smart+raw_attribute',
             '--to',
             'html',
             '--syntax-highlighting=none'
@@ -2108,7 +2735,7 @@ export default class JamsEdu {
             '--lua-filter',
             Path.join(this.#quarto.rootDir, '_extensions', 'jamsedu', 'jamsedu-blocks.lua'),
             '--from',
-            'markdown+fenced_divs+yaml_metadata_block-smart',
+            'markdown+fenced_divs+yaml_metadata_block+smart+raw_attribute',
             '--to',
             'html',
             '--syntax-highlighting=none'
@@ -2130,6 +2757,19 @@ export default class JamsEdu {
         return s.replace(REGEX.scriptOpenNoAttributes, '<script type="text/javascript">');
     }
 
+    /**
+     * JHP's script pass rewrites `$include`, `$echo`, and other `$word` builtins with `/\\$(\\w+)/g`. The Quarto bootstrap
+     * embeds `qmdContext` via `JSON.stringify`, so literal dollars in `quartoHtml` (or YAML strings) would become `$.include`
+     * etc. and corrupt the stored HTML. Mask `$` as `&#36;` in the serialized object literal; the HTML parser decodes it
+     * back to U+0024 when `$echo(quartoHtml)` writes the fragment into the page.
+     *
+     * @param {string} stringifiedContext
+     * @returns {string}
+     */
+    #maskAsciiDollarInQuartoContextJson(stringifiedContext) {
+        return String(stringifiedContext || '').replace(/\$/g, '&#36;');
+    }
+
     #renderQmdWithTemplate(relativePath, htmlFragment, meta) {
         if (!this.#quarto.templatePath) {
             throw new Error(
@@ -2147,7 +2787,7 @@ export default class JamsEdu {
             title: meta.title ?? 'Quarto File'
         };
         const contextScript = `<script>
-const qmdContext = ${JSON.stringify(context)};
+const qmdContext = ${this.#maskAsciiDollarInQuartoContextJson(JSON.stringify(context))};
 $context('title', qmdContext.title);
 $context('quartoHtml', qmdContext.quartoHtml);
 if (qmdContext.description !== null) { $context('description', qmdContext.description); }
@@ -2209,7 +2849,7 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
             const includePathRaw = typeof match[1] === 'string' ? match[1].trim() : '';
             const isRemoteInclude = REGEX.httpUrlScheme.test(includePathRaw);
             if (!includePathRaw || isRemoteInclude) {
-                // eslint-disable-next-line no-continue
+
                 continue;
             }
             if (!this.#resolveLocalQuartoIncludePath(includePathRaw, src)) {
@@ -2320,6 +2960,11 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
     /**
      * Shared QMD staging and payload preparation for sync/async render paths.
      *
+     * Step 0 (standalone `.qmd`): after normalize and dollar-math rewrite, strip Jams and flavored fenced blocks
+     * (`jams-*`, `html`, and related) from the body, stash them, and write `[[JAMSEDU-BLOCK-n]]` line placeholders so Quarto
+     * never sees raw block bodies. Stash is returned for merge after the fragment Pandoc pass. Include-only partials
+     * still use `#stageQmdPartialForQuarto` (rewrite only) so stashes are not dropped on disk.
+     *
      * @param {string} src
      * @param {string} relativePath
      * @returns {{
@@ -2330,6 +2975,8 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
      *   stagedMdBaseName: string;
      *   strayRootMdPath: string;
      *   strayManagedRootMdPath: string;
+     *   quartoBlockStash: Array<{ kind: 'fenced-div'; classes: string[]; inner: string; openLine: string }>;
+     *   qprotectMap: Array<{ placeholder: string; target: string }>;
      * }}
      */
     #prepareQmdRenderStaging(src, relativePath) {
@@ -2351,12 +2998,17 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
         this.#ensureManagedQuartoExtension();
         Fs.mkdirSync(stagedQmdDir, { recursive: true });
         const normalizedContent = this.#normalizeQuartoIncludesForRender(src, sourceContent);
-        const rewrittenJamsBlocks = this.#rewriteJamsFencedBlocksForQuartoRender(normalizedContent);
-        const stagedQmdPayload = this.#mergeJamseduShortcodeIntoFrontmatter(
-            this.#applyDollarMathRewriteBeforeQuarto(rewrittenJamsBlocks),
+        const mathRewritten = this.#applyDollarMathRewriteBeforeQuarto(normalizedContent);
+        const fmMatch = mathRewritten.match(REGEX.frontmatter);
+        const head = fmMatch ? fmMatch[0] : '';
+        const bodySlice = fmMatch ? mathRewritten.slice(fmMatch[0].length) : mathRewritten;
+        const { cleanedBody, stash } = this.#extractJamsEduBlocksFromQuartoIntermediateMarkdown(bodySlice);
+        const stagedQmdPayloadRaw = this.#mergeJamseduShortcodeIntoFrontmatter(
+            `${head}${cleanedBody}`,
             relativePath
         );
-        Fs.writeFileSync(stagedQmdPath, stagedQmdPayload, 'utf8');
+        const protectedStage = this.#qprotectRootTargetsBeforeQuartoMarkdown(stagedQmdPayloadRaw);
+        Fs.writeFileSync(stagedQmdPath, protectedStage.payload, 'utf8');
 
         return {
             stagedQmdPath,
@@ -2365,7 +3017,9 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
             stagedQmdBaseName,
             stagedMdBaseName,
             strayRootMdPath: Path.join(this.#usersRoot, stagedMdBaseName),
-            strayManagedRootMdPath: Path.join(this.#quarto.rootDir, stagedMdBaseName)
+            strayManagedRootMdPath: Path.join(this.#quarto.rootDir, stagedMdBaseName),
+            quartoBlockStash: stash,
+            qprotectMap: protectedStage.map
         };
     }
 
@@ -2464,12 +3118,26 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
             const mdContent = Fs.readFileSync(renderedPath, 'utf8');
             const { frontmatter, body } = this.#splitFrontmatter(mdContent);
             const meta = this.#extractQmdMeta(frontmatter);
+            const qprotectedBody = this.#qprotectRestoreRootTargetsAfterQuartoMarkdown(body, staged.qprotectMap);
             const rewrittenBody = this.#sanitizeQuartoMarkdownLinkRoots(
-                this.#rewriteQuartoAssetPaths(body, relativePath)
+                this.#rewriteQuartoAssetPaths(qprotectedBody, relativePath)
             );
-            const mdRelaxedHtml = this.#relaxMisinterpretedIndentedHtmlInQuartoMarkdown(rewrittenBody);
-            const mdWithMathHtml = this.#convertMarkdownMathToJamsHtml(mdRelaxedHtml);
-            const htmlFragment = this.#sanitizeHtmlFragmentForJhp(this.#pandocToHtmlFragment(mdWithMathHtml));
+            let stash = Array.isArray(staged.quartoBlockStash) ? staged.quartoBlockStash : [];
+            let cleanedBody = rewrittenBody;
+            if (stash.length === 0) {
+                const extracted = this.#extractJamsEduBlocksFromQuartoIntermediateMarkdown(rewrittenBody);
+                cleanedBody = extracted.cleanedBody;
+                stash = extracted.stash;
+            }
+            const mdWithMathHtml = this.#convertMarkdownMathToJamsHtml(cleanedBody);
+            let htmlFragment = this.#pandocToHtmlFragment(mdWithMathHtml);
+            htmlFragment = this.#sanitizeHtmlFragmentForJhp(htmlFragment);
+            const mergedPieces = stash.map((entry) => {
+                return this.#processJamsEduQuartoStashEntry(entry);
+            });
+            htmlFragment = this.#mergeJamsEduBlockPlaceholdersIntoHtmlFragment(htmlFragment, mergedPieces);
+            htmlFragment = this.#restoreTexBackslashesAfterPandoc(htmlFragment);
+            this.#warnIfUnresolvedJamsQuartoBlockPlaceholders(htmlFragment, stash.length);
             const finalHtml = this.#renderQmdWithTemplate(relativePath, htmlFragment, meta);
             this.#writeFile(dest, finalHtml, src);
             this.#copyRenderedQmdAssets(staged.stagedMdPath, relativePath);
@@ -2525,14 +3193,26 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
             const mdContent = Fs.readFileSync(renderedPath, 'utf8');
             const { frontmatter, body } = this.#splitFrontmatter(mdContent);
             const meta = this.#extractQmdMeta(frontmatter);
+            const qprotectedBody = this.#qprotectRestoreRootTargetsAfterQuartoMarkdown(body, staged.qprotectMap);
             const rewrittenBody = this.#sanitizeQuartoMarkdownLinkRoots(
-                this.#rewriteQuartoAssetPaths(body, relativePath)
+                this.#rewriteQuartoAssetPaths(qprotectedBody, relativePath)
             );
-            const mdRelaxedHtml = this.#relaxMisinterpretedIndentedHtmlInQuartoMarkdown(rewrittenBody);
-            const mdWithMathHtml = this.#convertMarkdownMathToJamsHtml(mdRelaxedHtml);
-            const htmlFragment = this.#sanitizeHtmlFragmentForJhp(
-                await this.#pandocToHtmlFragmentAsync(mdWithMathHtml)
-            );
+            let stash = Array.isArray(staged.quartoBlockStash) ? staged.quartoBlockStash : [];
+            let cleanedBody = rewrittenBody;
+            if (stash.length === 0) {
+                const extracted = this.#extractJamsEduBlocksFromQuartoIntermediateMarkdown(rewrittenBody);
+                cleanedBody = extracted.cleanedBody;
+                stash = extracted.stash;
+            }
+            const mdWithMathHtml = this.#convertMarkdownMathToJamsHtml(cleanedBody);
+            let htmlFragment = await this.#pandocToHtmlFragmentAsync(mdWithMathHtml);
+            htmlFragment = this.#sanitizeHtmlFragmentForJhp(htmlFragment);
+            const mergedPieces = stash.map((entry) => {
+                return this.#processJamsEduQuartoStashEntry(entry);
+            });
+            htmlFragment = this.#mergeJamsEduBlockPlaceholdersIntoHtmlFragment(htmlFragment, mergedPieces);
+            htmlFragment = this.#restoreTexBackslashesAfterPandoc(htmlFragment);
+            this.#warnIfUnresolvedJamsQuartoBlockPlaceholders(htmlFragment, stash.length);
             const finalHtml = this.#renderQmdWithTemplate(relativePath, htmlFragment, meta);
             this.#writeFile(dest, finalHtml, src);
             this.#copyRenderedQmdAssets(staged.stagedMdPath, relativePath);
@@ -2547,6 +3227,11 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
      * @param {{ deferQmd?: boolean }} [opts]
      */
     #processDir(src, opts = {}) {
+        if (this.#isUnderAssetsDir(src)) {
+            this.#copySourceTreeWithCopyRules(src);
+            return;
+        }
+
         const deferQmd = opts.deferQmd === true;
         const entries = Fs.readdirSync(src, { withFileTypes: true });
         for (const entry of entries) {
@@ -2579,6 +3264,18 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
 
     #processFile(src) {
         if (this.#isUnderTemplateDir(src)) {
+            return;
+        }
+
+        if (this.#isUnderAssetsDir(src)) {
+            const relativePath = Path.relative(this.#srcDir, src);
+            const normalizedRelPosix = relativePath.replace(REGEX.windowsSlash, '/').toLowerCase();
+            const ext = Path.extname(src).slice(1);
+            if (!this.#shouldCopyFile(normalizedRelPosix, ext)) {
+                return;
+            }
+            const dest = this.#getDestPathFromRelative(relativePath, false, ext);
+            this.#copyFile(src, dest);
             return;
         }
 
@@ -2803,13 +3500,16 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
         // Process unlink/unlinkDir first so output matches src (and renames don't leave stale files).
         for (const { event, path } of pending) {
             if (event === 'unlink') {
-                const wasCompiledPage = path.toLowerCase().endsWith('.jhp') || path.toLowerCase().endsWith('.qmd');
+                const srcAbs = Path.join(this.#srcDir, path);
+                const underAssets = this.#isUnderAssetsDir(srcAbs);
+                const wasCompiledPage = !underAssets &&
+                    (path.toLowerCase().endsWith('.jhp') || path.toLowerCase().endsWith('.qmd'));
                 const ext = Path.extname(path).replace('.', '');
                 const destPath = this.#resolveDestPath(path, wasCompiledPage, ext);
                 if (destPath) {
                     this.#removeDestPath(destPath);
                 }
-                if (path.toLowerCase().endsWith('.qmd')) {
+                if (path.toLowerCase().endsWith('.qmd') && !underAssets) {
                     const sourceDir = Path.dirname(path);
                     const sourcePrefix = sourceDir === '.' ? '' : sourceDir;
                     const generatedAssetsPath = Path.join(
@@ -2838,7 +3538,14 @@ if (qmdContext.keywords !== null) { $context('keywords', qmdContext.keywords); }
                     .toLowerCase();
                 const src = Path.join(this.#srcDir, path);
 
-                if (ext === 'css') {
+                if (this.#isUnderAssetsDir(src)) {
+                    this.#processFile(src);
+                    if (ext === 'css') {
+                        reloadStyles = true;
+                    } else {
+                        reloadAll = true;
+                    }
+                } else if (ext === 'css') {
                     this.#processFile(src);
                     reloadStyles = true;
                 } else if (this.#isUnderTemplateDir(src)) {
