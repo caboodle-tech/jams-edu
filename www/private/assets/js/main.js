@@ -2,8 +2,8 @@ import { DomWatcher, initJamsEdu } from './jamsedu/index.js';
 import './jamsedu/site-search.js';
 
 /**
- * Change settings here. Only add keys you care about; everything else uses `defaultJamsEduConfig`
- * from `jamsedu/index.js`. Use `false` to turn a loader off (e.g. `katex: false`).
+ * Change settings here; only add keys you care about. Everything else uses `defaultJamsEduConfig`
+ * from `jamsedu/index.js`. Use `false` to turn a loader off (for example `katex: false`).
  *
  * @type {import('./jamsedu/index.js').JamsEduConfig}
  */
@@ -38,7 +38,7 @@ DomWatcher.watch(
 );
 
 /**
- * `DomWatcher` is also on `window` (see `dom-watcher.js`).
+ * `DomWatcher` is also on `window`; see `dom-watcher.js`.
  *
  * Example:
  *   DomWatcher.watch('.my-element', (element) => { console.log(element); });

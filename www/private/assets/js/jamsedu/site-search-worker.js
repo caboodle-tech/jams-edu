@@ -45,7 +45,7 @@ const scoreRow = (q, row) => {
             if (row.t.toLowerCase().includes(tok)) {
                 score += 6;
             }
-            if (hay.indexOf(tok) !== -1) {
+            if (hay.includes(tok)) {
                 score += 3;
             }
         }

@@ -1,336 +1,329 @@
 {
-  "jamseduPackageVersion": "5.0.0",
-  "templateVersion": "5.0.0",
-  "installed": "2026-04-15T17:42:28.025Z",
-  "lastUpdated": null,
+  "jamseduPackageVersion": "7.0.0",
+  "templateVersion": "7.0.0",
+  "installed": "2026-05-06T16:48:15.593Z",
+  "lastUpdated": "2026-05-06T16:50:04.322Z",
   "srcDir": "www/private",
   "components": {
-    "vscode-settings": {
-      "file": ".vscode/settings.json",
-      "version": "1.1.0",
-      "hash": "7447099702930774c5e0f8e587b4334714da2b175200c7a8ccb487c0c8457413",
-      "modified": false,
-      "userCustomized": false
-    },
     "docs-css-customization": {
       "file": "docs/css-customization.jamsedu.md",
-      "version": "5.0.0",
+      "version": "2.2.2",
       "hash": "54344d710a39d55fad57495eb699222b44760c5eb55ec008a1d072a4487ca20b",
       "modified": false,
       "userCustomized": false
     },
     "docs-hooks": {
       "file": "docs/hooks.jamsedu.md",
-      "version": "5.0.0",
+      "version": "2.2.2",
       "hash": "e44f30f484aa80a2051bbc29b71b35fb1692f1fcc50d7340bcef7e4c0f17a367",
       "modified": false,
       "userCustomized": false
     },
     "docs-javascript-api": {
       "file": "docs/javascript-api.jamsedu.md",
-      "version": "5.0.0",
+      "version": "2.2.2",
       "hash": "c9ebe1f8e7c6b261e9127a5b89d066be635b45f9f04d4c6be714fd99be2de166",
       "modified": false,
       "userCustomized": false
     },
     "docs-javascript-setup": {
       "file": "docs/javascript-setup.jamsedu.md",
-      "version": "5.0.0",
-      "hash": "f0d57c6c9a66ec60defa1b1f09cb7ec1cf01ddd052e78bbbb6b9c0cce7cc6fd6",
+      "version": "2.2.2",
+      "hash": "f878462510c2b7f635f4f37888a8b6084250e092933eb03d0a9c22d178933bb0",
       "modified": false,
       "userCustomized": false
     },
     "docs-jhp-templates": {
       "file": "docs/jhp-templates.jamsedu.md",
-      "version": "5.0.0",
-      "hash": "40fd9fa819bfbd33302a811367860cc4552266beb5bff9fcf74c0385dfd01405",
+      "version": "2.2.2",
+      "hash": "0f9f8fafb3b1a53fef727e1cc53ffe4eb6a10382cb3c922eb4bdaba8f4a0192d",
+      "modified": false,
+      "userCustomized": false
+    },
+    "docs-quarto": {
+      "file": "docs/quarto.jamsedu.md",
+      "version": "2.2.2",
+      "hash": "c2bc442878d31c1a9445ae235f6ff2d915f60732d01da15ff454d15b2f0a3376",
       "modified": false,
       "userCustomized": false
     },
     "docs-tiny-documents": {
       "file": "docs/tiny-documents.jamsedu.md",
-      "version": "5.0.0",
+      "version": "2.2.2",
       "hash": "00698918c23df33171ae96ae595ea63eaa73bf63850223b625b99cc3bbb9e14f",
-      "modified": false,
-      "userCustomized": false
-    },
-    "eslint-html-rules": {
-      "file": "eslint/html-rules.js",
-      "version": "1.0.0",
-      "hash": "b996f5914d0219767035e6953a424d5dce58fa88ea0beb0d6d8b43c2539dd8be",
-      "modified": false,
-      "userCustomized": false
-    },
-    "eslint-js-rules": {
-      "file": "eslint/js-rules.js",
-      "version": "1.0.0",
-      "hash": "5ac33dbca8fe1a61cf9cda3b456658c1681d3eb48f1e9205ab2de6c077ee4531",
-      "modified": false,
-      "userCustomized": false
-    },
-    "eslint-json-rules": {
-      "file": "eslint/json-rules.js",
-      "version": "1.1.0",
-      "hash": "ec7a6ad69d12cf33cab391cf7c6c522c8745db8734e02e9324d2476d8f749c84",
-      "modified": false,
-      "userCustomized": false
-    },
-    "eslint-config": {
-      "file": "eslint.config.js",
-      "version": "1.1.0",
-      "hash": "86d49de3a1b8031b059be98d8813acb15026b76c09c23de0ca1de153bd87d085",
       "modified": false,
       "userCustomized": false
     },
     "elements-css": {
       "file": "www/private/assets/css/base/elements.css",
-      "version": "2.1.13",
-      "hash": "18fad836947ec1dd4a3440c13fc1bc5ce45476412c03bea64f53f15c770d8cd4",
+      "version": "2.1.15",
+      "hash": "c23e7487b05bb531689de06a86ba57e00062fc4ccf065582973a0499d94582d8",
       "modified": false,
       "userCustomized": false
     },
     "reset-css": {
       "file": "www/private/assets/css/base/reset.css",
-      "version": "1.3.0",
-      "hash": "3f6719c76fa1299b8f0b675091e79a969656f509b41e1ed596301b1b88a8cba7",
+      "version": "1.3.1",
+      "hash": "7055badc74c81ca607b665b7cd16f2e79e94edbea03c768944e9c62989d275a9",
       "modified": false,
       "userCustomized": false
     },
     "blockquotes-css": {
       "file": "www/private/assets/css/components/blockquotes.css",
-      "version": "1.0.7",
-      "hash": "124ee235b84848cc0a33a3658654b6cfbfe7fccbd3da00cede4be0c2055599f8",
+      "version": "1.0.8",
+      "hash": "6a6121b8b0ee2ff3b6a3a23210b538049b439464b6ca223d7421edbe7e73dcee",
       "modified": false,
       "userCustomized": false
     },
     "callouts-css": {
       "file": "www/private/assets/css/components/callouts.css",
-      "version": "2.2.3",
-      "hash": "95228487ce828a2e13a5c91607e37f7d1fa8bb4038659070596275ddb7f14943",
+      "version": "2.2.4",
+      "hash": "664c158ea3cccc0f041f1ca1fce8bb1de0418890be7abbdbd4893d04ac3888bc",
       "modified": false,
       "userCustomized": false
     },
     "link-cards-css": {
       "file": "www/private/assets/css/components/cards.css",
-      "version": "1.2.1",
-      "hash": "bac7ec8adadae2ebe8ab41de7fb3c1467e254f15ce44e1cd11f46415620cb62a",
+      "version": "1.2.2",
+      "hash": "6e0e49cb73113afca9b482d8baa34745a82296138a0ec605875b04d1d8ac895f",
       "modified": false,
       "userCustomized": false
     },
     "color-mode-toggle-css": {
       "file": "www/private/assets/css/components/color-mode-toggle.css",
-      "version": "1.4.0",
-      "hash": "6bf8b38c0755a3cbe3107cd881cb69a5608f302ed9ee46021e321b573eaca9dd",
+      "version": "1.0.0",
+      "hash": "ef721e66365940a32c8ae7b2c4abbdd9c9251bbf504e22621c92addd3cc15b27",
       "modified": false,
       "userCustomized": false
     },
     "details-css": {
       "file": "www/private/assets/css/components/details.css",
-      "version": "2.2.2",
-      "hash": "bcab6547dc4e0318a1474284becbbd4a4ac3c3f35891d95c13ce754f917902be",
+      "version": "2.2.4",
+      "hash": "e88d3ca99806097ef3e9a4b738a442024169b15b2e8cf333790352458150c269",
       "modified": false,
       "userCustomized": false
     },
     "site-chrome-css": {
       "file": "www/private/assets/css/components/site-chrome.css",
-      "version": "3.5.6",
-      "hash": "b04458df9788e6429bc7a7bd1b8fd52ac9c8cd4f46e1de649ab584f52d524676",
+      "version": "3.5.7",
+      "hash": "5d6219dc8ac5b89b2a2c81cd92fbfb6d2dc355724ae79bf5cb56fd7dead41035",
       "modified": false,
       "userCustomized": false
     },
     "site-main-css": {
       "file": "www/private/assets/css/components/site-main.css",
-      "version": "2.1.0",
-      "hash": "8c90b6696f39c00b246c63aebc5433bf4c5beb8041bcede2b0f197ed68374180",
+      "version": "2.1.1",
+      "hash": "760c5cfb29de10f08bc914d948d8bb4fb565899c476338204a312c904de45dcb",
       "modified": false,
       "userCustomized": false
     },
     "video-embed-css": {
       "file": "www/private/assets/css/components/video-embed.css",
-      "version": "1.0.4",
-      "hash": "b20fbad72d8d602ac9287808d670b301e5f246a41bdb07beee7ce84d9c919a57",
+      "version": "1.0.5",
+      "hash": "0b5a2dd17e498757dc95c49bb25e4268fc4ca7df3159d80e39b69f3893d820ae",
       "modified": false,
       "userCustomized": false
     },
     "layout-columns-grid": {
       "file": "www/private/assets/css/layout/columns-grid.css",
-      "version": "2.2.1",
-      "hash": "08f8e82d57a75ceb1e9af7498d840a43e41c6989557cc29b4d17d8eea1083c25",
+      "version": "2.2.2",
+      "hash": "0783beee5df89bee73003bf805287445750c58c0d536b35d9800c2623c201d55",
       "modified": false,
       "userCustomized": false
     },
     "layout-content-grid": {
       "file": "www/private/assets/css/layout/content-grid.css",
-      "version": "2.1.1",
-      "hash": "9c486f021b5b5874dc9041778cad2e1c3efe8a155d97d46d6f29fc4234349709",
+      "version": "2.1.2",
+      "hash": "b222c26291ee9fc3a2dd41a0eeca109b7d32d27bc7838dd7011df3108563831d",
       "modified": false,
       "userCustomized": false
     },
     "layout-footer": {
       "file": "www/private/assets/css/layout/footer.css",
-      "version": "3.2.0",
-      "hash": "f1fbc63a13c9348f01f88e9ab4afe08366e9510724da709e8e2fde3fc2c0cd26",
+      "version": "3.2.1",
+      "hash": "b611463e4b97a2340a583bd74321d055a5c0ba7862f386246be53cc0dd032aa4",
       "modified": false,
       "userCustomized": false
     },
     "layout-primary": {
       "file": "www/private/assets/css/layout/primary.css",
-      "version": "1.1.1",
-      "hash": "9858a35137a15fa9e1485405488cf162e5572dc8d0e4e6056127cadb3790ac16",
+      "version": "1.1.2",
+      "hash": "e5da8c42b9d618390ab873f7873d2060178fd37e5d64cdb125966a8a3189c14f",
       "modified": false,
       "userCustomized": false
     },
     "main-css": {
       "file": "www/private/assets/css/main.css",
-      "version": "1.7.9",
-      "hash": "4e0f071d2ac768d5afbd2c11542413dbc5dc50833837d2beafde1608cc160604",
+      "version": "1.7.10",
+      "hash": "8c7800282e3c42ad1d97af2a9c307140c43a3b900c3b7ca05344b57a65f562c3",
       "modified": false,
       "userCustomized": false
     },
     "colors-css": {
       "file": "www/private/assets/css/tokens/colors.css",
-      "version": "2.2.11",
-      "hash": "539104d85bcc5a39d94b02d2cc01a5b79e1fdf549df6ed2310d2c2f97ce58aae",
+      "version": "1.0.0",
+      "hash": "f7fbe14fed6658e3f372a32c0eb9dc9983a420ddb0dd67c44ff57408ae907a8d",
       "modified": false,
       "userCustomized": false
     },
     "variables-css": {
       "file": "www/private/assets/css/tokens/variables.css",
-      "version": "2.2.2",
-      "hash": "edcf2c78148be8decd96face0f3074f65cf4589a23dece7b0af8b52620e54dc0",
+      "version": "2.2.3",
+      "hash": "2eac7073167e29f3ea2fb0fd51c830e3d1fd9e07b727164c75fee666a0111276",
       "modified": false,
       "userCustomized": false
     },
     "utilities-css": {
       "file": "www/private/assets/css/utilities/utilities.css",
-      "version": "1.4.0",
-      "hash": "5fe7d6375c34bffc0cb14d615404e995081593c52617402d9025b7d50c151ae8",
+      "version": "1.4.1",
+      "hash": "9b4015c0d9ce221d40f230a66a4632353c313228d327ffb2306c79c7ed710135",
       "modified": false,
       "userCustomized": false
     },
     "embed-pdf": {
       "file": "www/private/assets/css/vendor/jamsedu/embed-pdf.css",
-      "version": "1.6.3",
-      "hash": "ff8b179986ed6033cfd6a4f7efd27f4b5e9c61cdadc0b32d495fe0bfc5b296f3",
+      "version": "1.6.4",
+      "hash": "2884b5de26e1b52bc31240268e2080042c5b2c4be0f92095c721f0c283372bbd",
       "modified": false,
       "userCustomized": false
     },
     "jamsedu-css": {
       "file": "www/private/assets/css/vendor/jamsedu/jamsedu.css",
-      "version": "1.6.3",
-      "hash": "360826e81e482fcf39b36c363339bfb99dd03b132123ebba5359df23197df3e4",
+      "version": "1.6.4",
+      "hash": "35ef5eb3e12192bebcb48f26d41229d260d5d4bab1dd79fce739f8ff09c748c6",
       "modified": false,
       "userCustomized": false
     },
     "tiny-document": {
       "file": "www/private/assets/css/vendor/jamsedu/tiny-document.css",
-      "version": "1.5.2",
-      "hash": "20448b32eb2dd8a640510c5a9b14a862f8f1c1d77346655c54fd608442565f6b",
+      "version": "1.7.1",
+      "hash": "985d65919c0ecc32b8a95d92a4e98a18fe5cd77dbc0a1450c1520be07dbab25a",
       "modified": false,
       "userCustomized": false
     },
     "tiny-wysiwyg": {
       "file": "www/private/assets/css/vendor/jamsedu/tiny-wysiwyg.css",
-      "version": "1.8.10",
-      "hash": "9d5a3471c02c153876f2c80e9fe170a38c57eb41b0e02370b6fb9d4f770af1c0",
+      "version": "1.8.11",
+      "hash": "55582ff79d6f4665845a4ad34291bf3a24c58c1746252d84e9e2131670e7debb",
       "modified": false,
       "userCustomized": false
     },
     "jamsedu-vendor-tokens": {
       "file": "www/private/assets/css/vendor/jamsedu/tokens.css",
-      "version": "1.7.8",
-      "hash": "f88754832833b70191ac6e9f236e26f8dd8155f904cec42d7a2f9a58862cf0df",
+      "version": "1.7.9",
+      "hash": "92168ac604d6f0d87ee697b0e09b853f114bf8b2e2677a45ffed8d67d116a360",
       "modified": false,
       "userCustomized": false
     },
     "dom-watcher": {
       "file": "www/private/assets/js/jamsedu/dom-watcher.js",
-      "version": "1.2.0",
-      "hash": "b9b10386a950d0bcd10855bfc492bf21faa044f9caefc6de10f6a5d774635239",
+      "version": "1.3.0",
+      "hash": "725ebfc89834596e7f2c863adc322edb49c0b88126829bbbf053e2e57e94bb77",
       "modified": false,
       "userCustomized": false
     },
     "embed-pdf-js": {
       "file": "www/private/assets/js/jamsedu/embed-pdf.js",
-      "version": "1.6.1",
-      "hash": "3f2fe65d3e779e757e7db9b9866a49cab581dae5bb420c7d9dab0df6633e7a85",
+      "version": "1.7.0",
+      "hash": "f6ae0139e029af436408c3a900dc47109df82f51d445d2f4a2791ac66cf8d0ce",
       "modified": false,
       "userCustomized": false
     },
     "js-jamsedu-highlight-js-lite": {
       "file": "www/private/assets/js/jamsedu/highlight-js-lite.js",
-      "version": "1.0.0",
-      "hash": "67b95cb18a9ab4ef33a93ae8a7b31e8c27301599e11f1ae81c44eb12354561c9",
+      "version": "1.1.0",
+      "hash": "d5d1ba7e523136cc264c3b424f7fe14e593658d0a8a202592c7271c918a2f2d8",
       "modified": false,
       "userCustomized": false
     },
     "jamsedu-index": {
       "file": "www/private/assets/js/jamsedu/index.js",
-      "version": "3.3.0",
-      "hash": "ddccf9578ac7dee358e1401f59146099f0504f7f51c00542493a4f30c406ad94",
+      "version": "3.4.0",
+      "hash": "f5f6062a6d7656c4ce0b93cbd8ceb70781d1396c3f2518c45ff6a7aaad6f8186",
       "modified": false,
       "userCustomized": false
     },
     "katex": {
       "file": "www/private/assets/js/jamsedu/katex.js",
-      "version": "2.2.0",
-      "hash": "7fe64ba851424d16e14786c1e8eb9e9a26159ed856c45b383bd5b2e656b7d91c",
+      "version": "2.3.0",
+      "hash": "89a0f0666fcf29c2a5d00d387dc550aa0c4046bafc7b96cb6149b36d456be0e4",
       "modified": false,
       "userCustomized": false
     },
     "mermaid": {
       "file": "www/private/assets/js/jamsedu/mermaid.js",
-      "version": "2.2.0",
-      "hash": "1e4b5ea05a7e23d36a9de4d302161c840de5df63c8caa77b2c1f96552a41d9fd",
+      "version": "2.3.0",
+      "hash": "b3f6e0ab47828015c305b251525d4eb042f11af18d64e597f0233aa93075d784",
+      "modified": false,
+      "userCustomized": false
+    },
+    "site-search-worker": {
+      "file": "www/private/assets/js/jamsedu/site-search-worker.js",
+      "version": "1.1.0",
+      "hash": "6e901311b041de0cebe61155a1d1501ddb6e35421a819d8f2a6a2c042df02800",
+      "modified": false,
+      "userCustomized": false
+    },
+    "site-search": {
+      "file": "www/private/assets/js/jamsedu/site-search.js",
+      "version": "1.1.0",
+      "hash": "ecd7def4d5afec1317ea8bb33709d937c66bc72cf31612bcc87073366488fc26",
       "modified": false,
       "userCustomized": false
     },
     "tiny-doc": {
       "file": "www/private/assets/js/jamsedu/tiny-doc.js",
-      "version": "1.4.0",
-      "hash": "30d290e603279a7a24ba2291c688ced4334f6f9d685d2719ff060f360b56b6fb",
+      "version": "1.2.0",
+      "hash": "71299a58d0da2a55d74abf68cb66106b19ef14af5ed1c6782f0ece9467c98453",
       "modified": false,
       "userCustomized": false
     },
     "tiny-wysiwyg-2": {
       "file": "www/private/assets/js/jamsedu/tiny-wysiwyg.js",
-      "version": "1.4.0",
-      "hash": "7f0afac8b0e7c058dd07c6318eb5eaa11475465013522d4fb6ecce435183f037",
+      "version": "1.5.0",
+      "hash": "b805d07c28e265606022d3a1749b47d6cfeba714d8243c4192e1c0dd50ce015f",
       "modified": false,
       "userCustomized": false
     },
     "main-js": {
       "file": "www/private/assets/js/main.js",
-      "version": "3.2.0",
-      "hash": "11c6859ee4464ee769276a305809e200501d23cc15fb5b84d139dbfcbfdc636d",
+      "version": "3.3.0",
+      "hash": "0cf26c725423e1944a4dd4c8de9b9cb44fbd977bee35902249c285e9e32ff05d",
       "modified": false,
       "userCustomized": false
     },
     "js-theme-preference": {
       "file": "www/private/assets/js/theme-preference.js",
-      "version": "1.0.0",
-      "hash": "8cb6575689f49f9ca24753dd545befac295f1a1723c7af68a546e6673aefb56e",
+      "version": "1.1.0",
+      "hash": "de0c2a08d9596acf0e6aed024d904416c17164e322a2ec99fb4dfcd415b9e2f2",
       "modified": false,
       "userCustomized": false
     },
     "templates-footer": {
       "file": "www/private/templates/footer.html",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "hash": "43c3e214d6899722a1517150171de570aa6ac121df3b6f851e798dd03370f153",
       "modified": false,
       "userCustomized": false
     },
     "templates-head": {
       "file": "www/private/templates/head.html",
-      "version": "1.0.0",
-      "hash": "d316ecfe81838b615a3122a811fc86784cf264948bb84c2fe6084589f1008e72",
+      "version": "1.1.0",
+      "hash": "817320464dbb0926736a6657fb01ace0952dba9332f6ea0df5c9083dbed0b07e",
       "modified": false,
       "userCustomized": false
     },
     "templates-header": {
       "file": "www/private/templates/header.html",
       "version": "1.0.0",
-      "hash": "d9cb1335c74111820ed4c02e02d5167142545246fc16e86eea4ec33be6a02632",
+      "hash": "50e0240d30ebc4690e5b432bbf900f1655d34bea5b0469f7c56e2354a1f57e05",
+      "modified": false,
+      "userCustomized": false
+    },
+    "templates-quarto": {
+      "file": "www/private/templates/quarto.jhp",
+      "version": "1.0.0",
+      "hash": "e89ddd486a44673ded136f39e42554f9e7bd2d8876f8a1093833cfaaf6b1d664",
       "modified": false,
       "userCustomized": false
     }

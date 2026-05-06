@@ -1,5 +1,3 @@
-<!-- @jamsedu-version: 1.0.0 -->
-<!-- @jamsedu-component: docs-quarto -->
 # Quarto (`.qmd`) Guide
 
 ## What this covers
