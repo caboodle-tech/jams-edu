@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="icon" href="../assets/images/favicon/favicon.ico" sizes="any">
-        <link rel="icon" href="../assets/images/favicon/icon.svg" type="image/svg+xml">
+        <link rel="icon" href="../assets/images/favicon/favicon.png" type="image/png">
         <link rel="apple-touch-icon" href="../assets/images/favicon/apple-touch-icon.png">
         <link href="../assets/css/main.css" rel="stylesheet">
         <title>Configuration · JamsEDU</title>
@@ -134,8 +134,8 @@
             <dt><code>websiteUrl</code> <small>Optional</small></dt>
             <dd>
                 Canonical absolute URL for your site (including <code>https://</code>), configured here in this exported object (<code>.jamsedu/config.js</code>). A full <strong><code>jamsedu --build</code></strong> (the default clean production pass) writes <code>sitemap.xml</code> under <code>destDir</code> when this property is set, so crawlers get full <code>&lt;loc&gt;</code> URLs.
-                The same clean build pass always writes <code>sitemap.json</code> at the site root (next to published HTML); that file powers the masthead search and does <strong>not</strong> require <code>websiteUrl</code>.
-                <strong><code>jamsedu --watch</code></strong> refreshes individual pages as you save but does not rewrite <code>sitemap.json</code> or <code>sitemap.xml</code> on every save; run <code>jamsedu --build</code> after substantive edits (or before deploy) so search and sitemap files match the full site.
+                The same clean build pass always writes <code>sitemap.json</code> at the site root (next to published HTML); that file powers the masthead search and does <strong>not</strong> require <code>websiteUrl</code>. At runtime the search worker discovers that file without assuming a bare <code>/sitemap.json</code> path (for example GitHub Pages project URLs); you can set <code>data-sitemap-url</code> on <code>#site-search-panel</code> to force a full URL when needed.
+                <strong><code>jamsedu --watch</code></strong> refreshes individual pages as you save but does not rewrite <code>sitemap.json</code> or <code>sitemap.xml</code> on every save; run <code>jamsedu --build</code> after substantive edits (or before deploy) so search and sitemap files match the full site. Place an empty <code>.noindex</code> or <code>.no-index</code> file in the matching directory under <code>srcDir</code> to exclude that folder and everything below it from both files; those marker names are not copied to <code>destDir</code>.
             </dd>
         </div>
         <div>

@@ -14,6 +14,53 @@ let debounceTimer = null;
 /** @type {(q: string, page: number) => void} */
 let postWorkerSearch = () => {};
 
+/**
+ * HTTP(S) URL used inside the worker to derive `sitemap.json` candidates (blob workers cannot use `import.meta.url`).
+ *
+ * @returns {string}
+ */
+const resolveProbeBaseUrl = () => {
+    try {
+        const u = new URL('./site-search-worker.js', import.meta.url);
+        if (u.protocol === 'https:' || u.protocol === 'http:') {
+            return u.href;
+        }
+    } catch {
+        // fall through
+    }
+    const boot = document.querySelector('script[type="module" i][src]');
+    if (boot) {
+        const srcAttr = boot.getAttribute('src');
+        if (srcAttr) {
+            try {
+                const u = new URL(srcAttr, location.href);
+                if (u.protocol === 'https:' || u.protocol === 'http:') {
+                    return u.href;
+                }
+            } catch {
+                // fall through
+            }
+        }
+    }
+    return location.href;
+};
+
+/**
+ * @param {HTMLElement} panel
+ * @returns {{ probeBaseUrl: string; pageHref: string; sitemapUrl?: string }}
+ */
+const buildWorkerContext = (panel) => {
+    const raw = typeof panel.dataset.sitemapUrl === 'string' ? panel.dataset.sitemapUrl.trim() : '';
+    const base = {
+        pageHref: location.href,
+        probeBaseUrl: resolveProbeBaseUrl()
+    };
+    if (raw) {
+        return { ...base, sitemapUrl: raw };
+    }
+    return base;
+};
+
 const getWorker = () => {
     if (worker) {
         return worker;
@@ -136,18 +183,26 @@ const wireSiteSearch = () => {
         return;
     }
 
+    const ctx = () => {
+        return buildWorkerContext(panel);
+    };
+
     postWorkerSearch = (q, page) => {
         const w = getWorker();
         w.postMessage({
             page,
             q,
-            type: 'search'
+            type: 'search',
+            ...ctx()
         });
     };
 
     const requestIndex = () => {
         const w = getWorker();
-        w.postMessage({ type: 'ensureIndex' });
+        w.postMessage({
+            type: 'ensureIndex',
+            ...ctx()
+        });
     };
 
     const runSearch = () => {
