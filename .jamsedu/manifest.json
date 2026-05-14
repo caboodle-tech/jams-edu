@@ -259,15 +259,15 @@
     },
     "site-search-worker": {
       "file": "www/private/assets/js/jamsedu/site-search-worker.js",
-      "version": "1.1.0",
-      "hash": "6e901311b041de0cebe61155a1d1501ddb6e35421a819d8f2a6a2c042df02800",
+      "version": "1.2.0",
+      "hash": "e49ff0c54278759e05dd74c3d66815e2b257c605acb037186a27ce4ca041d23b",
       "modified": false,
       "userCustomized": false
     },
     "site-search": {
       "file": "www/private/assets/js/jamsedu/site-search.js",
-      "version": "1.1.0",
-      "hash": "ecd7def4d5afec1317ea8bb33709d937c66bc72cf31612bcc87073366488fc26",
+      "version": "1.2.0",
+      "hash": "91b2be44e1656d28381d5d95a24a69f73142b3161cdad3082d65115f7e4fb40b",
       "modified": false,
       "userCustomized": false
     },

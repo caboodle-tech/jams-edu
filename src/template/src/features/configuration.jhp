@@ -65,7 +65,7 @@
             <dt><code>websiteUrl</code> <small>Optional</small></dt>
             <dd>
                 Canonical absolute URL for your site (including <code>https://</code>), configured here in this exported object (<code>.jamsedu/config.js</code>). A full <strong><code>jamsedu --build</code></strong> (the default clean production pass) writes <code>sitemap.xml</code> under <code>destDir</code> when this property is set, so crawlers get full <code>&lt;loc&gt;</code> URLs.
-                The same clean build pass always writes <code>sitemap.json</code> at the site root (next to published HTML); that file powers the masthead search and does <strong>not</strong> require <code>websiteUrl</code>.
+                The same clean build pass always writes <code>sitemap.json</code> at the site root (next to published HTML); that file powers the masthead search and does <strong>not</strong> require <code>websiteUrl</code>. At runtime the search worker discovers that file without assuming a bare <code>/sitemap.json</code> path (for example GitHub Pages project URLs); you can set <code>data-sitemap-url</code> on <code>#site-search-panel</code> to force a full URL when needed.
                 <strong><code>jamsedu --watch</code></strong> refreshes individual pages as you save but does not rewrite <code>sitemap.json</code> or <code>sitemap.xml</code> on every save; run <code>jamsedu --build</code> after substantive edits (or before deploy) so search and sitemap files match the full site.
             </dd>
         </div>

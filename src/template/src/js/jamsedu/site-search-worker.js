@@ -1,4 +1,4 @@
-// @jamsedu-version: 1.1.0
+// @jamsedu-version: 1.2.0
 // @jamsedu-component: site-search-worker
 
 /**
@@ -7,11 +7,94 @@
 
 const PAGE_SIZE = 25;
 
+const MAX_SITEMAP_PREFIX_SEGMENTS = 3;
+
 /** @type {{ p: Array<{ u: string; t: string; d: string; k: string; h: string[]; s: string; m: number }> } | null} */
 let index = null;
 
 /** @type {Promise<void> | null} */
 let loadPromise = null;
+
+/**
+ * @param {string[]} candidates
+ * @returns {Promise<Response | null>}
+ */
+const fetchFirstOk = async(candidates) => {
+    for (const href of candidates) {
+        try {
+            const res = await fetch(href, { credentials: 'same-origin' });
+            if (res.ok) {
+                return res;
+            }
+        } catch {
+            // try next candidate
+        }
+    }
+    return null;
+};
+
+/**
+ * @param {string[]} out
+ * @param {Set<string>} seen
+ * @param {string} href
+ */
+const pushCandidate = (out, seen, href) => {
+    if (!href || seen.has(href)) {
+        return;
+    }
+    seen.add(href);
+    out.push(href);
+};
+
+/**
+ * @param {Record<string, unknown>} msg
+ * @returns {string[]}
+ */
+const buildSitemapCandidates = (msg) => {
+    const out = [];
+    const seen = new Set();
+    const explicit = typeof msg.sitemapUrl === 'string' ? msg.sitemapUrl.trim() : '';
+    if (explicit) {
+        try {
+            pushCandidate(out, seen, new URL(explicit).href);
+        } catch {
+            // invalid explicit URL
+        }
+    }
+    const probeStrRaw = typeof msg.probeBaseUrl === 'string' ? msg.probeBaseUrl.trim() : '';
+    const pageHrefRaw = typeof msg.pageHref === 'string' ? msg.pageHref.trim() : '';
+    const probeStr = probeStrRaw || pageHrefRaw;
+    if (!probeStr) {
+        return out;
+    }
+    let probeUrl;
+    try {
+        probeUrl = new URL(probeStr);
+    } catch {
+        return out;
+    }
+    if (probeUrl.protocol !== 'http:' && probeUrl.protocol !== 'https:') {
+        return out;
+    }
+    const { origin, pathname } = probeUrl;
+    pushCandidate(out, seen, `${origin}/sitemap.json`);
+    try {
+        pushCandidate(out, seen, new URL('sitemap.json', probeUrl).href);
+    } catch {
+        // ignore
+    }
+    const parts = pathname.split('/').filter(Boolean);
+    if (parts.length === 0) {
+        return out;
+    }
+    const dirSegs = parts.slice(0, -1);
+    const cap = Math.min(MAX_SITEMAP_PREFIX_SEGMENTS, dirSegs.length);
+    for (let k = 1; k <= cap; k++) {
+        const prefix = dirSegs.slice(0, k).join('/');
+        pushCandidate(out, seen, `${origin}/${prefix}/sitemap.json`);
+    }
+    return out;
+};
 
 const tokenize = (q) => {
     return q
@@ -56,14 +139,19 @@ const scoreRow = (q, row) => {
     return score;
 };
 
-const ensureLoaded = async() => {
+/**
+ * @param {Record<string, unknown>} msg
+ */
+const ensureLoaded = async(msg) => {
     if (index) {
         return;
     }
     if (!loadPromise) {
+        const loadMsg = msg;
         loadPromise = (async() => {
-            const res = await fetch('/sitemap.json', { credentials: 'same-origin' });
-            if (!res.ok) {
+            const candidates = buildSitemapCandidates(loadMsg);
+            const res = candidates.length > 0 ? await fetchFirstOk(candidates) : null;
+            if (!res) {
                 index = { p: [] };
                 return;
             }
@@ -79,7 +167,7 @@ self.addEventListener('message', (evt) => {
     if (msg.type === 'ensureIndex') {
         void (async() => {
             try {
-                await ensureLoaded();
+                await ensureLoaded(msg);
                 self.postMessage({ type: 'ready' });
             } catch (err) {
                 const message = err instanceof Error ? err.message : String(err);
@@ -99,7 +187,7 @@ self.addEventListener('message', (evt) => {
         }
         void (async() => {
             try {
-                await ensureLoaded();
+                await ensureLoaded(msg);
                 const rows = index?.p ?? [];
                 const rankedAll = rows
                     .map((row) => {
