@@ -12,13 +12,29 @@ import {
     parseVersionFromFile,
     stripJamseduComments
 } from './imports/strip-jamsedu-comments.js';
+import { siteAppearsToHaveFavicon } from './imports/favicon-path-probe.js';
+import {
+    copyTemplateFaviconDirectory,
+    FAVICON_JAMSEDU_DOC_BASENAME,
+    scanTemplateFaviconBinaryFiles,
+    sha256FileBuffer,
+    writeFaviconJamseduMarkdown
+} from './imports/template-binary-assets.js';
 
 class Updater {
 
     static #header = `
 ==============================================
-      JamsEdu Update Utility
+      _                     _____    _       
+     | | __ _ _ __ ___  ___| ____|__| |_   _ 
+  _  | |/ _\` | '_ \` _ \\/ __|  _| / _\` | | | |
+ | |_| | (_| | | | | | \\__ \\ |__| (_| | |_| |
+  \\___/ \\__,_|_| |_| |_|___/_____\\__,_|\\__,_|
+   
 ==============================================
+Version {{VERSION}}
+
+Merge template files from your installed JamsEdu package into this project. Follow the prompts.
     `;
 
     static clearScreen() {
@@ -90,7 +106,12 @@ class Updater {
      */
     static async update(cwd, jamseduWd, userConfig, force = false) {
         this.clearScreen();
-        Print.notice(this.#header);
+
+        const packageJsonPath = Path.join(jamseduWd, 'package.json');
+        const packageJson = JSON.parse(Fs.readFileSync(packageJsonPath, 'utf-8'));
+        const currentPackageVersion = packageJson.version;
+
+        Print.notice(`${this.#header.replace('{{VERSION}}', currentPackageVersion)}`);
 
         // Read user's config to get srcDir (normalize to relative path)
         let srcDir = userConfig.srcDir || 'src';
@@ -117,10 +138,6 @@ class Updater {
         if (sourceRepoMode) {
             Print.info(`Source repo mode: limiting updates to ${srcDir}/`);
         }
-
-        const packageJsonPath = Path.join(jamseduWd, 'package.json');
-        const packageJson = JSON.parse(Fs.readFileSync(packageJsonPath, 'utf-8'));
-        const currentPackageVersion = packageJson.version;
 
         const manifestPath = Path.join(cwd, '.jamsedu', 'manifest.json');
         const manifestDir = Path.join(cwd, '.jamsedu');
@@ -188,8 +205,41 @@ class Updater {
             return;
         }
 
-        const templateFiles = this.scanTemplateFiles(templateDir, srcDir, templatePathLayout, { sourceRepoMode });
-        
+        let binaryTemplateFiles = scanTemplateFaviconBinaryFiles(
+            templateDir,
+            srcDir,
+            templatePathLayout,
+            currentPackageVersion,
+            { sourceRepoMode }
+        );
+
+        if (!sourceRepoMode && !siteAppearsToHaveFavicon(cwd, userConfig)) {
+            Print.out(
+                '\nNo common favicon files were found under your project root, source tree, or images or assets paths.'
+            );
+            const installFav = await this.getResponse(
+                'Install the JamsEdu template favicon set under your configured layout? (y/n) [n]',
+                'n'
+            );
+            if (['y', 'ye', 'yes'].includes(installFav.trim().toLowerCase())) {
+                const destRel = copyTemplateFaviconDirectory(templateDir, cwd, srcDir, templatePathLayout);
+                writeFaviconJamseduMarkdown(cwd, destRel);
+                binaryTemplateFiles = scanTemplateFaviconBinaryFiles(
+                    templateDir,
+                    srcDir,
+                    templatePathLayout,
+                    currentPackageVersion,
+                    { sourceRepoMode }
+                );
+                Print.success(
+                    `Installed favicons under ${destRel}/ and wrote ${FAVICON_JAMSEDU_DOC_BASENAME} at project root.`
+                );
+            }
+        }
+
+        const textTemplateFiles = this.scanTemplateFiles(templateDir, srcDir, templatePathLayout, { sourceRepoMode });
+        const templateFiles = [...textTemplateFiles, ...binaryTemplateFiles];
+
         // Clean up and correct manifest (remove stale entries, add missing entries, fix component names)
         // This runs before scanning user files so we have a clean manifest to work with
         const removedFromTemplate = this.correctManifest(manifest, templateFiles, cwd, srcDir, { sourceRepoMode });
@@ -230,13 +280,15 @@ class Updater {
         // Check if there are any updates available (including customized files with updates)
         const hasRegularUpdates = updates.available.length > 0 || updates.new.length > 0;
         const hasCustomizedUpdates = updates.customizedWithUpdates && updates.customizedWithUpdates.length > 0;
-        
+
         if (!hasRegularUpdates && !hasCustomizedUpdates) {
             Print.success('\n✅ All files are up to date!');
             if (manifest.jamseduPackageVersion === currentPackageVersion) {
                 Print.info(`JamsEdu package version: ${currentPackageVersion}`);
             }
-            const customizedCount = Object.values(manifest.components || {}).filter((e) => e && e.userCustomized).length;
+            const customizedCount = Object.values(manifest.components || {}).filter((e) => {
+                return e && e.userCustomized;
+            }).length;
             if (customizedCount > 0) {
                 Print.info(`To replace ${customizedCount} customized file(s) with template versions, run: jamsedu --update --force`);
             }
@@ -264,12 +316,12 @@ class Updater {
                 Print.info('Force update cancelled.');
                 return;
             }
-            
+
             // Auto-select all updates
             for (let i = 0; i < allUpdates.length; i++) {
                 selected.add(i);
             }
-            
+
             // Also include customized files with updates
             if (updates.customizedWithUpdates) {
                 for (const customized of updates.customizedWithUpdates) {
@@ -277,7 +329,7 @@ class Updater {
                     selected.add(allUpdates.length - 1);
                 }
             }
-            
+
             // Create backup automatically
             Print.out('\n⚠️  Creating automatic backup...');
             backupPath = this.createBackup(cwd, updates);
@@ -303,7 +355,7 @@ class Updater {
             for (let i = 0; i < allUpdates.length; i++) {
                 const update = allUpdates[i];
                 const num = `\x1b[33m${i + 1}\x1b[0m`;
-                
+
                 let status = '';
                 let versionInfo = '';
                 if (update.modified) {
@@ -327,11 +379,11 @@ class Updater {
         }
 
         // Handle customized files with updates (especially docs) - skip in force mode
-        let customizedSelected = [];
+        const customizedSelected = [];
         if (hasCustomizedUpdates && !force) {
             Print.out('\n\x1b[33m⚠️  Customized Files with Updates Available:\x1b[0m\n');
             Print.out('These files have been customized but newer versions are available.\n');
-            
+
             for (let i = 0; i < updates.customizedWithUpdates.length; i++) {
                 const update = updates.customizedWithUpdates[i];
                 Print.out(`  ${i + 1}. \x1b[1m${update.component}\x1b[0m`);
@@ -339,44 +391,41 @@ class Updater {
                 Print.out(`     \x1b[90mYour version: ${update.userVersion || 'unknown'} → Template version: ${update.templateVersion || 'unknown'}\x1b[0m`);
                 Print.out('');
             }
-            
-            Print.out('\x1b[36mShow customized files with updates? (y/N)\x1b[0m');
-            const showCustomized = await this.getResponse('> ', 'n');
-            
-            if (showCustomized.toLowerCase() === 'y') {
-                Print.out('\nHow should these customized files be handled?\n');
-                Print.out('   1) Decide each file individually');
-                Print.out('   2) Keep all customized (skip every update in this list)');
-                Print.out('   3) Accept all template updates (overwrite all; you already chose to review this list)');
-                Print.out('   4) Skip this section (do not update any of these now)');
-                const bulk = await this.getResponse('   Your choice (1-4) [1]: ', '1');
 
-                const pushAccepted = (u) => {
-                    customizedSelected.push({
-                        ...u,
-                        /** User already confirmed replacing customized content; skip applyUpdates overwrite prompt */
-                        skipModifiedOverwritePrompt: true
-                    });
-                };
+            Print.out(
+                `\n\x1b[36m${updates.customizedWithUpdates.length} customized file(s) have updates available. How should they be handled?\x1b[0m\n`
+            );
+            Print.out('   1) Review individually');
+            Print.out('   2) Keep all customized (skip every update in this list)');
+            Print.out('   3) Accept all template updates for this list (overwrite all)');
+            Print.out('   4) Skip this section (do not update any of these now)');
+            const bulk = await this.getResponse('   Your choice (1-4) [4]: ', '4');
 
-                if (bulk === '3') {
-                    for (const update of updates.customizedWithUpdates) {
+            const pushAccepted = (u) => {
+                customizedSelected.push({
+                    ...u,
+                    /** User already confirmed replacing customized content; skip applyUpdates overwrite prompt */
+                    skipModifiedOverwritePrompt: true
+                });
+            };
+
+            if (bulk === '3') {
+                for (const update of updates.customizedWithUpdates) {
+                    pushAccepted(update);
+                }
+            } else if (bulk === '1') {
+                Print.out('\nPer-file choices:\n');
+                for (let i = 0; i < updates.customizedWithUpdates.length; i++) {
+                    const update = updates.customizedWithUpdates[i];
+                    Print.out(`\n${i + 1}. ${update.component} (${update.file})`);
+                    Print.out('   Options:');
+                    Print.out('   1) Keep customized (skip update)');
+                    Print.out('   2) Accept update (overwrite your changes)');
+                    Print.out('   3) Skip for now');
+                    const choice = await this.getResponse('   Your choice (1-3) [1]: ', '1');
+
+                    if (choice === '2') {
                         pushAccepted(update);
-                    }
-                } else if (bulk !== '2' && bulk !== '4') {
-                    Print.out('\nPer-file choices (same options as above, per item):\n');
-                    for (let i = 0; i < updates.customizedWithUpdates.length; i++) {
-                        const update = updates.customizedWithUpdates[i];
-                        Print.out(`\n${i + 1}. ${update.component} (${update.file})`);
-                        Print.out('   Options:');
-                        Print.out('   1) Keep customized (skip update)');
-                        Print.out('   2) Accept update (overwrite your changes)');
-                        Print.out('   3) Skip for now');
-                        const choice = await this.getResponse('   Your choice (1-3) [1]: ', '1');
-
-                        if (choice === '2') {
-                            pushAccepted(update);
-                        }
                     }
                 }
             }
@@ -386,7 +435,7 @@ class Updater {
         if (hasRegularUpdates && !force) {
             Print.out('\n\x1b[36mEnter numbers separated by commas (e.g., "1,2,3" or "1-3,4,7-9"), "all" for everything:\x1b[0m');
             const input = await this.getResponse('> ', '');
-            
+
             if (input.toLowerCase() === 'all') {
                 for (let i = 0; i < allUpdates.length; i++) {
                     selected.add(i);
@@ -415,8 +464,15 @@ class Updater {
         }
 
         // Get selected updates (regular + customized)
+        const selectedCoversFullList = !force && hasRegularUpdates && selected.size > 0 && selected.size === allUpdates.length;
         const selectedUpdates = [
-            ...Array.from(selected).map(i => allUpdates[i]),
+            ...Array.from(selected).map((i) => {
+                const u = allUpdates[i];
+                if (selectedCoversFullList && u && u.modified) {
+                    return { ...u, skipModifiedOverwritePrompt: true };
+                }
+                return u;
+            }),
             ...customizedSelected
         ];
 
@@ -427,7 +483,7 @@ class Updater {
         } else {
             Print.info('\nNo updates selected.');
         }
-        
+
         // Save manifest (in case userCustomized flags were updated)
         Fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
     }
@@ -573,9 +629,69 @@ class Updater {
         };
 
         for (const templateFile of templateFiles) {
-            // Normalize paths for comparison
             const normalizedTemplatePath = templateFile.userPath.replace(/\\/g, '/');
-            const userFile = userFiles.find(f => {
+
+            if (templateFile.binary) {
+                const templateHash = sha256FileBuffer(templateFile.fullTemplatePath);
+                const manifestEntry = manifest.components[templateFile.component];
+                const primaryPath = Path.join(cwd, normalizedTemplatePath);
+                let absUser = primaryPath;
+                if (!Fs.existsSync(absUser) && manifestEntry?.file) {
+                    const alt = Path.join(cwd, manifestEntry.file);
+                    if (Fs.existsSync(alt)) {
+                        absUser = alt;
+                    }
+                }
+                const userExists = Fs.existsSync(absUser);
+                const userHash = userExists ? sha256FileBuffer(absUser) : '';
+                const manifestHash = manifestEntry?.hash;
+                const userCustomized = manifestEntry?.userCustomized || false;
+                const isCurrentlyCustomized = Boolean(manifestHash && userHash && userHash !== manifestHash);
+
+                if (isCurrentlyCustomized && !userCustomized && manifestEntry) {
+                    manifestEntry.userCustomized = true;
+                }
+
+                const userFile = userFiles.find((f) => {
+                    const normalizedUserPath = f.file.replace(/\\/g, '/');
+                    return normalizedUserPath === normalizedTemplatePath
+                        || (manifestEntry?.file && normalizedUserPath === manifestEntry.file.replace(/\\/g, '/'));
+                });
+
+                if (!userExists) {
+                    newFiles.push({
+                        file: normalizedTemplatePath,
+                        component: templateFile.component,
+                        version: templateFile.version,
+                        templateFile
+                    });
+                    continue;
+                }
+
+                if (userHash !== templateHash) {
+                    const userVer = manifestEntry?.version || templateFile.version || '1.0.0';
+                    const templateVer = templateFile.version || manifestEntry?.version || '1.0.0';
+                    if (force || userVer !== templateVer) {
+                        available.push({
+                            file: normalizedTemplatePath,
+                            component: templateFile.component,
+                            userVersion: userVer,
+                            templateVersion: templateVer,
+                            modified: isCurrentlyCustomized || userCustomized,
+                            templateFile,
+                            userFile: userFile ? { ...userFile, hash: userHash } : {
+                                file: normalizedTemplatePath,
+                                hash: userHash,
+                                version: manifestEntry?.version || templateFile.version
+                            },
+                            templateHash
+                        });
+                    }
+                }
+                continue;
+            }
+
+            const userFile = userFiles.find((f) => {
                 const normalizedUserPath = f.file.replace(/\\/g, '/');
                 return normalizedUserPath === normalizedTemplatePath;
             });
@@ -846,12 +962,31 @@ class Updater {
             if (templateFile) {
                 // Verify the component name matches what's in the actual file
                 try {
+                    if (templateFile.binary) {
+                        const prevHash = typeof entry.hash === 'string' && entry.hash.length > 0 ? entry.hash : '';
+                        let fileHash = '';
+                        try {
+                            fileHash = sha256FileBuffer(fullPath);
+                        } catch {
+                            // leave empty when unreadable
+                        }
+                        if (prevHash && fileHash !== prevHash) {
+                            entry.userCustomized = true;
+                        }
+                        entry.hash = fileHash;
+                        if (!entry.version || entry.version === 'unknown') {
+                            entry.version = templateFile.version || '1.0.0';
+                        }
+                        seenComponents.add(componentName);
+                        continue;
+                    }
+
                     const content = Fs.readFileSync(fullPath, 'utf-8');
                     const actualComponent = parseComponentFromFile(content);
                     const fileVersion = parseVersionFromFile(content);
                     const fileHash = Crypto.createHash('sha256').update(normalizeContentForHash(content)).digest('hex');
-                    const templateHash = Crypto.createHash('sha256').update(normalizeContentForHash(templateFile.content)).digest('hex');
-                    
+                    const prevHash = typeof entry.hash === 'string' && entry.hash.length > 0 ? entry.hash : '';
+
                     if (actualComponent && actualComponent !== componentName) {
                         // Component name changed - update the manifest entry key
                         manifest.components[actualComponent] = {
@@ -870,7 +1005,7 @@ class Updater {
                     } else if (!entry.version || entry.version === 'unknown') {
                         entry.version = templateFile.version || '1.0.0';
                     }
-                    if (fileHash !== templateHash) {
+                    if (prevHash && fileHash !== prevHash) {
                         entry.userCustomized = true;
                     }
                     entry.hash = fileHash;
@@ -897,23 +1032,39 @@ class Updater {
             try {
                 let hash = '';
                 let version = templateFile.version || '1.0.0';
-                
-                if (Fs.existsSync(fullUserPath)) {
+
+                if (templateFile.binary) {
+                    if (Fs.existsSync(fullUserPath)) {
+                        hash = sha256FileBuffer(fullUserPath);
+                        version = templateFile.version || '1.0.0';
+                        manifest.components[templateFile.component] = {
+                            file: userFilePath.replace(/\\/g, '/'),
+                            version,
+                            hash,
+                            modified: false,
+                            userCustomized: false
+                        };
+                    } else {
+                        manifest.components[templateFile.component] = {
+                            file: userFilePath.replace(/\\/g, '/'),
+                            version: templateFile.version || '1.0.0',
+                            hash,
+                            modified: false,
+                            userCustomized: false
+                        };
+                    }
+                } else if (Fs.existsSync(fullUserPath)) {
                     // File exists, read it to get current hash and version
                     const content = Fs.readFileSync(fullUserPath, 'utf-8');
                     hash = Crypto.createHash('sha256').update(normalizeContentForHash(content)).digest('hex');
                     version = parseVersionFromFile(content) || templateFile.version || '1.0.0';
-                    
-                    // Check if user customized (hash differs from template)
-                    const templateHash = Crypto.createHash('sha256').update(normalizeContentForHash(templateFile.content)).digest('hex');
-                    const isCustomized = hash !== templateHash;
-                    
+
                     manifest.components[templateFile.component] = {
                         file: userFilePath.replace(/\\/g, '/'),
                         version: version,
                         hash: hash,
                         modified: false,
-                        userCustomized: isCustomized
+                        userCustomized: false
                     };
                 } else {
                     // If file doesn't exist, hash will be empty and it will be treated as needing update
@@ -983,7 +1134,7 @@ class Updater {
 
             // In force mode skip the overwrite prompt; otherwise prompt for modified files.
             // Customized docs: user already chose "Accept update" (or bulk accept); do not prompt again.
-            if (!force && update.modified && Fs.existsSync(destPath) && !update.skipModifiedOverwritePrompt) {
+            if (!force && update.modified && Fs.existsSync(destPath) && !update.skipModifiedOverwritePrompt && !initialBackupPath) {
                 Print.warn(`\n⚠️  File has been modified: ${update.file}`);
                 const overwriteLabel = backupPath ? '1) Overwrite (backup made)' : '1) Overwrite';
                 const backupOption = backupPath ? '' : '  3) Backup & overwrite';
@@ -1008,6 +1159,20 @@ class Updater {
             const destDir = Path.dirname(destPath);
             if (!Fs.existsSync(destDir)) {
                 Fs.mkdirSync(destDir, { recursive: true });
+            }
+
+            if (update.templateFile?.binary) {
+                Fs.copyFileSync(templatePath, destPath);
+                Print.success(`Updated ${update.file}`);
+                const hash = sha256FileBuffer(destPath);
+                manifest.components[update.component] = {
+                    file: filePath,
+                    version: packageVersion,
+                    hash,
+                    modified: false,
+                    userCustomized: false
+                };
+                continue;
             }
 
             // Read template file, strip version tags, then write to destination

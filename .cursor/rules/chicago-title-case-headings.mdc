@@ -1,0 +1,55 @@
+---
+description: Chicago title case for headings; prose is title-cased, technical syntax and identifiers stay source-accurate
+globs: **/*.html,**/*.htm,**/*.jhp,**/*.tsx,**/*.jsx,**/*.vue,**/*.mdx
+alwaysApply: false
+---
+
+# Heading capitalization (Chicago headline style)
+
+Do **not** rely on CSS `text-transform` for headings unless the design system explicitly standardizes on it. Author visible heading text using **Chicago Manual of Style headline-style capitalization** (CMOS 8.159), adapted for technical content.
+
+**Prose vs syntax:** Apply headline-style rules **only to plain English fragments**. Technical **terms, identifiers, and language syntax** stay **source-accurate**; never rewrite them (for example **`::after`**, **`@media`** with a lowercase **`m`**) to satisfy title case.
+
+## Technical syntax and identifiers
+
+- **`<code>`, `<kbd>`, `<samp>` are optional.** Wrap technical fragments when layout or typography calls for it or the project prefers phrasing headings that way; otherwise bare syntax in the heading text is acceptable if readable.
+- **Do not title-case syntax runs.** Each run is atomic: `@`, `::`, slashes, casing, and punctuation stay as defined by the language or tool.
+  - **CSS:** `::after`, `::before`, `@media`, `@keyframes`, `:focus-visible`, selectors, keywords where the spec lowercases (`media`, not `Media`).
+  - **Same idea elsewhere:** flags (`--frozen`), dotted paths (`std::io`), literals that are case-sensitive.
+- Apply headline rules **around** those runs using normal English wording; for example **Using ::after for icon styling**, **Working with `@media` and container queries**.
+
+## Rules (English only)
+
+1. **Capitalize** the first and last **English word** counted for headline style (syntax can sit at either edge unchanged).
+2. **Capitalize** major English words (nouns, verbs, etc.) and subordinating conjunctions such as **Because**, **Although**, **If**, **When** when they introduce a titled clause.
+3. **Lowercase** **a**, **an**, **the** in the middle of plain English.
+4. **Lowercase** coordinating **and**, **but**, **or**, **nor**, **for**, **so**, **yet** in the middle of plain English.
+5. **Lowercase** short prepositions listed in CMOS (**as**, **at**, **by**, **down**, **for**, **from**, **in**, **into**, **like**, **near**, **of**, **off**, **on**, **onto**, **out**, **over**, **past**, **per**, **plus**, **save**, **than**, **to**, **up**, **upon**, **via**, **with**, **without**, **within**) unless adverbial, stressed in a verbal phrase, or first/last **English** word in the title.
+6. **Colons:** After `:`, capitalize the next **English** word when starting a new segment (**Part A: Practice Site Setup and CSS Fundamentals**). Still do not alter a fragment that is syntax (**`Part D: ::after`** keeps `::` and `after`).
+7. **Hyphenated English compounds:** Capitalize meaningful parts (**Self-Hosted**, **End-to-End**). Do not re-case hyphens inside technical tokens.
+8. **When you wrap with `<code>`, `<kbd>`, `<samp>`:** Never change interior text; headline rules touch only markdown or HTML outside those tags.
+9. **Acronyms and names:** Normal conventions (**CSS**, **API**, **README**, brand casing).
+10. **Section headings** composed only of ordinary words stay in headline style.
+
+## Examples
+
+### General English
+
+| Avoid | Prefer |
+|--------|--------|
+| Unit 3: color, theming, and visual effects | Unit 3: Color, Theming, and Visual Effects |
+| Filters and backdrop | Filters and Backdrop |
+| Choose topic: blend modes | Choose Topic: Blend Modes |
+| Part B: Print, forms, tokens at scale | Part B: Print, Forms, and Tokens at Scale |
+
+### Syntax and terms (`<code>` optional)
+
+| Avoid | Prefer |
+|--------|--------|
+| Styling ::After for Icons | Styling ::after for Icons *(…or emphasize with `<code>::after</code>` if the project prefers)* |
+| Working With @Media Queries | Working with `@media` queries *( **`Media` incorrect**; **`m` stays lowercase** )* |
+| Using After Pseudo Element | Using the `::after` pseudo-element |
+
+## Consistency
+
+When headings are authored in markup, the rendered title should match the authored string (no accidental drift from transforms). Adjust globs in this rule’s frontmatter if your project keeps headings in other file types.

@@ -5,7 +5,8 @@
         "jamsedu": "bin/cli.js"
     },
     "scripts": {
-        "test:dollar-mask": "node --test test/quarto-context-dollar-mask.test.js",
+        "prepublishOnly": "npm test",
+        "test": "node --test",
         "start": "node bin/cli.js --watch",
         "build": "node bin/cli.js --build",
         "build:debug": "node bin/cli.js --build --verbose",
@@ -26,7 +27,7 @@
     },
     "type": "module",
     "engines": {
-        "node": ">=18.0.0"
+        "node": ">=24.0.0"
     },
     "description": "JamsEdu is a feature rich but simplistic to use Jamstack application designed for open source content. Originally designed to help rapidly develop and deploy university courses, JamsEdu is the perfect way to quickly create dynamic static websites for STEM focused content.",
     "keywords": [

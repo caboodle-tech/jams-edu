@@ -1,0 +1,24 @@
+---
+description: Entry-file and DOM patterns for client apps (late-injected markup, shared observers)
+globs: **/*.js,**/*.mjs,**/*.ts,**/*.tsx
+alwaysApply: false
+---
+
+# Frontend runtime conventions
+
+## Scope
+
+Apply when editing the project’s **client entry or shared runtime helpers**—typically a `main.*`, `index.*` client entry, or a small library folder the entry imports. Paths vary; discover them from imports and README.
+
+## DOM work after load or injection
+
+- For behavior that must run on nodes that appear **after** first paint (dynamic routes, portals, CMS-injected HTML, design-system partials), prefer the project’s **central pattern** if one exists (a `watch`, `observe`, or “bind when present” helper used elsewhere).
+- Avoid one-off `MutationObserver` duplicates when a shared utility already encapsulates lifecycle and debouncing; extend that utility if the need is general.
+- **Synchronous one-shot init** (for example `querySelectorAll` for `aria-current` on static markup only) is fine when the project guarantees no late injection for those selectors.
+
+## Entry file discipline
+
+- Respect the repository’s **documented bootstrap** (init function, global config object, framework `createRoot`, etc.). Extend through the same extension points other features use.
+- Re-exports and public bundle surface should match how the repo already exposes modules (`package.json` exports, build entry, etc.).
+
+If this repository has no shared DOM helper, follow the **simplest consistent pattern** already in the entry file rather than introducing a new architecture in a small change.

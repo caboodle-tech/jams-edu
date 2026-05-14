@@ -10,6 +10,7 @@ import { dump as dumpYaml, load as parseYaml } from 'js-yaml';
 import { exit } from 'process';
 import { fileURLToPath } from 'url';
 import { isTextFileForStripping, stripJamseduComments } from './imports/strip-jamsedu-comments.js';
+import { maskAsciiDollarInQuartoContextJson } from './imports/quarto-context-dollar-mask.js';
 import { writeSearchIndexAndSitemap } from './search-index-and-sitemap.js';
 
 const Spawn = Process.spawn;
@@ -317,6 +318,7 @@ export default class JamsEdu {
                     assetsDir: this.#assetsDir,
                     destDir: this.#destDir,
                     quartoAssetsDir: this.#quarto.assetsDir,
+                    srcDir: this.#srcDir,
                     usersRoot: this.#usersRoot,
                     verbose: this.#verbose,
                     websiteUrl: this.#websiteUrl
@@ -1195,6 +1197,9 @@ export default class JamsEdu {
         }
         for (const token of denySuffix) {
             this.#copyRules.denySuffix.add(token.replace(REGEX.dotPrefix, ''));
+        }
+        for (const token of ['noindex', 'no-index']) {
+            this.#copyRules.denySuffix.add(token);
         }
     }
 
@@ -2935,19 +2940,6 @@ export default class JamsEdu {
     }
 
     /**
-     * JHP's script pass rewrites `$include`, `$echo`, and other `$word` builtins with `/\\$(\\w+)/g`. The Quarto bootstrap
-     * embeds `qmdContext` via `JSON.stringify`, so literal dollars in `quartoHtml` (or YAML strings) would become `$.include`
-     * etc. and corrupt the stored HTML. Mask `$` as `&#36;` in the serialized object literal; the HTML parser decodes it
-     * back to U+0024 when `$echo(quartoHtml)` writes the fragment into the page.
-     *
-     * @param {string} stringifiedContext
-     * @returns {string}
-     */
-    #maskAsciiDollarInQuartoContextJson(stringifiedContext) {
-        return String(stringifiedContext || '').replace(/\$/g, '&#36;');
-    }
-
-    /**
      * Renders a Quarto HTML fragment using the configured Quarto wrapper template.
      *
      * @param {string} relativePath
@@ -2972,7 +2964,7 @@ export default class JamsEdu {
             title: meta.title ?? 'Quarto File'
         };
         const contextScript = `<script>
-const qmdContext = ${this.#maskAsciiDollarInQuartoContextJson(JSON.stringify(context))};
+const qmdContext = ${maskAsciiDollarInQuartoContextJson(JSON.stringify(context))};
 $context('title', qmdContext.title);
 $context('quartoHtml', qmdContext.quartoHtml);
 if (qmdContext.description !== null) { $context('description', qmdContext.description); }

@@ -1,0 +1,64 @@
+---
+description: Modern JavaScript style and pragmatic CSS structure (token-first when the project uses design tokens)
+alwaysApply: true
+---
+
+# Coding standards
+
+## Modern ESM JavaScript
+
+- Use `const` with arrow functions instead of function declarations when it fits the codebase’s existing style.
+- Wrap arrow function parameters in parentheses consistently with project convention.
+- Prefer explicit braces and explicit `return` unless the file already standardizes on expression-bodied arrows for trivial callbacks.
+- **Strings:** Do **not** assemble strings with the `+` operator. Always use **template literals** (`\`…\${expr}…\``) whenever the result mixes fixed text with expressions or stitches multiple parts together.
+- Consolidate consecutive one-line comments into one concise comment or a proper multiline comment.
+- Avoid dashes in prose comments unless a technical term requires one.
+- Add JSDoc where the project already documents exports, public APIs, or non-obvious behavior.
+
+## Regular expressions
+
+- Default to a single, named regex collection per file: `const REGEX = Object.freeze({ ... })` (see `src/jamsedu.js` for the pattern). All static literals belong in this collection at module scope so they are compiled once, not on every function call.
+- This applies even when there are only 2-3 patterns. The trigger is "this regex sits inside a function/method that runs more than once or is reused across the file," not "many regexes."
+- When editing a file that already uses a `REGEX` collection, **add to it** instead of introducing inline literals. If hoisting would actively reduce clarity, leave a brief code comment explaining why that one exception stays inline.
+- The **only** acceptable inline regex is one that genuinely cannot be hoisted: it is built at runtime from variables (e.g. `new RegExp(`^${prefix}\\b`)`) or its source depends on values not known until execution. Anything else gets pulled out.
+- As a regex collection grows, periodically **simplify and combine** patterns when safe (remove redundant variants, merge similar patterns, tighten scopes) to keep the set readable.
+
+## JamsEdu `head.html` meta script
+
+Do **not** edit the JHP `<script>` block that `$echo`s `<meta name="description">` and the optional author, date, and keywords tags in **`www/private/templates/head.html`** or **`src/template/src/templates/head.html`** unless the user **explicitly** asks for that change in the same message. No refactors, no “cleanup,” keep both files aligned.
+
+## CSS and design tokens
+
+- Before adding new colors, spacing, typography scales, or motion values, look for an **existing design system or token layer** (variables, theme files, Tailwind config, CSS custom properties in a `tokens` or `theme` path, etc.). Paths differ per repo; discover them instead of assuming a layout.
+- Add or extend shared tokens only when no suitable token exists and the value is reused or should be systemic. One-off layout tweaks can stay local to the component rule.
+- Prefer consuming tokens (`var(--...)`, theme classes, etc.) over duplicating the same raw values in many files.
+
+## CSS class names and structure
+
+- Avoid BEM-style noise unless the project already commits to BEM; skip `block__element` / `block--modifier` if the codebase does not use it.
+- Do not hang long repetitive class names on every nested node when the same styling can target semantic markup from one root hook and child or descendant selectors (for example `nav.foo > ul a` with states nested under `a`).
+- Prefer one short, readable root class on the main container when a hook is needed; add extra single-word classes only when behavior truly differs (for example a variant layout), not a full taxonomy of utility-style names.
+- Name components for what they are in context (accurate, user-facing language), not generic or misleading labels.
+- Skip new class names whose only job is duplicating what the tag, role, or structure already expresses (`form[role='search']`, `input[type='search']`, and similar when scoped under a component root).
+
+## CSS authoring style (native nesting)
+
+- Use **native CSS nesting** for layout and component styles. Flat rulesheets are only for deliberate exceptions (for example legacy vendor snippets you cannot nest cleanly).
+- **Structural nesting is required:** If a selector’s subject is structurally **inside** another block in the HTML, that rule must live **nested inside** the stylesheet block for the **immediate owning** parent, not as a **sibling** nested rule under a higher ancestor that repeats the parent prefix. Wrong under a shared `header` block: `.nav-list { }` then `.nav-list a { }` then `.nav-list a:hover { }` as separate parallel groups. Right: `.nav-list { … a { … &:hover { … } &:active { … } } }`.
+- **No compound sprawl:** Do not spread one subtree across multiple parallel nested rules that only re-string the same compound path (` .parent .child`, ` .parent .child:hover`). One subtree in the DOM, one nested `{ }` group in the CSS.
+- **Pseudo-classes on one subject:** Never author parallel blocks such as `.block li:first-child`, `.block li:last-child`, and `.block li` next to each other. Put base styles once on **`li`** (nested inside **`.block`**) and nest **`&:first-child`**, **`&:last-child`**, and similar on that same **`li`** block. The same applies to **`a`** with **`&:hover`** / **`&:focus-visible`** and other chaining forms: keep one nested **`a { }`** with state rules inside it, not a separate **`.block a:hover`** sibling block.
+- **List spacing:** For flex or grid lists (`display: flex` / `grid` on **`ul`** or **`ol`**), rely on **`gap`** on the list for spacing between items. Avoid putting **`margin-block`** (or symmetrical vertical margins) on every **`li`** and then cancelling on **`:last-child`** when **`gap`** already defines the rhythm; reserve **`:first-child` / `:last-child`** margins for deliberate edge inset against the panel, not for duplicating inter-item spacing.
+- **`&`:** Use `&` when the compiled selector must continue from the parent (`&:hover`, `&:focus-visible`, `&.is-open`, `& + li`, `&::after`). Do not use `&` when a child selector can be written plainly (`a { }`, `.label { }` nested under the parent). Avoid `&` for any other case.
+- **Cascade leeway (`@import`, `@layer`):** Structural nesting applies to **selectors that mirror markup**. `@import`, `@layer` ordering, and `@layer name { … }` wrappers may stay at **file top** or in other flat, explicit places when cascade or bundler order requires it. Do not bury imports or layer declarations deep under component selectors if that would break order, specificity, or tooling. Small, intentional flat sections for cascade glue are fine.
+- **Checkbox or sibling hacks:** When the DOM forces state hooks that are not descendant relationships (for example `#toggle:checked ~ .panel`), keep those selectors in a **small, explicit group** at the owning block level; still nest each **true** subtree under its parent.
+- **Features:** Prefer baseline modern CSS supported by the repo’s browserslist and build pipeline.
+- **Scope:** Follow the prevailing pattern in the repo (CSS modules, scoped SFC styles, plain global layers). Do not introduce a second parallel system without a reason.
+- **Balance:** Prefer structural nesting for DOM-owned rules; prefer clear cascade and valid `@import` / `@layer` layout over hyper-nesting at-rules. Deep nesting is for real subtrees, not for every at-rule.
+
+## HTML headings
+
+When you author visible `<h1>`–`<h6>` text in markup, use **Chicago headline-style title case** and do not depend on `text-transform` alone; see **Chicago title case headings** (`.cursor/rules/chicago-title-case-headings.mdc`). Narrow or widen that rule’s `globs` to match where your headings live.
+
+## Project-specific rhythms
+
+Courseware, docs sites, or app-specific UX rules (for example “unit index pages assume X flows into Y”) do **not** belong in this portable rule. Add a **separate** rule file in `.cursor/rules/` for that repository if you need those constraints.

@@ -1,0 +1,32 @@
+---
+description: Prefer web search and first-party sources when facts may be stale or project-specific
+alwaysApply: true
+---
+
+# Web research and trusted sources
+
+## When to search
+
+Use web search when the task needs **current**, **authoritative**, or **repository-specific** facts (released APIs, policies, hosted behavior, security advisories, pricing, or anything likely changed since training data). Prefer verifying over guessing.
+
+## Order of evidence
+
+1. **This repository:** `README`, `docs/`, `CONTRIBUTING`, configuration comments, and code the user pointed at.
+2. **Upstream / vendor docs:** Official documentation for frameworks, hosts, registries, and SDKs named in `package.json`, lockfiles, or infra config.
+3. **First-party web:** Domains and org repos **this project links to or names** as canonical (README badges, env examples, deployment docs).
+4. **Broader search:** Community posts only when primary sources are thin; cite what you relied on.
+
+If local docs disagree with an authoritative live source, **prefer the live upstream doc** unless the repo explicitly documents an intentional fork or pinned behavior.
+
+## Optional: pin your org’s hosts
+
+Maintain a short list under version control if helpful—for example in `CONTRIBUTING.md` or a small `docs/` note—not inside this generic rule:
+
+- Production and staging origins your team treats as canonical.
+- Internal handbook or design-system URLs agents should check.
+
+This keeps `.cursor/rules` portable across repos without hard-coding one product.
+
+## Sandboxing
+
+Cursor may merge **`.cursor/sandbox.json`** with user defaults ([sandbox reference](https://cursor.com/docs/reference/sandbox.md)). Terminal or MCP allowlists live in Cursor Settings or **`~/.cursor/permissions.json`** ([permissions reference](https://cursor.com/docs/reference/permissions)). If network or shell access is blocked, say so briefly and rely on local files and reasoning.

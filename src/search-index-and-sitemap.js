@@ -8,13 +8,12 @@ import Print from './imports/print.js';
  * @typedef {object} SearchIndexOptions
  * @property {string} usersRoot
  * @property {string} destDir
+ * @property {string} [srcDir] Parallel source root; used to find `.noindex` / `.no-index` because those files are not copied to `destDir`.
  * @property {string} [websiteUrl]
  * @property {string} [assetsDir]
  * @property {string} [quartoAssetsDir]
  * @property {boolean} [verbose]
  */
-
-const WEAK_DEFAULT_DESCRIPTION = 'JamsEdu static site generator for teaching and open content.';
 
 const READ_CAP_BYTES = 3 * 1024 * 1024;
 
@@ -23,6 +22,48 @@ const SNIPPET_CAP = 520;
 const MAX_HEADINGS = 48;
 
 const MAX_HEADING_TEXT = 2200;
+
+/** Basenames; not copied to `destDir`; indexer consults the parallel path under `srcDir` when set. */
+const SEARCH_SKIP_DIR_MARKERS = Object.freeze(['.noindex', '.no-index']);
+
+/**
+ * True when the subtree rooted at `destSubtreeDir` is excluded: a marker in that dest folder, or in the
+ * parallel folder under `srcDir` when `srcDir` is set.
+ *
+ * @param {string} destSubtreeDir
+ * @param {string} destDir
+ * @param {string} [srcDir]
+ * @returns {boolean}
+ */
+const dirHasSearchSkipMarker = (destSubtreeDir, destDir, srcDir) => {
+    const hasMarkerInDir = (absDir) => {
+        for (const name of SEARCH_SKIP_DIR_MARKERS) {
+            if (Fs.existsSync(Path.join(absDir, name))) {
+                return true;
+            }
+        }
+        return false;
+    };
+    if (hasMarkerInDir(destSubtreeDir)) {
+        return true;
+    }
+    if (!srcDir) {
+        return false;
+    }
+    const resolvedDest = Path.resolve(destDir);
+    const resolvedSubtree = Path.resolve(destSubtreeDir);
+    const rel = Path.relative(resolvedDest, resolvedSubtree);
+    if (rel.startsWith('..') || Path.isAbsolute(rel)) {
+        return false;
+    }
+    const resolvedSrc = Path.resolve(srcDir);
+    const srcParallel = Path.resolve(resolvedSrc, rel);
+    const back = Path.relative(resolvedSrc, srcParallel);
+    if (back.startsWith('..') || Path.isAbsolute(back)) {
+        return false;
+    }
+    return hasMarkerInDir(srcParallel);
+};
 
 const collapseWhitespace = (text) => {
     return String(text || '').replace(/\s+/gu, ' ').trim();
@@ -61,12 +102,19 @@ const shouldSkipRelativeHtml = (relPosix, skip) => {
 };
 
 /**
+ * Collects `.html` paths under `dir`, honoring `skip` and skipping any subtree whose directory contains
+ * `.noindex` or `.no-index` in dest or in the parallel path under `srcDir` when `srcDir` is set.
+ *
  * @param {string} dir
  * @param {string} destDir
+ * @param {string} [srcDir]
  * @param {{ assetsDirNorm: string; quartoAssetsNorm: string }} skip
  * @param {string[]} out
  */
-const collectHtmlPathsRecursive = (dir, destDir, skip, out) => {
+const collectHtmlPathsRecursive = (dir, destDir, srcDir, skip, out) => {
+    if (dirHasSearchSkipMarker(dir, destDir, srcDir)) {
+        return;
+    }
     let entries;
     try {
         entries = Fs.readdirSync(dir, { withFileTypes: true });
@@ -79,7 +127,7 @@ const collectHtmlPathsRecursive = (dir, destDir, skip, out) => {
             const relRaw = Path.relative(destDir, full).replace(/\\/g, '/');
             const relLower = relRaw.toLowerCase();
             if (!shouldSkipRelativeHtml(relLower, skip)) {
-                collectHtmlPathsRecursive(full, destDir, skip, out);
+                collectHtmlPathsRecursive(full, destDir, srcDir, skip, out);
             }
         } else if (ent.isFile() && ent.name.toLowerCase().endsWith('.html')) {
             const relLower = Path.relative(destDir, full).replace(/\\/g, '/').toLowerCase();
@@ -198,7 +246,7 @@ const collectHeadingsInOrder = (root) => {
  * @returns {string}
  */
 const buildSnippet = (root, description) => {
-    const weak = !description || description === WEAK_DEFAULT_DESCRIPTION;
+    const weak = !description;
     let sourceText = '';
     if (weak) {
         const main = root.querySelector('main');
@@ -259,6 +307,8 @@ const escapeXmlText = (s) => {
 
 /**
  * Writes `sitemap.json`, updates `.jamsedu/search-output-fingerprints.json`, and optionally `sitemap.xml`.
+ * Skips directories that contain `.noindex` or `.no-index` in the parallel `srcDir` tree (those files are
+ * not copied to `destDir`) or under `destDir` if a marker is present there.
  *
  * @param {SearchIndexOptions} opts
  * @returns {Promise<void>}
@@ -274,6 +324,8 @@ export const writeSearchIndexAndSitemap = async(opts) => {
     const quartoAssetsNorm = normalizeAssetPrefix(opts.quartoAssetsDir || 'quarto-assets') || 'quarto-assets';
     const skip = { assetsDirNorm, quartoAssetsNorm };
     const verbose = opts.verbose === true;
+    const srcDirRaw = typeof opts.srcDir === 'string' ? opts.srcDir.trim() : '';
+    const srcDirForIndex = srcDirRaw && Fs.existsSync(srcDirRaw) ? Path.resolve(srcDirRaw) : '';
 
     /** @type {Record<string, number>} */
     let sourceMtimes = {};
@@ -306,7 +358,7 @@ export const writeSearchIndexAndSitemap = async(opts) => {
     const buildTimeMs = Date.now();
     const generatedAt = new Date(buildTimeMs).toISOString();
     const htmlPaths = [];
-    collectHtmlPathsRecursive(destDir, destDir, skip, htmlPaths);
+    collectHtmlPathsRecursive(destDir, destDir, srcDirForIndex || undefined, skip, htmlPaths);
     htmlPaths.sort((a, b) => {
         return destPathToSitePath(destDir, a).localeCompare(destPathToSitePath(destDir, b));
     });

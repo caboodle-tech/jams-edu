@@ -15,6 +15,10 @@ import {
     stripJamseduComments
 } from './imports/strip-jamsedu-comments.js';
 import { joinConfigRelPosixPath } from './imports/quarto-default-config.js';
+import {
+    scanTemplateFaviconBinaryFiles,
+    syncBinaryFaviconManifestEntries
+} from './imports/template-binary-assets.js';
 
 class Initializer {
 
@@ -816,6 +820,15 @@ ${cleanedWebsiteUrl ? `  websiteUrl: ${cleanedWebsiteUrl}\n` : ''}`
                 };
             }
         }
+
+        const binaryFiles = scanTemplateFaviconBinaryFiles(
+            templateDir,
+            normalizedSrcDir,
+            userConfig,
+            packageVersion,
+            {}
+        );
+        syncBinaryFaviconManifestEntries(manifest, binaryFiles, cwd, packageVersion);
 
         // Write manifest
         const manifestPath = Path.join(manifestDir, 'manifest.json');

@@ -41,9 +41,15 @@
         starts a watcher that auto builds the site source files when changed.
 
     update, -update, --update
-        Interactive update for JamsEdu template files. Lets you choose which
-        components to update, creates backups when needed, and handles conflicts
-        per file (overwrite, skip, or backup then overwrite).
+        Interactive update for JamsEdu template files. You choose which components
+        to update. When you create a backup at the start of a run, later overwrite
+        prompts for locally modified files among your selection are skipped because
+        the backup already captured your prior content. Choosing "all" or selecting
+        every listed item also skips those per file overwrite prompts. Customized
+        files with updates use one menu: review individually, keep all customized,
+        accept all template updates for that list, or skip. When no common favicon
+        is found under typical project paths, the updater may offer to install the
+        template favicon set and write FAVICON-JAMSEDU.md at the project root.
 
     force, -force, --force
         With --update: include files marked as customized and overwrite them

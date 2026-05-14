@@ -1,0 +1,27 @@
+---
+description: Read local documentation and project conventions before assuming a stack or vendor
+alwaysApply: true
+---
+
+# Project documentation first
+
+## Default stance
+
+- Treat each repository on its own terms: **README**, **`docs/`**, architecture notes, and existing code are the source of truth for how to implement changes.
+- Prefer **patterns already in the tree** (build tool, test runner, style of config) over generic templates that do not match the repo.
+- Do not assume a specific hosted platform, framework, or product line unless this repo’s files name it.
+
+## What to open early
+
+Discover and use whatever the maintainers maintain—common names include:
+
+- `README.md`, `CONTRIBUTING.md`, `AGENTS.md`, `docs/**/*.md`
+- Config that defines stack: `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`, CI workflows under `.github/`
+
+## Features and theming
+
+If the project integrates a **documented runtime** (embed script, design system, CMS, static site generator), follow that product’s **local** integration notes in this repo first, then official external docs if something is missing locally.
+
+## External references
+
+Link to vendor or host docs when helpful, but only **after** local guidance is checked—URLs and feature sets change; the repo may pin versions or wrap behavior.
