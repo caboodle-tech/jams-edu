@@ -319,9 +319,9 @@ ${cleanedWebsiteUrl ? `  websiteUrl: ${cleanedWebsiteUrl}\n` : ''}`
             this.rewriteCopiedAssetReferencesForNoAssetsLayout(cwd, srcDir);
         }
 
-        // Ensure .gitignore includes destDir
+        // Merge template ignore rules and destDir; never replace the whole file from template copy.
         if (!sourceRepoMode) {
-            this.ensureGitignore(cwd, destDir);
+            this.ensureGitignore(cwd, destDir, Path.join(jamseduTemplateDir, '.gitignore'));
         }
 
         // Write out the configuration file AFTER copying (so it doesn't conflict)
@@ -570,6 +570,13 @@ ${cleanedWebsiteUrl ? `  websiteUrl: ${cleanedWebsiteUrl}\n` : ''}`
                         }
                         const destPathRel = Path.relative(cwd, destPath).replace(/\\/g, '/');
                         if (options.sourceRepoMode && !this.isAllowedSourceRepoWritePath(destPathRel, options.allowedWriteRoots || [])) {
+                            continue;
+                        }
+                        // Root .gitignore is merged in ensureGitignore so overwrite mode cannot wipe user rules.
+                        if (relativePath === '.gitignore') {
+                            if (Fs.existsSync(destPath) && conflictMode === 'skip') {
+                                skippedFiles.push(relativePath);
+                            }
                             continue;
                         }
                         // Handle file conflicts
@@ -934,19 +941,25 @@ ${cleanedWebsiteUrl ? `  websiteUrl: ${cleanedWebsiteUrl}\n` : ''}`
         }
     }
 
-    static ensureGitignore(cwd, destDir) {
+    /**
+     * Ensures every non comment line from the JamsEdu template .gitignore exists, keeps other project lines,
+     * then appends destDir when missing. Does not replace the entire file.
+     *
+     * @param {string} cwd Project root.
+     * @param {string} destDir Build output directory relative to cwd.
+     * @param {string|null} templateGitignorePath Absolute path to packaged `src/template/.gitignore`.
+     */
+    static ensureGitignore(cwd, destDir, templateGitignorePath = null) {
         const gitignorePath = Path.join(cwd, '.gitignore');
-        let content = '';
+        const initialContent = Fs.existsSync(gitignorePath) ? Fs.readFileSync(gitignorePath, 'utf-8') : '';
 
-        // Read existing .gitignore if it exists - preserve all existing content
-        if (Fs.existsSync(gitignorePath)) {
-            content = Fs.readFileSync(gitignorePath, 'utf-8');
+        let content = initialContent;
+        if (templateGitignorePath && Fs.existsSync(templateGitignorePath)) {
+            const templateRaw = Fs.readFileSync(templateGitignorePath, 'utf-8');
+            content = this.mergeTemplateGitignoreIntoExisting(content, templateRaw);
         }
 
-        // Normalize destDir path for .gitignore (use forward slashes)
         const destDirNormalized = destDir.replace(/\\/g, '/');
-
-        // Check if destDir is already in .gitignore
         const lines = content.split('\n');
         const destDirPattern = new RegExp(`^${destDirNormalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/?$`);
         const alreadyIgnored = lines.some((line) => {
@@ -954,16 +967,84 @@ ${cleanedWebsiteUrl ? `  websiteUrl: ${cleanedWebsiteUrl}\n` : ''}`
             return trimmed && (trimmed === destDirNormalized || trimmed === `${destDirNormalized}/` || destDirPattern.test(trimmed));
         });
 
-        // Add destDir if not already present - append only, never overwrite existing content
+        let destAdded = false;
         if (!alreadyIgnored) {
-            // Preserve existing content exactly as-is, just append the new entry
             if (content && !content.endsWith('\n')) {
                 content += '\n';
             }
             content += `${destDirNormalized}/\n`;
-            Fs.writeFileSync(gitignorePath, content, 'utf-8');
-            Print.info(`Added ${destDirNormalized}/ to .gitignore`);
+            destAdded = true;
         }
+
+        const normalizeForCompare = (raw) => {
+            const n = String(raw || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            return n.endsWith('\n') ? n : `${n}\n`;
+        };
+
+        if (normalizeForCompare(content) !== normalizeForCompare(initialContent)) {
+            Fs.writeFileSync(gitignorePath, content, 'utf-8');
+            if (destAdded) {
+                Print.info(`Added ${destDirNormalized}/ to .gitignore`);
+            }
+        }
+    }
+
+    /**
+     * Merges template ignore patterns first, then keeps existing lines that are not duplicates.
+     *
+     * @param {string} existingRaw Current or empty .gitignore body.
+     * @param {string} templateRaw Packaged template .gitignore body.
+     * @returns {string} Body ending with a single newline.
+     */
+    static mergeTemplateGitignoreIntoExisting(existingRaw, templateRaw) {
+        const normalizeEol = (s) => {
+            return String(s || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        };
+        const strippedTemplate = stripJamseduComments(normalizeEol(templateRaw));
+        const existing = normalizeEol(existingRaw);
+        const templateLines = strippedTemplate.split('\n');
+        const existingLines = existing.split('\n');
+        const seen = new Set();
+        const out = [];
+
+        const isMeaningfulPattern = (trimmed) => {
+            return trimmed !== '' && !trimmed.startsWith('#');
+        };
+
+        for (const line of templateLines) {
+            const t = line.trim();
+            if (!isMeaningfulPattern(t)) {
+                continue;
+            }
+            if (seen.has(t)) {
+                continue;
+            }
+            out.push(t);
+            seen.add(t);
+        }
+
+        for (const line of existingLines) {
+            const t = line.trim();
+            if (t === '') {
+                out.push('');
+                continue;
+            }
+            if (t.startsWith('#')) {
+                out.push(line);
+                continue;
+            }
+            if (seen.has(t)) {
+                continue;
+            }
+            out.push(line);
+            seen.add(t);
+        }
+
+        while (out.length > 0 && out[out.length - 1] === '') {
+            out.pop();
+        }
+
+        return `${out.join('\n')}\n`;
     }
 
 }
