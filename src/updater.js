@@ -20,6 +20,7 @@ import {
     sha256FileBuffer,
     writeFaviconJamseduMarkdown
 } from './imports/template-binary-assets.js';
+import { syncStarterAssetUrlPrefixes } from './imports/starter-asset-url-rewrite.js';
 
 class Updater {
 
@@ -1194,6 +1195,8 @@ Merge template files from your installed JamsEdu package into this project. Foll
                 userCustomized: false // Reset to false since we just updated from template
             };
         }
+
+        syncStarterAssetUrlPrefixes(cwd, srcDir, assetsDir);
 
         // Update manifest metadata
         manifest.jamseduPackageVersion = packageVersion;

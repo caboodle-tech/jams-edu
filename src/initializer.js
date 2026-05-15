@@ -19,6 +19,7 @@ import {
     scanTemplateFaviconBinaryFiles,
     syncBinaryFaviconManifestEntries
 } from './imports/template-binary-assets.js';
+import { syncStarterAssetUrlPrefixes } from './imports/starter-asset-url-rewrite.js';
 
 class Initializer {
 
@@ -311,13 +312,12 @@ ${cleanedWebsiteUrl ? `  websiteUrl: ${cleanedWebsiteUrl}\n` : ''}`
             allowedWriteRoots: sourceRepoAllowedRoots
         });
 
-        // When using assets layout, remove old css/js/images under srcDir so only assets/ layout remains; ensure assets/images exists
+        // When using assets layout, remove old css/js/images under srcDir so only grouped layout remains
         if (assetsDir) {
             this.removeOldAssetDirsUnderSrc(cwd, srcDir, assetsDir);
-        } else {
-            // Post-copy user-project patch only: rewrite starter references from assets/* to css|js|images/*
-            this.rewriteCopiedAssetReferencesForNoAssetsLayout(cwd, srcDir);
         }
+        // Post-copy user project only: align /assets/{css,js,images}/ URLs with assetsDir (or flat layout when off)
+        syncStarterAssetUrlPrefixes(cwd, srcDir, assetsDir);
 
         // Merge template ignore rules and destDir; never replace the whole file from template copy.
         if (!sourceRepoMode) {
@@ -681,98 +681,6 @@ ${cleanedWebsiteUrl ? `  websiteUrl: ${cleanedWebsiteUrl}\n` : ''}`
                 Fs.mkdirSync(newPath, { recursive: true });
             }
             this.moveDirContentsInto(oldPath, newPath);
-        }
-    }
-
-    /**
-     * Rewrite copied user project references when assetsDir is disabled.
-     * This runs only after template files are copied into the user's project.
-     * It never edits bundled template source files inside the JamsEdu package.
-     *
-     * @param {string} cwd Project root.
-     * @param {string} srcDir Source dir (e.g. 'src').
-     */
-    static rewriteCopiedAssetReferencesForNoAssetsLayout(cwd, srcDir) {
-        const srcRoot = Path.join(cwd, ...srcDir.replace(/\\/g, '/').split('/').filter(Boolean));
-        if (!Fs.existsSync(srcRoot)) {
-            return;
-        }
-
-        const textExtensions = new Set(['.jhp', '.html', '.htm', '.css', '.js', '.mjs', '.cjs', '.md']);
-        const rewriteCount = { files: 0 };
-
-        const rewriteAssetsPrefix = (rawPrefix, bucket) => {
-            if (!['css', 'js', 'images'].includes(bucket)) {
-                return `${rawPrefix}${bucket}/`;
-            }
-
-            if (rawPrefix.startsWith('/assets/')) {
-                return `/${bucket}/`;
-            }
-            if (rawPrefix.startsWith('./assets/')) {
-                return `./${bucket}/`;
-            }
-            if (rawPrefix.startsWith('assets/')) {
-                return `${bucket}/`;
-            }
-            return `${rawPrefix}${bucket}/`;
-        };
-
-        const rewriteContent = (content) => {
-            let updated = content;
-
-            // Handles href/src and JS string literals containing ./assets/*, /assets/*, or assets/*
-            updated = updated.replace(
-                /(["'`])((?:\.\/|\/)?assets\/)(css|js|images)\//g,
-                (match, quote, prefix, bucket) => {
-                    return `${quote}${rewriteAssetsPrefix(prefix, bucket)}`;
-                }
-            );
-
-            // Handles CSS url(...) references with optional quotes
-            updated = updated.replace(
-                /(url\(\s*["']?)((?:\.\/|\/)?assets\/)(css|js|images)\//g,
-                (match, before, prefix, bucket) => {
-                    return `${before}${rewriteAssetsPrefix(prefix, bucket)}`;
-                }
-            );
-
-            return updated;
-        };
-
-        const walkAndPatch = (dir) => {
-            const entries = Fs.readdirSync(dir, { withFileTypes: true });
-            for (const entry of entries) {
-                const fullPath = Path.join(dir, entry.name);
-                if (entry.isDirectory()) {
-                    walkAndPatch(fullPath);
-                    continue;
-                }
-
-                const ext = Path.extname(entry.name).toLowerCase();
-                if (!textExtensions.has(ext)) {
-                    continue;
-                }
-
-                let original = '';
-                try {
-                    original = Fs.readFileSync(fullPath, 'utf-8');
-                } catch (err) {
-                    Print.warn(`Could not read ${fullPath}: ${err.message}`);
-                    continue;
-                }
-
-                const rewritten = rewriteContent(original);
-                if (rewritten !== original) {
-                    Fs.writeFileSync(fullPath, rewritten, 'utf-8');
-                    rewriteCount.files += 1;
-                }
-            }
-        };
-
-        walkAndPatch(srcRoot);
-        if (rewriteCount.files > 0) {
-            Print.info(`Adjusted no-assets starter paths in ${rewriteCount.files} copied file(s).`);
         }
     }
 

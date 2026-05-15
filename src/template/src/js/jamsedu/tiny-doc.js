@@ -1,4 +1,4 @@
-// @jamsedu-version: 1.2.0
+// @jamsedu-version: 1.3.0
 // @jamsedu-component: tiny-doc
 
 import './dom-watcher.js';
@@ -13,10 +13,13 @@ class TinyDocument {
     #document;
 
     #elements = {
+        '.bold': this.#setupGenericElement.bind(this),
         '.context': this.#setupGenericElement.bind(this),
         '.header': this.#setupGenericElement.bind(this),
         '.indent': this.#setupGenericElement.bind(this),
+        '.inline': this.#setupGenericElement.bind(this),
         '.instructions': this.#setupGenericElement.bind(this),
+        '.print': this.#setupGenericElement.bind(this),
         '.section': this.#setupGenericElement.bind(this),
         '.spacer': this.#setupGenericElement.bind(this),
         '.subsection': this.#setupGenericElement.bind(this),
@@ -56,7 +59,7 @@ class TinyDocument {
     }
 
     #wrapWithStrongIfNeeded(node, sourceElem) {
-        if (!sourceElem.classList.contains('bold')) {
+        if (!sourceElem.classList.contains('doc-bold')) {
             return node;
         }
         const strong = document.createElement('strong');
@@ -342,8 +345,8 @@ class TinyDocument {
         if (select.classList.contains('inline') || select.closest('p')) {
             altInput.classList.add('inline');
         }
-        if (select.classList.contains('bold')) {
-            altInput.classList.add('bold');
+        if (select.classList.contains('doc-bold')) {
+            altInput.classList.add('doc-bold');
         }
 
         select.insertAdjacentElement('afterend', altInput);
@@ -542,7 +545,7 @@ class TinyDocument {
         // Save handler
         saveBtn.addEventListener('click', () => {
             const url = urlField.value.trim();
-            const text = hasForcedLabel ? String(forcedLabel).trim() : (textField ? textField.value.trim() : '');
+            const text = hasForcedLabel ? String(forcedLabel).trim() : textField ? textField.value.trim() : '';
 
             if (url) {
                 elem.dataset.url = url;
@@ -905,6 +908,8 @@ class TinyDocument {
                     span.className = 'not-provided';
                     span.textContent = '[Not Provided]';
                 }
+            } else if (selectedOption.value) {
+                span.textContent = selectedOption.value;
             } else {
                 span.textContent = selectedOption.text;
             }

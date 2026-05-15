@@ -47,6 +47,11 @@
                 }
             }
         }
+        
+        .doc-context {
+            font-style: normal;
+            opacity: 1;
+        }
 
         .doc-download {
             text-align: center;
@@ -112,9 +117,8 @@
             margin-left: 0.25in;
         }
 
-        .doc-context {
-            font-style: normal;
-            opacity: 1;
+        .doc-print {
+            display: none;
         }
 
         .doc-spacer {
@@ -228,9 +232,9 @@
          * The smaller block padding helps controls fit the surrounding line-height.
          */
         :where(
-            input.doc-input.inline:not([type="hidden"]),
-            select.doc-select.inline,
-            textarea.doc-textarea.inline
+            input.doc-input.doc-inline:not([type="hidden"]),
+            select.doc-select.doc-inline,
+            textarea.doc-textarea.doc-inline
         ) {
             display: inline-block;
             width: auto;
@@ -241,26 +245,26 @@
         }
 
         :where(
-            input.doc-input.inline:not([type="hidden"]),
+            input.doc-input.doc-inline:not([type="hidden"]),
             p input.doc-input:not([type="hidden"])
         ) {
             line-height: 1;
         }
 
-        .doc-link-wrapper.inline,
-        .doc-file-wrapper.inline {
+        .doc-link-wrapper.doc-inline,
+        .doc-file-wrapper.doc-inline {
             display: inline-flex;
             margin-block-end: 0;
             vertical-align: baseline;
         }
 
-        .doc-link-wrapper.inline input.doc-input.doc-link {
+        .doc-link-wrapper.doc-inline input.doc-input.doc-link {
             padding-block: 0;
             line-height: 1.2;
         }
 
         /*
-         * Paragraph context implies sentence-flow fields, even without explicit `.inline`.
+         * Paragraph context implies sentence-flow fields, even without explicit `.doc-inline`.
          * Keep controls visually aligned with prose line-height.
          */
         p :where(
@@ -423,7 +427,7 @@
          * Keep sentence-flow text inputs compact.
          * This lives after the base input block so it wins the cascade.
          */
-        input.doc-input.inline:not([type="hidden"]),
+        input.doc-input.doc-inline:not([type="hidden"]),
         p input.doc-input:not([type="hidden"]) {
             padding-block: 0;
             line-height: 1;
@@ -646,7 +650,7 @@
             }
         }
 
-        select.doc-select.inline,
+        select.doc-select.doc-inline,
         p select.doc-select {
             display: inline-block;
             margin: 0;
@@ -666,7 +670,7 @@
             -webkit-text-fill-color: var(--doc-field-placeholder-color);
         }
 
-        input.doc-select-alt-input.inline,
+        input.doc-select-alt-input.doc-inline,
         p input.doc-select-alt-input {
             display: inline-block;
             margin: 0 0 0 6px;

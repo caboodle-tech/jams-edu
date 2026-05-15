@@ -69,8 +69,13 @@
             </tr>
             <tr>
                 <td><code>instructions</code></td>
-                <td>(preserved)</td>
+                <td><code>doc-instructions</code></td>
                 <td>Guidance omitted from PDF output</td>
+            </tr>
+            <tr>
+                <td><code>print</code></td>
+                <td><code>doc-print</code></td>
+                <td>Content hidden in browser but visible in PDF output</td>
             </tr>
             <tr>
                 <td><code>spacer</code> / <code>indent</code></td>
@@ -84,12 +89,12 @@
             </tr>
             <tr>
                 <td><code>inline</code> (field modifier)</td>
-                <td>(preserved)</td>
+                <td><code>doc-inline</code></td>
                 <td>Keeps the field inline with sentence text</td>
             </tr>
             <tr>
                 <td><code>bold</code> (field modifier)</td>
-                <td>(preserved)</td>
+                <td><code>doc-bold</code></td>
                 <td>Wraps exported value in <code>&lt;strong&gt;</code></td>
             </tr>
         </tbody>
